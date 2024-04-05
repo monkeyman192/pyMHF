@@ -178,8 +178,8 @@ try:
     # First, load our internal mod before anything else.
     if internal_mod_folder is not None:
         logging.debug(f"Loading internal mods: {internal_mod_folder}")
-        mod_manager.load_mod_folder(internal_mod_folder)
-        mod_manager.enable_all(quiet=not debug_mode)
+        mod_manager.load_mod_folder(internal_mod_folder, quiet=True)
+        # mod_manager.enable_all(quiet=not debug_mode)
 
     logging.info("pyMHF injection complete!")
 
@@ -190,11 +190,15 @@ try:
     reset = "\u001b[0m"
     logging.info(bold + "Loading mods" + reset)
     try:
-        mod_manager.load_mod_folder(mod_folder)
-        _loaded = mod_manager.enable_all()
+        _loaded = mod_manager.load_mod_folder(mod_folder)
+        # _loaded = mod_manager.enable_all()
     except:
         logging.exception(traceback.format_exc())
     logging.info(f"Loaded {_loaded} mods in {time.time() - start_time:.3f}s")
+
+    hook_manager.debug_show_states()
+
+    hook_manager.enable_all()
 
     for func_name, hook_class in hook_manager.failed_hooks.items():
         offset = hook_class.target

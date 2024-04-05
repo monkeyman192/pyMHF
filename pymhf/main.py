@@ -13,6 +13,7 @@ import webbrowser
 import psutil
 import pymem
 import pymem.process
+import pymem.exception
 
 from pymhf.core.caching import hash_bytes
 from pymhf.core.process import start_process
@@ -37,7 +38,6 @@ def get_process_when_ready(
         for p in psutil.process_iter(["name", "pid"]):
             if p.name().lower() == "steam.exe":
                 parent_process = p
-                print(f"Steam found: {p}")
                 break
         if parent_process is None:
             print("Steam not running! For now, start it yourself and try again...")
@@ -54,9 +54,7 @@ def get_process_when_ready(
         while run:
             if target_process is None:
                 for child in parent_process.children():
-                    # print(child.name())
                     if child.name() == target:
-                        print(f"found target process: {child.name()}")
                         target_process = child
             else:
                 binary = pymem.Pymem(target)
@@ -72,7 +70,12 @@ def get_process_when_ready(
     if target_process is not None:
         binary = pymem.Pymem('Kamiko.exe')
         # TODO: We can inject python in really early since any loaded dll's will persist through steam's forking process.
-        binary.inject_python_interpreter()
+        try:
+            binary.inject_python_interpreter()
+        except pymem.exception.MemoryWriteError:
+            print("Failed to inject python for some reason... Trying again in 2 seconds")
+            time.sleep(2)
+            binary.inject_python_interpreter()
         print("Python injected")
         target_process.suspend()
 
@@ -87,13 +90,11 @@ def load_module(module_path: str):
     config = configparser.ConfigParser()
     # Currently it's in the same directory as this file...
     cfg_file = op.join(module_path, "pymhf.cfg")
-    print(cfg_file)
     read = config.read(cfg_file)
     if not read:
         print(f"No pymhf.cfg file found in specified directory: {module_path}")
         print("Cannot proceed with loading")
         return
-    print(read)
     binary_path = config["binary"]["path"]
     binary_exe = op.basename(binary_path)
     root_dir = config["binary"]["root_dir"]
@@ -102,8 +103,6 @@ def load_module(module_path: str):
         cmd = f"steam://rungameid/{steam_gameid}"
     else:
         cmd = binary_path
-    print(root_dir)
-    print(cmd)
 
     pm_binary, proc = get_process_when_ready(cmd, "Kamiko.exe", ["GameAssembly.dll"], True)
 
@@ -168,29 +167,42 @@ def load_module(module_path: str):
         # Inject some other dlls:
         # pymem.process.inject_dll(nms.process_handle, b"path")
 
-        cwd = CWD.replace("\\", "\\\\")
-        pm_binary.inject_python_shellcode(f"CWD = '{cwd}'")
-        pm_binary.inject_python_shellcode("import sys")
-        pm_binary.inject_python_shellcode("sys.path.append(CWD)")
-
-        # Inject _preinject AFTER modifying the sys.path for now until we have
-        # nmspy installed via pip.
-        with open(op.join(CWD, "_scripts", "_preinject.py"), "r") as f:
-            _preinject_shellcode = f.read()
-        pm_binary.inject_python_shellcode(_preinject_shellcode)
-        # Inject the common NMS variables which are required for general use.
-        module_path = module_path.replace("\\", "\\\\")
-        pm_binary.inject_python_shellcode(f"pymhf.core._internal.MODULE_PATH = '{module_path}'")
-        pm_binary.inject_python_shellcode(f"pymhf.core._internal.BASE_ADDRESS = {binary_base}")
-        pm_binary.inject_python_shellcode(f"pymhf.core._internal.SIZE_OF_IMAGE = {binary_size}")
-        pm_binary.inject_python_shellcode(f"pymhf.core._internal.CWD = '{cwd}'")
-        pm_binary.inject_python_shellcode(f"pymhf.core._internal.FAKE = 17")
-        pm_binary.inject_python_shellcode(f"pymhf.core._internal.PID = {pm_binary.process_id}")
-        pm_binary.inject_python_shellcode(f"pymhf.core._internal.HANDLE = {pm_binary.process_handle}")
-        pm_binary.inject_python_shellcode(f"pymhf.core._internal.BINARY_HASH = '{binary_hash}'")
-        pm_binary.inject_python_shellcode(
-            f"pymhf.core._internal.GAME_ROOT_DIR = \"{root_dir}\""
-        )
+        try:
+            cwd = CWD.replace("\\", "\\\\")
+            print(0)
+            # TODO: This can fail sometimes.... Figure out why??
+            pm_binary.inject_python_shellcode(f"CWD = '{cwd}'")
+            print(0.5)
+            pm_binary.inject_python_shellcode("import sys")
+            pm_binary.inject_python_shellcode("sys.path.append(CWD)")
+            print(1)
+            # Inject _preinject AFTER modifying the sys.path for now until we have
+            # nmspy installed via pip.
+            with open(op.join(CWD, "_scripts", "_preinject.py"), "r") as f:
+                _preinject_shellcode = f.read()
+            pm_binary.inject_python_shellcode(_preinject_shellcode)
+            print(2)
+            # Inject the common NMS variables which are required for general use.
+            module_path = module_path.replace("\\", "\\\\")
+            pm_binary.inject_python_shellcode(f"pymhf.core._internal.MODULE_PATH = '{module_path}'")
+            print(3)
+            pm_binary.inject_python_shellcode(f"pymhf.core._internal.BASE_ADDRESS = {binary_base}")
+            print(4)
+            pm_binary.inject_python_shellcode(f"pymhf.core._internal.SIZE_OF_IMAGE = {binary_size}")
+            print(5)
+            pm_binary.inject_python_shellcode(f"pymhf.core._internal.CWD = '{cwd}'")
+            print(6)
+            pm_binary.inject_python_shellcode(f"pymhf.core._internal.PID = {pm_binary.process_id}")
+            print(7)
+            pm_binary.inject_python_shellcode(f"pymhf.core._internal.HANDLE = {pm_binary.process_handle}")
+            print(8)
+            pm_binary.inject_python_shellcode(f"pymhf.core._internal.BINARY_HASH = '{binary_hash}'")
+            print(9)
+            pm_binary.inject_python_shellcode(
+                f"pymhf.core._internal.GAME_ROOT_DIR = \"{root_dir}\""
+            )
+        except Exception as e:
+            print(e)
         # Inject the script
         with open(op.join(CWD, "injected.py"), "r") as f:
             shellcode = f.read()

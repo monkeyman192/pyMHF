@@ -46,6 +46,10 @@ def _funchook_predicate(value: Any) -> bool:
         return isinstance(value, partial) and isinstance(value.func.__self__, FuncHook)
     except TypeError:
         return False
+    
+
+def _funchook_predicate_new(value: Any) -> bool:
+    return getattr(value, "_is_funchook", False)
 
 
 def _has_hotkey_predicate(value: Any) -> bool:
@@ -138,15 +142,11 @@ class Mod(ABC):
 
     def __init__(self):
         # Find all the hooks defined for the mod.
-        self.hooks: list[FuncHook] = [
-            x[1].func.__self__ for x in inspect.getmembers(self, _funchook_predicate)
-        ]
+        self.hooks: set[Callable[..., Any]] = self.get_members(_funchook_predicate_new)
+        mod_logger.info(self.hooks)
+        self._hotkey_funcs = self.get_members(_has_hotkey_predicate)
 
-        self._hotkey_funcs = [
-            x[1] for x in inspect.getmembers(self, _has_hotkey_predicate)
-        ]
-
-    def get_members(self, predicate) -> set[Callable]:
+    def get_members(self, predicate) -> set[Callable[..., Any]]:
         return {x[1] for x in inspect.getmembers(self, predicate)}
 
 
@@ -227,26 +227,45 @@ class ModManager():
             return False
         return self._load_module(module)
 
-    def load_mod_folder(self, folder: str):
+    def load_mod_folder(self, folder: str, quiet: bool = False):
         for file in os.listdir(folder):
             if file.endswith(".py"):
                 self.load_mod(op.join(folder, file))
+        # Once all the mods in the folder have been loaded, then parse the mod
+        # for function hooks and register then with the hook loader.
+        for mod in self._preloaded_mods.values():
+            self.register_funcs_new(mod)
+
+        bound_hooks = 0
+
+        for hook in self.hook_manager.hooks.values():
+            hook._init()
+            bound = hook.bind(None)
+            if bound:
+                bound_hooks += 1
+
+        # TODO: This isn't actually the right metric. Need to get the number of
+        # actual mods loaded.
+        return bound_hooks
+
+    def register_funcs_new(self, mod: type[Mod], quiet: bool = False):
+        # Instantiate the mod object.
+        _mod = mod()
+        for hook in _mod.hooks:
+            self.hook_manager.register_hook(hook)
+        self._register_funcs(_mod, quiet)
 
     def _register_funcs(self, mod: Mod, quiet: bool):
-        for hook in mod.hooks:
-            self.hook_manager.register_function(hook, True, mod, quiet)
         if hasattr(mod, "callback_funcs"):
             self.hook_manager.add_custom_callbacks(mod.callback_funcs)
-        # for main_loop_func in mod._main_funcs:
-        #     self.hook_manager.add_main_loop_func(main_loop_func)
-        # for func in mod._state_change_funcs:
-        #     self.hook_manager.add_state_change_func(func._trigger_on_state, func)
         for hotkey_func in mod._hotkey_funcs:
             # Don't need to tell the hook manager, register the keyboard
             # hotkey here...
             # NOTE: The below is a "hack"/"solution" to an issue that the
             # keyboard library has.
             # cf. https://github.com/boppreh/keyboard/issues/584
+            # NOTE: This solution breaks for keybindings where multiple keys
+            # Are required. Will need a better solution for this case.
 
             cb = keyboard.hook(
                 lambda e, func=hotkey_func, name=hotkey_func._hotkey, event_type=hotkey_func._hotkey_press: (
@@ -281,11 +300,10 @@ class ModManager():
                 continue
             mod_logger.info(mod.hooks)
             for hook in mod.hooks:
-                mod_logger.info(hook._name)
-                if hook._name in self._mod_hooks:
-                    self._mod_hooks[hook._name].append(hook)
+                if hook._hook_func_name in self._mod_hooks:
+                    self._mod_hooks[hook._hook_func_name].append(hook)
                 else:
-                    self._mod_hooks[hook._name] = [hook]
+                    self._mod_hooks[hook._hook_func_name] = [hook]
 
         mod_logger.info(self.mods)
         mod_logger.info(self._mod_hooks)
@@ -294,7 +312,7 @@ class ModManager():
         for name, mod in self.mods.items():
             if not quiet:
                 mod_logger.info(f"- Loading hooks for {name}")
-            self._register_funcs(mod, quiet)
+            self.register_funcs_new(mod)
             # If we get here, then the mod has been loaded successfully.
             # Add the name to the loaded mod names set so we can then remove the
             # mod from the preloaded mods dict.

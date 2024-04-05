@@ -42,6 +42,7 @@ class DetourTime(Enum):
 ORIGINAL_MAPPING = dict()
 
 
+# TODO: Move to a different file with `Mod` from mod_loader.py
 class FuncHook(cyminhook.MinHook):
     original: Callable[..., Any]
     target: int
@@ -51,47 +52,33 @@ class FuncHook(cyminhook.MinHook):
     _should_enable: bool
     _invalid: bool = False
     _call_func: Optional[FUNCDEF]
-    _is_one_shot: bool = False
 
     def __init__(
         self,
         detour: Callable[..., Any],
         *,
-        name: Optional[str] = None,
         offset: Optional[int] = None,
         call_func: Optional[FUNCDEF] = None,
-        detour_time: DetourTime = DetourTime.NONE,
         overload: Optional[str] = None,
-        should_enable: bool = True,
     ):
-        self._mod = None
-        self._should_enable = should_enable
         self._offset = offset
         self._call_func = call_func
         # TODO: This probably needs to be a dictionary so that we may add and
         # remove function hooks without duplication and allow lookup based on
         # name. Name will probably have to be be mod class name . func name.
-        self._before_detours = []
-        self._after_detours = []
-        self._after_detours_with_results = []
-        if detour_time == DetourTime.BEFORE:
-            self._before_detours.append(detour)
-        elif detour_time == DetourTime.AFTER:
-            self._after_detours.append(detour)
-        self._original_detour = detour
-        self.detour_time = detour_time
+        self._before_detours: list[Callable] = []
+        self._after_detours: list[Callable] = []
+        self._after_detours_with_results: list[Callable] = []
+        # Disabled detours will go here. This will include hooks disabled by the
+        # @disable decorator, as well as hooks which are one-shots and have been
+        # run.
+        self._disabled_detours: list[Callable] = []
+        self._oneshot_detours: dict[Callable, Callable] = {}
+        self.add_detour(detour)
         self.overload = overload
         self.state = None
-        if name is not None:
-            self._name = name
-        else:
-            raise ValueError(
-                "name cannot be none. This should only happen if this class was"
-                " instantiated manually which you should NOT be doing."
-            )
+        self._name = detour._hook_func_name
         self._initialised = False
-        if self._should_enable:
-            self._init()
 
     def _init(self):
         """ Actually initialise all the data. This is defined separately so that
@@ -157,64 +144,78 @@ class FuncHook(cyminhook.MinHook):
             hook_logger.error(f"{self._name} has no known call signature")
             self._invalid = True
         self._initialised = True
+        hook_logger.info(f"Initialized hook for function {self._name}")
 
     def add_detour(
         self,
         detour: Callable[..., Any],
-        detour_time: DetourTime = DetourTime.NONE
     ):
-        # TODO: Handle one-shot detours too...
         """ Add the provided detour to this FuncHook. """
-        if detour_time == DetourTime.BEFORE:
-            self._before_detours.append(detour)
-        elif detour_time == DetourTime.AFTER:
-            # For an "after" hook, we need to determine if "_result_" is in the
-            # function arguments.
-            func_sig = inspect.signature(detour)
-            if "_result_" in func_sig.parameters.keys():
-                self._after_detours_with_results.append(detour)
-            else:
-                self._after_detours.append(detour)
+        # If the hook has the `_disabled` attribute, then don't add the detour.
+        if getattr(detour, "_disabled", False):
+            self._disabled_detours.append(detour)
+            return
+        if not hasattr(detour, "_hook_time"):
+            hook_logger.info(f"{detour} is missing something...")
 
-    def bind(self, cls = None) -> bool:
+        # Determine when the hook should be run. Don't add the detour yet
+        # because if the hook is a one-shot then we need to know when to run it.
+        if detour._hook_time == DetourTime.BEFORE:
+            detour_list = self._before_detours
+        elif detour._hook_time == DetourTime.AFTER:
+            # Check to see if the detour has the `_result_` argument.
+            # This will have been determined already when the function was
+            # decorated
+            # TODO: Ensure this works if there is some other funky decoration
+            # shenanigans (eg. with a one-shot decorator...)
+            if getattr(detour, "_has__result_", False):
+                detour_list = self._after_detours_with_results
+            else:
+                detour_list = self._after_detours
+        else:
+            hook_logger.error(f"Detour {detour} has an invalid detour time: {detour._hook_time}")
+            return
+
+        if not getattr(detour, "_is_one_shot", False):
+            # If we aren't a one-shot detout, then add it to the list.
+            detour_list.append(detour)
+
+        # If the hook is a one-shot, wrap it so that it can remove itself once
+        # it's executed.
+        if getattr(detour, "_is_one_shot", False):
+            def _one_shot(*args, detour=detour, detour_list=detour_list):
+                try:
+                    hook_logger.info(detour_list)
+                    detour(*args)
+                    self._disabled_detours.append(detour)
+                    detour_list.remove(self._oneshot_detours[detour])
+                except:
+                    hook_logger.exception(traceback.format_exc())
+            self._oneshot_detours[detour] = _one_shot
+            detour_list.append(_one_shot)
+
+    @property
+    def _should_enable(self):
+        return (
+            len(self._before_detours) > 0 or
+            len(self._after_detours) > 0 or
+            len(self._after_detours_with_results)
+        )
+
+    def bind(self, mod) -> bool:
         # TODO: Change how this binding works. We need to iterate over the before
         # and after hooks and then create a function which will run them
         # appropriately.
         """ Actually initialise the base class. Returns whether the hook is bound. """
-        # Associate the mod now whether or not we get one. This way if the
-        # function is actually disabled, we may enable it later with no issues.
-        self._mod = cls
         if not self._should_enable:
+            hook_logger.info(f"No need to enable {self._name}")
             return False
 
-        # TODO: Apply this logic to the detour funcs...
-        if cls is not None:
-            self._detour_func = partial(self._original_detour, cls)
-        else:
-            self._detour_func = self._original_detour
-
-        # Check the detour time and create an approriately "wrapped" function
-        # which will run instead of the original function.
-        if self.detour_time == DetourTime.BEFORE:
-            self.detour = self._before_detour
-        elif self.detour_time == DetourTime.AFTER:
-            # For an "after" hook, we need to determine if "_result_" is in the
-            # function arguments.
-            func_sig = inspect.signature(self._original_detour)
-            if "_result_" in func_sig.parameters.keys():
-                self.detour = self._after_detour_with_return
-            else:
-                self.detour = self._after_detour
-        else:
-            self.detour = self._normal_detour
-
-        # Check to see if it's a one shot and wrap this detour one more to be
-        # one-shot.
-        if self._is_one_shot:
-            self._non_oneshot_detour = self.detour
-            self.detour = self._oneshot_detour
+        self.detour = self._compound_detour
 
         try:
+            hook_logger.info(f"Signature: {self.signature}")
+            hook_logger.info(f"Target: 0x{self.target - _internal.BASE_ADDRESS:X}")
             super().__init__(signature=self.signature, target=self.target)
         except cyminhook._cyminhook.Error as e:  # type: ignore
             if e.status == cyminhook._cyminhook.Status.MH_ERROR_ALREADY_CREATED:
@@ -228,8 +229,7 @@ class FuncHook(cyminhook.MinHook):
             return False
         ORIGINAL_MAPPING[self._name] = self.original
         self.state = "initialized"
-        if not hasattr(self, "_should_enable"):
-            self._should_enable = True
+        hook_logger.info(f"Bound hook for function {self._name}")
         return True
 
     def __call__(self, *args, **kwargs):
@@ -255,13 +255,16 @@ class FuncHook(cyminhook.MinHook):
                 ret = r
         # If we get a return value that is not None, then pass it through.
         if ret is not None:
-            return self.original(*ret)
+            result = self.original(*ret)
         else:
-            return self.original(*args)
+            result = self.original(*args)
 
         # Now loop over the after functions. We'll need to handle the cases of
         # functions which take the `_result_` kwarg, and those that don't.
-        pass
+        for func in self._after_detours:
+            func(*args)
+        for func in self._after_detours_with_results:
+            func(*args, _result_=result)
 
     def _normal_detour(self, *args):
         # Run a detour as provided by the user.
@@ -301,7 +304,7 @@ class FuncHook(cyminhook.MinHook):
     def enable(self):
         super().enable()
         self.state = "enabled"
-        self._should_enable = True
+        # self._should_enable = True
 
     def disable(self):
         if self.state == "enabled":
@@ -387,13 +390,35 @@ class HookFactory:
         else:
             f = FuncHook(
             detour,
-            name=cls._name,
             detour_time=DetourTime.BEFORE,
             overload=cls._overload,
-            should_enable=should_enable,
         )
             setattr(cls, "_func_hook", f)
             return f
+
+    @staticmethod
+    def _set_detour_as_funchook(cls, detour):
+        """ Set all the standard attributes required for a function hook. """
+        setattr(detour, "_is_funchook", True)
+        if hasattr(cls, "_name"):
+            setattr(detour, "_hook_func_name", cls._name)
+        else:
+            raise ValueError("class used as detour must have a name")
+
+    @classmethod
+    def after_new(cls, detour: Callable[..., Any]):
+        HookFactory._set_detour_as_funchook(cls, detour)
+        setattr(detour, "_hook_time", DetourTime.AFTER)
+        if "_result_" in inspect.signature(detour).parameters.keys():
+            setattr(detour, "_has__result_", True)
+        hook_logger.info(f"{detour}: {detour._hook_time}")
+        return detour
+
+    @classmethod
+    def before_new(cls, detour: Callable[..., Any]):
+        HookFactory._set_detour_as_funchook(cls, detour)
+        setattr(detour, "_hook_time", DetourTime.BEFORE)
+        return detour
 
     @classmethod
     def after(cls, detour: Callable[..., Any]) -> FuncHook:
@@ -422,15 +447,6 @@ class HookFactory:
         )
             setattr(cls, "_func_hook", f)
             return f
-
-
-def disable(obj):
-    """
-    Disable the current function or class.
-    This decorator MUST be the innermost decorator for it to work correctly.
-    """
-    obj._should_enable = False
-    return obj
 
 
 # TODO: See if we can make this work so that we may have a main loop decorator
@@ -464,24 +480,13 @@ def on_state_change(state):
     return _inner
 
 
-def on_game_save(func):
-    func._on_game_save = True
+def before(func):
+    setattr(func, "_hook_time", DetourTime.BEFORE)
     return func
 
 
-def on_game_load(func):
-    func._on_game_load = True
-    return func
-
-
-def on_fully_booted(func):
-    """
-    Configure the decorated function to be run once the game is considered
-    "fully booted".
-    This occurs when the games' internal state first changes to "mode selector"
-    (ie. just before the game mode selection screen appears).
-    """
-    func._trigger_on_state = "MODESELECTOR"
+def after(func):
+    setattr(func, "_hook_time", DetourTime.AFTER)
     return func
 
 
@@ -605,9 +610,17 @@ def conditional_hook(conditional: str):
     return _conditional_hook
 
 
-def one_shot(klass: FuncHook):
-    klass._is_one_shot = True
-    return klass
+def disable(obj):
+    """
+    Disable the current function or class.
+    """
+    obj._disabled = True
+    return obj
+
+
+def one_shot(func: Callable[..., Any]):
+    func._is_one_shot = True
+    return func
 
 
 def on_key_pressed(event: str):
@@ -661,54 +674,12 @@ class HookManager():
                 if not self.callback_funcs[cb_type]:
                     del self.callback_funcs[cb_type]
 
-    def add_main_loop_func(self, func):
-        if func._main_loop_detour_time == DetourTime.BEFORE:
-            self.main_loop_before_funcs.append(func)
+    def register_hook(self, hook: Callable):
+        hook_func_name = hook._hook_func_name
+        if hook_func_name in self.hooks:
+            self.hooks[hook_func_name].add_detour(hook)
         else:
-            self.main_loop_after_funcs.append(func)
-
-    def remove_main_loop_func(self, func):
-        try:
-            if func._main_loop_detour_time == DetourTime.BEFORE:
-                self.main_loop_before_funcs.remove(func)
-            else:
-                self.main_loop_after_funcs.remove(func)
-        except ValueError:
-            # In this case maybe there was an error starting the hook the last
-            # time and so it won't be loaded. Just ignore as hopefully this
-            # time when reloading it will go better!
-            pass
-
-    def add_state_change_func(self, state, func):
-        self.on_state_change_funcs[state].append(func)
-
-    def remove_state_change_func(self, state, func):
-        self.on_state_change_funcs[state].remove(func)
-
-    def register_function(
-            self,
-            hook: FuncHook,
-            enable: bool = True,
-            mod = None,
-            quiet: bool = False
-    ):
-        """ Register the provided function as a callback. """
-        if hook._invalid:
-            # If the hook is invalid for any reason, then just return (for now...)
-            return
-        bound_ok = hook.bind(mod)
-        if bound_ok:
-            if not quiet:
-                hook_logger.info(
-                    f"Registered hook '{hook._name}' for function "
-                    f"'{hook._original_detour.__name__}'"
-                )
-            self.hooks[hook._name] = hook
-            if enable and hook._should_enable:
-                try:
-                    hook.enable()
-                except:
-                    hook_logger.info(traceback.format_exc())
+            self.hooks[hook_func_name] = FuncHook(hook)
 
     def enable(self, func_name: str):
         """ Enable the hook for the provided function name. """
@@ -726,11 +697,27 @@ class HookManager():
             return
         hook_logger.info(f"Disabled hook for function '{func_name}'")
 
-    @property
-    def states(self):
+    def debug_show_states(self):
         # Return the states of all the registered hooks
         for func_name, hook in self.hooks.items():
-            yield f"{func_name}: {hook.state}"
+            hook_logger.info(f"Functions registered for {func_name}:")
+            if hook._before_detours:
+                hook_logger.info(f"  Before Detours:")
+                for func in hook._before_detours:
+                    hook_logger.info(f"    {func}")
+            if hook._after_detours:
+                hook_logger.info(f"  After Detours:")
+                for func in hook._after_detours:
+                    hook_logger.info(f"    {func}")
+
+    def enable_all(self):
+        for func_name, hook in self.hooks.items():
+            try:
+                hook.enable()
+                hook_logger.info(f"Enabled hook for {func_name}")
+            except:
+                hook_logger.error(f"Unable to enable {func_name} because:")
+                hook_logger.exception(traceback.format_exc())
 
 
 hook_manager = HookManager()
