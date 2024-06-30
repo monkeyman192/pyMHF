@@ -3,3 +3,6 @@ build/*
 **/__pycache__/**
 **/logs/**
 **/CRITICAL_ERROR.txt
+dist/*
+logs
+mods

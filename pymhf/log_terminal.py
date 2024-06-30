@@ -1,3 +1,4 @@
+import argparse
 import pickle
 import logging
 import logging.handlers
@@ -12,19 +13,20 @@ import pymhf
 
 
 # Logo generated using https://patorjk.com/software/taag/
+# Options:
+# Font: Varsity
+# Character Width: Full
+# Character Height: Full
 LOGO = """
- ____  _____   ____    ____    ______        _______    ____  ____  
-|_   \|_   _| |_   \  /   _| .' ____ \      |_   __ \  |_  _||_  _| 
-  |   \ | |     |   \/   |   | (___ \_|       | |__) |   \ \  / /   
-  | |\ \| |     | |\  /| |    _.____`.        |  ___/     \ \/ /    
- _| |_\   |_   _| |_\/_| |_  | \____) |  _   _| |_        _|  |_    
-|_____|\____| |_____||_____|  \______.' (_) |_____|      |______|   
+ _______    ____  ____   ____    ____   ____  ____   ________  
+|_   __ \  |_  _||_  _| |_   \  /   _| |_   ||   _| |_   __  | 
+  | |__) |   \ \  / /     |   \/   |     | |__| |     | |_ \_| 
+  |  ___/     \ \/ /      | |\  /| |     |  __  |     |  _|    
+ _| |_        _|  |_     _| |_\/_| |_   _| |  | |_   _| |_     
+|_____|      |______|   |_____||_____| |____||____| |_____|    
+                                                               
 """
 
-
-CWD = op.dirname(__file__)
-LOGDIR = op.join(CWD, "logs")
-os.makedirs(LOGDIR, exist_ok=True)
 
 # NB: This code is mostly taken from the python stdlib docs.
 
@@ -102,10 +104,12 @@ class LogRecordSocketReceiver(socketserver.ThreadingTCPServer):
         except KeyboardInterrupt:
             print("Ending logging server...")
 
-def main():
+def main(path: str):
     formatter = logging.Formatter("%(asctime)s %(name)-15s %(levelname)-6s %(message)s")
+    logdir = op.join(path, "..", "logs")
+    os.makedirs(logdir, exist_ok=True)
     # TODO: Need to make this strip the ANSI escape chars from the written log
-    file_handler = logging.FileHandler(op.join(LOGDIR, f"nmspy-{time.strftime('%Y%m%dT%H%M%S')}.log"), encoding="utf-8")
+    file_handler = logging.FileHandler(op.join(logdir, f"pymhf-{time.strftime('%Y%m%dT%H%M%S')}.log"), encoding="utf-8")
     file_handler.setFormatter(formatter)
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
@@ -120,4 +124,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("path", help="Path to place the log files")
+    args = parser.parse_args()
+    main(args.path)

@@ -16,8 +16,8 @@ import pymem.process
 import pymem.exception
 
 from pymhf.core.caching import hash_bytes
-from pymhf.core.process import start_process
-from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol
+# from pymhf.core.process import start_process
+from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol, READY_ASK_SEQUENCE
 from pymhf.core.logging import open_log_console
 
 
@@ -26,7 +26,7 @@ CWD = op.dirname(__file__)
 
 def get_process_when_ready(
     cmd: str,
-    target: Optional[str] = None,
+    target: str,
     required_assemblies: Optional[list[str]] = None,
     is_steam: bool = True,
 ):
@@ -41,6 +41,8 @@ def get_process_when_ready(
                 break
         if parent_process is None:
             print("Steam not running! For now, start it yourself and try again...")
+            # TODO: Return?
+            # return
 
     run = True
     if parent_process is not None:
@@ -68,8 +70,9 @@ def get_process_when_ready(
         pass
 
     if target_process is not None:
-        binary = pymem.Pymem('Kamiko.exe')
-        # TODO: We can inject python in really early since any loaded dll's will persist through steam's forking process.
+        binary = pymem.Pymem(target)
+        # TODO: We can inject python in really early since any loaded dll's will persist through steam's
+        # forking process.
         try:
             binary.inject_python_interpreter()
         except pymem.exception.MemoryWriteError:
@@ -85,7 +88,6 @@ def get_process_when_ready(
 
 
 def load_module(module_path: str):
-
     # Parse the config file first so we can load anything we need to know.
     config = configparser.ConfigParser()
     # Currently it's in the same directory as this file...
@@ -98,15 +100,22 @@ def load_module(module_path: str):
     binary_path = config["binary"]["path"]
     binary_exe = op.basename(binary_path)
     root_dir = config["binary"]["root_dir"]
-    steam_gameid = config.getint("bninary", "steam_gameid", fallback=0)
+    required_assemblies = [
+        x.strip() for x in config.get("binary", "required_assemblies", fallback="").split(",")
+    ]
+    steam_gameid = config.getint("binary", "steam_gameid", fallback=0)
+    log_window_name_override = config.get("pymhf", "log_window_name_override", fallback="pymhf console")
+    is_steam = False
     if steam_gameid:
         cmd = f"steam://rungameid/{steam_gameid}"
+        is_steam = True
     else:
         cmd = binary_path
 
-    pm_binary, proc = get_process_when_ready(cmd, "Kamiko.exe", ["GameAssembly.dll"], True)
+    pm_binary, proc = get_process_when_ready(cmd, binary_exe, required_assemblies, is_steam)
 
     if not pm_binary or not proc:
+        # TODO: Raise better error messages/reason why it couldn't load.
         print("FATAL ERROR: Cannot start process!")
         return
 
@@ -132,9 +141,8 @@ def load_module(module_path: str):
         loop.run_until_complete(factory_coroutine)
         loop.run_until_complete(client_completed)
 
-
     try:
-        log_pid = open_log_console(op.join(CWD, "log_terminal.py"))
+        log_pid = open_log_console(op.join(CWD, "log_terminal.py"), module_path, log_window_name_override)
         # Have a small nap just to give it some time.
         time.sleep(0.5)
         print(f"Opened the console log with PID: {log_pid}")
@@ -146,85 +154,104 @@ def load_module(module_path: str):
         time.sleep(3)
 
         print(f"proc id from pymem: {pm_binary.process_id}")
-        if (base_assembly := config.get("binary", "assembly", fallback=None)) is not None:
+        offset_map = {}
+        if required_assemblies:
             modules = pm_binary.list_modules()
-            found_module = None
-            for m in modules:
-                if m.name == base_assembly:
-                    found_module = m
-                    break
-            if found_module is None:
-                print(f"Cannot find specified assembly from config ({base_assembly})")
+            found_modules = list(filter(lambda x: x.name in required_assemblies, modules))
+            if not found_modules:
+                print(f"Cannot find specified assembly from config ({required_assemblies})")
                 return
-            binary_base = found_module.lpBaseOfDll
-            binary_size = found_module.SizeOfImage
+            for module in found_modules:
+                offset_map[module.name] = (module.lpBaseOfDll, module.SizeOfImage)
         else:
             pb = pm_binary.process_base
-            binary_base = pb.lpBaseOfDll
-            binary_size = pb.SizeOfImage
-        print(f"The handle: {pm_binary.process_handle}, base: 0x{binary_base:X}")
+            offset_map[binary_exe] = (pb.lpBaseOfDll, pb.SizeOfImage)
+        # print(f"The handle: {pm_binary.process_handle}, base: 0x{binary_base:X}")
+
+        if len(offset_map) == 1:
+            # Only one thing. For now, we just set these as the `binary_base` and `binary_size`.
+            # TODO: When we want to support offsets and hooks in multiple assemblies we need to pass the whole
+            # dictionary in potentially, or do a lookup from inside the process.
+            assem_name = list(offset_map.keys())[0]
+            binary_base = offset_map[assem_name][0]
+            binary_size = offset_map[assem_name][1]
 
         # Inject some other dlls:
         # pymem.process.inject_dll(nms.process_handle, b"path")
 
         try:
             cwd = CWD.replace("\\", "\\\\")
-            print(0)
+            import sys
+            saved_path = [x.replace("\\", "\\\\") for x in sys.path]
             # TODO: This can fail sometimes.... Figure out why??
-            pm_binary.inject_python_shellcode(f"CWD = '{cwd}'")
-            print(0.5)
-            pm_binary.inject_python_shellcode("import sys")
-            pm_binary.inject_python_shellcode("sys.path.append(CWD)")
-            print(1)
-            # Inject _preinject AFTER modifying the sys.path for now until we have
-            # nmspy installed via pip.
-            with open(op.join(CWD, "_scripts", "_preinject.py"), "r") as f:
+            pm_binary.inject_python_shellcode(
+                f"""
+import sys
+sys.path = {saved_path}
+                """
+            )
+
+            with open(op.join(CWD, "_preinject.py"), "r") as f:
                 _preinject_shellcode = f.read()
             pm_binary.inject_python_shellcode(_preinject_shellcode)
-            print(2)
             # Inject the common NMS variables which are required for general use.
             module_path = module_path.replace("\\", "\\\\")
-            pm_binary.inject_python_shellcode(f"pymhf.core._internal.MODULE_PATH = '{module_path}'")
-            print(3)
-            pm_binary.inject_python_shellcode(f"pymhf.core._internal.BASE_ADDRESS = {binary_base}")
-            print(4)
-            pm_binary.inject_python_shellcode(f"pymhf.core._internal.SIZE_OF_IMAGE = {binary_size}")
-            print(5)
-            pm_binary.inject_python_shellcode(f"pymhf.core._internal.CWD = '{cwd}'")
-            print(6)
-            pm_binary.inject_python_shellcode(f"pymhf.core._internal.PID = {pm_binary.process_id}")
-            print(7)
-            pm_binary.inject_python_shellcode(f"pymhf.core._internal.HANDLE = {pm_binary.process_handle}")
-            print(8)
-            pm_binary.inject_python_shellcode(f"pymhf.core._internal.BINARY_HASH = '{binary_hash}'")
-            print(9)
             pm_binary.inject_python_shellcode(
-                f"pymhf.core._internal.GAME_ROOT_DIR = \"{root_dir}\""
+                f"""
+pymhf.core._internal.MODULE_PATH = '{module_path}'
+pymhf.core._internal.BASE_ADDRESS = {binary_base}
+pymhf.core._internal.SIZE_OF_IMAGE = {binary_size}
+pymhf.core._internal.CWD = '{cwd}'
+pymhf.core._internal.PID = {pm_binary.process_id}
+pymhf.core._internal.HANDLE = {pm_binary.process_handle}
+pymhf.core._internal.BINARY_HASH = '{binary_hash}'
+pymhf.core._internal.GAME_ROOT_DIR = \"{root_dir}\"
+                """
             )
         except Exception as e:
             print(e)
         # Inject the script
         with open(op.join(CWD, "injected.py"), "r") as f:
             shellcode = f.read()
-        executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
         print("Injecting hooking code")
         futures.append(executor.submit(pm_binary.inject_python_shellcode, shellcode))
 
+        # Wait for a user input to start the process.
+        # TODO: Send a signal back up from the process to trigger this automatically.
         try:
+            # print("Checking to see if we are ready to run...")
+            # client_completed = asyncio.Future()
+            # client_factory = partial(
+            #     TerminalProtocol,
+            #     message=READY_ASK_SEQUENCE,
+            #     future=client_completed
+            # )
+            # print("A")
+            # factory_coroutine = loop.create_connection(
+            #     client_factory,
+            #     '127.0.0.1',
+            #     6770,
+            # )
+            # print("B")
+            # loop.run_until_complete(factory_coroutine)
+            # print("C")
+            # loop.run_until_complete(client_completed)
+
             input("Press something to start binary")
         except KeyboardInterrupt:
             # Kill the injected code so that we don't wait forever for the future to end.
             kill_injected_code(loop)
             raise
-        if proc is None:
-            print(f"Opening thread {thread_handle}")
-            # thread_handle = pymem.process.open_thread(main_thread.thread_id)
-            pymem.ressources.kernel32.ResumeThread(thread_handle)
-        else:
-            proc.resume()
+        # if proc is None:
+        #     print(f"Opening thread {thread_handle}")
+        #     # thread_handle = pymem.process.open_thread(main_thread.thread_id)
+        #     pymem.ressources.kernel32.ResumeThread(thread_handle)
+        # else:
+        proc.resume()
 
-        print("NMS.py interactive python command prompt")
-        print("Type any valid python commands to execute them within the NMS process")
+        print("pyMHF interactive python command prompt")
+        print("Type any valid python commands to execute them within the games' process")
         while True:
             try:
                 input_ = input(">>> ")

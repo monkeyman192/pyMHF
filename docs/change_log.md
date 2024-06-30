@@ -1,9 +1,5 @@
 # Change Log
 
-### 0.6.9 (31/12/2023)
+### Current (0.1.0) [30/06/2024]
 
-- Added `ModState` base class. Any class which inherits from this will have its' state preserved across mod reloads.
-
-### 0.6.8 (29/12/2023)
-
-- Added ability to hot reload mods
+- Initial release. Much of the functionality has been copied over from NMS.py which was how this project started.

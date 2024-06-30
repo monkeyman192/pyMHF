@@ -1,23 +1,21 @@
 import asyncio
 import builtins
 from concurrent.futures import ThreadPoolExecutor
-import configparser
 import ctypes
 import ctypes.wintypes
 from functools import partial
 import locale
 import logging
 import logging.handlers
-import os
 import os.path as op
 import time
 import traceback
 from typing import Optional
-import sys
 
 
 socket_logger_loaded = False
-nms = None
+executor = None
+ready = False
 
 try:
     rootLogger = logging.getLogger('')
@@ -33,16 +31,18 @@ try:
     import pymhf.core._internal as _internal
     from pymhf.core.importing import import_file
 
-    # # Before any nmspy.data imports occur, set the os.environ value for the
+    from pymhf.core.utils import AutosavingConfig
+
+    # # Before any pymhf imports occur, set the os.environ value for the
     # # binary hash:
     # if _internal.BINARY_HASH:
-    #     os.environ["NMS_BINARY_HASH"] = _internal.BINARY_HASH
+    #     os.environ["PYMHF_BINARY_HASH"] = _internal.BINARY_HASH
     # else:
     #     # If there is no binary hash, something has gone wrong. Exit now since
     #     # we can't continue.
     #     sys.exit(-1)
 
-    config = configparser.ConfigParser()
+    config = AutosavingConfig()
     # Currently it's in the same directory as this file...
     cfg_file = op.join(_internal.MODULE_PATH, "pymhf.cfg")
     read = config.read(cfg_file)
@@ -65,12 +65,13 @@ try:
     from pymhf.core.protocols import (
         ExecutionEndedException,
         custom_exception_handler,
-        ESCAPE_SEQUENCE
+        ESCAPE_SEQUENCE,
+        READY_ASK_SEQUENCE,
+        READY_ACK_SEQUENCE
     )
     from pymhf.core.memutils import getsize
     from pymhf.core.mod_loader import ModManager
-    # import pymhf.core.common as nms
-
+    from pymhf.gui.gui import GUI
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     hook_logger = logging.getLogger("HookManager")
@@ -97,9 +98,9 @@ try:
         which will accept requests, execute them and persist any variables to
         globals()."""
         def connection_made(self, transport: asyncio.transports.WriteTransport):
-            peername = transport.get_extra_info('peername')
             self.transport: asyncio.transports.WriteTransport = transport
-            builtins.print('Connection from {}'.format(peername))
+            # peername = transport.get_extra_info('peername')
+            # self.write(f'Connection from {peername} ')
             # Overwrite print so that any `print` statements called in the commands
             # to be executed will be written back out of the socket they came in.
             globals()['print'] = partial(builtins.print, file=self)
@@ -115,6 +116,11 @@ try:
             if __data == ESCAPE_SEQUENCE:
                 print("\nReceived exit command!")
                 raise ExecutionEndedException
+            elif __data == READY_ASK_SEQUENCE:
+                print("\nReceived ready ask command")
+                print(f"Are we ready? {ready}")
+                self.transport.write(READY_ACK_SEQUENCE)
+                return
             try:
                 exec(__data.decode())
             except:
@@ -153,28 +159,14 @@ try:
             return data[:limit]
         else:
             return data
-
     # Patch the locale to make towupper work.
     # Python must change this so we change it back otherwise calls to `towupper`
     # in the various functions to set and get keypresses don't work correctly.
     locale.setlocale(locale.LC_CTYPE, "C")
 
-    # nms.executor = ThreadPoolExecutor(1, thread_name_prefix="pyMHF_Executor")
-    _internal._executor = ThreadPoolExecutor(1, thread_name_prefix="pyMHF_Internal_Executor")
-    # logging.info("FIRST")
-    # gui_executor = ThreadPoolExecutor(1, thread_name_prefix="pyMHF_GUI")
-    # logging.info("Importing GUI")
-    # from pymhf.gui.fake import run
-    # logging.info("Running GUI")
-    # gui_future = gui_executor.submit(run)
-
-    # logging.info("After GUI")
+    executor = ThreadPoolExecutor(2, thread_name_prefix="pyMHF_Internal_Executor")
 
     mod_manager = ModManager(hook_manager)
-
-    # TODO: Need to re-write how we load mods.
-    # To enable compound mods
-
     # First, load our internal mod before anything else.
     if internal_mod_folder is not None:
         logging.debug(f"Loading internal mods: {internal_mod_folder}")
@@ -196,7 +188,7 @@ try:
         logging.exception(traceback.format_exc())
     logging.info(f"Loaded {_loaded} mods in {time.time() - start_time:.3f}s")
 
-    hook_manager.debug_show_states()
+    # hook_manager.debug_show_states()
 
     hook_manager.enable_all()
 
@@ -208,6 +200,20 @@ try:
     # Each client connection will create a new protocol instance
     coro = loop.create_server(ExecutingProtocol, '127.0.0.1', 6770)
     server = loop.run_until_complete(coro)
+    # logging.info("Executing protocol is ready to go!")
+
+    futures = []
+    if config.getboolean("gui", "shown", fallback=True):
+        gui = GUI(mod_manager, config)
+        # For each mod, add the corresponding tab to the gui.
+        for mod in mod_manager.mods.values():
+            gui.add_tab(mod)
+        # Add the settings tab so that we may configure various settings.
+        gui.add_settings_tab()
+
+        # TODO: This needs to have some exception handling because if something
+        # goes wrong in here it will just fail "silently".
+        futures.append(executor.submit(gui.run))
 
     logging.info(f'Serving on executor {server.sockets[0].getsockname()}')
     loop.run_forever()
@@ -231,12 +237,12 @@ except Exception as e:
         with open(op.join(_internal.CWD, "CRITICAL_ERROR.txt"), "w") as f:
             traceback.print_exc(file=f)
             if socket_logger_loaded:
-                logging.error("An error occurred while loading NMS.py:")
+                logging.error("An error occurred while loading pymhf:")
                 logging.exception(traceback.format_exc())
     except:
         with open(op.join(op.expanduser("~"), "CRITICAL_ERROR.txt"), "w") as f:
             traceback.print_exc(file=f)
 finally:
-    if nms and nms.executor is not None:
-        nms.executor.shutdown(wait=False, cancel_futures=True)
+    if executor is not None:
+        executor.shutdown(wait=False, cancel_futures=True)
 

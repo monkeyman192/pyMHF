@@ -1,3 +1,0 @@
-use a threaded queue to pass data between the gui running in a separate thread.
-These will be events which tell the gui when to fire certain thigns or to update the gui itself
-Need to run the gui loop manually

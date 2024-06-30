@@ -1,6 +1,5 @@
 from ctypes import windll, create_unicode_buffer, byref, c_ulong
-import json
-import os.path as op
+from configparser import ConfigParser
 from typing import Optional
 
 # from pymhf import _internal
@@ -42,3 +41,28 @@ def get_foreground_pid():
 
 def does_pid_have_focus(pid: int) -> bool:
     return pid == get_foreground_pid()
+
+
+class AutosavingConfig(ConfigParser):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._filename: str
+        self._encoding: Optional[str]
+
+    def read(self, filenames, encoding=None):
+        super().read(filenames, encoding)
+        self._filename = filenames
+        self._encoding = encoding
+
+    def set(self, section: str, option: str, value=None):
+        if value is not None:
+            val = str(value)
+        else:
+            val = value
+        try:
+            super().set(section, option, val)
+            with open(self._filename, "w", encoding=self._encoding) as f:
+                self.write(f, space_around_delimiters=True)
+        except Exception as e:
+            import logging
+            logging.exception(e)

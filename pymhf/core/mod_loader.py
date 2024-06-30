@@ -13,6 +13,7 @@ import json
 import logging
 import os.path as op
 import os
+import traceback
 from types import ModuleType
 from typing import Any, Optional, Callable
 import sys
@@ -23,6 +24,7 @@ import pymhf.core._internal as _internal
 from pymhf.core.hooking import HookManager, FuncHook
 import pymhf.core.common as common
 from pymhf.core.utils import does_pid_have_focus
+from pymhf.core._types import HookProtocol
 
 import keyboard
 import semver
@@ -42,22 +44,30 @@ def _is_mod_state_predicate(obj) -> bool:
 
 
 def _funchook_predicate(value: Any) -> bool:
-    try:
-        return isinstance(value, partial) and isinstance(value.func.__self__, FuncHook)
-    except TypeError:
-        return False
-    
-
-def _funchook_predicate_new(value: Any) -> bool:
     return getattr(value, "_is_funchook", False)
 
 
 def _has_hotkey_predicate(value: Any) -> bool:
-    """ Determine if the objecy has the _is_main_loop_func property.
+    """ Determine if the object has the _is_main_loop_func property.
     This will only be methods on Mod classes which are decorated with either
     @main_loop.before or @main_loop.after
     """
     return getattr(value, "_hotkey", False)
+
+
+def _gui_button_predicate(value) -> bool:
+    return getattr(value, "_is_button", False) and hasattr(value, "_button_text")
+
+
+def _gui_variable_predicate(value) -> bool:
+    # Variables are properties which have the .fset function defined with
+    # _is_variable and _label_text attributes, and a .fset function too.
+    if isinstance(value, property):
+        return (
+            getattr(value.fget, "_is_variable", False)
+            and hasattr(value.fget, "_label_text")
+            and hasattr(value.fget, "_variable_type")
+        )
 
 
 class StructEncoder(json.JSONEncoder):
@@ -142,17 +152,30 @@ class Mod(ABC):
 
     def __init__(self):
         # Find all the hooks defined for the mod.
-        self.hooks: set[Callable[..., Any]] = self.get_members(_funchook_predicate_new)
-        mod_logger.info(self.hooks)
+        self.hooks: set[HookProtocol] = self.get_members(_funchook_predicate)
+        self.callback_funcs = {}
         self._hotkey_funcs = self.get_members(_has_hotkey_predicate)
+        self._gui_buttons = {x[1] for x in inspect.getmembers(self, _gui_button_predicate)}
+        # For variables, unless there is a better way, store just the name so we
+        # can our own special binding of the name to the GUI.
+        self._gui_variables = {}
+        for x in inspect.getmembers(self.__class__, _gui_variable_predicate):
+            if x[1].fset is not None:
+                x[1].fget._has_setter = True
+            self._gui_variables[x[0]] = x[1].fget
 
-    def get_members(self, predicate) -> set[Callable[..., Any]]:
+    @property
+    def _mod_name(self):
+        return self.__class__.__name__
+
+    def get_members(self, predicate):
         return {x[1] for x in inspect.getmembers(self, predicate)}
 
 
 class ModManager():
     def __init__(self, hook_manager: HookManager):
         # Internal mapping of mods.
+        # TODO: Probably change datatype
         self._preloaded_mods: dict[str, type[Mod]] = {}
         # Actual mapping of mods.
         self.mods: dict[str, Mod] = {}
@@ -234,13 +257,15 @@ class ModManager():
         # Once all the mods in the folder have been loaded, then parse the mod
         # for function hooks and register then with the hook loader.
         for mod in self._preloaded_mods.values():
-            self.register_funcs_new(mod)
+            self.register_funcs(mod)
+
+        self._preloaded_mods.clear()
 
         bound_hooks = 0
 
         for hook in self.hook_manager.hooks.values():
             hook._init()
-            bound = hook.bind(None)
+            bound = hook.bind()
             if bound:
                 bound_hooks += 1
 
@@ -248,16 +273,17 @@ class ModManager():
         # actual mods loaded.
         return bound_hooks
 
-    def register_funcs_new(self, mod: type[Mod], quiet: bool = False):
+    def register_funcs(self, mod: type[Mod], quiet: bool = False):
         # Instantiate the mod object.
         _mod = mod()
         for hook in _mod.hooks:
             self.hook_manager.register_hook(hook)
         self._register_funcs(_mod, quiet)
+        self.mods[_mod._mod_name] = _mod
 
     def _register_funcs(self, mod: Mod, quiet: bool):
-        if hasattr(mod, "callback_funcs"):
-            self.hook_manager.add_custom_callbacks(mod.callback_funcs)
+        # TODO: Update how custom callbacks work/implement them.
+        self.hook_manager.add_custom_callbacks(mod.callback_funcs)
         for hotkey_func in mod._hotkey_funcs:
             # Don't need to tell the hook manager, register the keyboard
             # hotkey here...
@@ -279,88 +305,56 @@ class ModManager():
                 (hotkey_func._hotkey, hotkey_func._hotkey_press)
             ] = cb
 
-    def enable_all(self, quiet: bool = False) -> int:
-        """ Enable all mods loaded by the manager that haven't been enabled yet.
-        Returns the number of mods enabled. """
-        _loaded_mod_names = set()
-        mod_logger.info(self._preloaded_mods)
-        for name, _mod in self._preloaded_mods.items():
-            mod_logger.info(name)
-            mod = _mod()
-            # Instantiate the mod, and then overwrite the object in the mods
-            # attribute with the instance.
-            self.mods[name] = mod
-            if not hasattr(mod, "hooks"):
-                mod_logger.error(
-                    f"The mod {mod.__class__.__name__} is not initialised "
-                    "properly. Please ensure that `super().__init__()` is "
-                    "included in the `__init__` method of this mod!"
-                )
-                mod_logger.warning(f"Could not enable {mod.__class__.__name__}")
-                continue
-            mod_logger.info(mod.hooks)
-            for hook in mod.hooks:
-                if hook._hook_func_name in self._mod_hooks:
-                    self._mod_hooks[hook._hook_func_name].append(hook)
-                else:
-                    self._mod_hooks[hook._hook_func_name] = [hook]
+    def _gui_reload(self, _sender, _keyword, user_data):
+        # Callback to register with the GUI to enable reloading of mods from there.
+        self.reload(user_data)
 
-        mod_logger.info(self.mods)
-        mod_logger.info(self._mod_hooks)
-        mod_logger.info("^^^^^^^^^^^^")
-
-        for name, mod in self.mods.items():
-            if not quiet:
-                mod_logger.info(f"- Loading hooks for {name}")
-            self.register_funcs_new(mod)
-            # If we get here, then the mod has been loaded successfully.
-            # Add the name to the loaded mod names set so we can then remove the
-            # mod from the preloaded mods dict.
-            _loaded_mod_names.add(name)
-        for name in _loaded_mod_names:
-            self._preloaded_mods.pop(name)
-        return len(_loaded_mod_names)
-
-    def reload(self, name):
-        if (mod := self.mods.get(name)) is not None:
-            # First, remove everything.
-            for hook in mod.hooks:
-                mod_logger.info(f"Disabling hook {hook}: {hook._name}")
-                hook.disable()
-                hook.close()
-                del hook
-            self.hook_manager.remove_custom_callbacks(mod.callback_funcs)
-            for hotkey_func in mod._hotkey_funcs:
-                cb = self.hotkey_callbacks.pop(
-                    (hotkey_func._hotkey, hotkey_func._hotkey_press),
-                    None,
-                )
-                if cb is not None:
-                    keyboard.unhook(cb)
-
-            # Then, reload the module
-            module = self._mod_paths[name]
-            del sys.modules[module.__name__]
-            # Then, add everything back.
-            self.load_mod(module.__file__)
-            _loaded_mod_names = set()
-            for name, _mod in self._preloaded_mods.items():
-                mod = _mod()
-                self.mods[name] = mod
-                if not hasattr(mod, "hooks"):
-                    mod_logger.error(
-                        f"The mod {mod.__class__.__name__} is not initialised "
-                        "properly. Please ensure that `super().__init__()` is "
-                        "included in the `__init__` method of this mod!"
+    def reload(self, name: str):
+        """ Reload a mod with the given name. """
+        try:
+            if (mod := self.mods.get(name)) is not None:
+                # First, remove everything.
+                for hook in mod.hooks:
+                    fh: Optional[FuncHook] = self.hook_manager.hook_registry.get(hook)
+                    if fh is not None:
+                        mod_logger.info(f"Removing hook {hook}: {hook._hook_func_name}")
+                        fh.remove_detour(hook)
+                self.hook_manager.remove_custom_callbacks(mod.callback_funcs)
+                for hotkey_func in mod._hotkey_funcs:
+                    cb = self.hotkey_callbacks.pop(
+                        (hotkey_func._hotkey, hotkey_func._hotkey_press),
+                        None,
                     )
-                    mod_logger.warning(f"Could not enable {mod.__class__.__name__}")
-                    continue
-                self._register_funcs(mod, False)
+                    if cb is not None:
+                        keyboard.unhook(cb)
+
+                # Then, reload the module
+                module = self._mod_paths[name]
+                del sys.modules[module.__name__]
+                # Then, add everything back.
+                self.load_mod(module.__file__)
+                for mod in self._preloaded_mods.values():
+                    self.register_funcs(mod)
+
+                self._preloaded_mods.clear()
+
+                for hook in self.hook_manager.hooks.values():
+                    hook._init()
+                    hook.bind()
+
+                mod_logger.info(self.mod_states)
+                mod_logger.info("Mod states after finishing reloading...")
+
+                # Get the mod states for the mod if there are any and reapply them to the new mod instance.
                 if mod_state := self.mod_states.get(name):
                     for ms in mod_state:
                         field, state = ms
                         setattr(mod, field, state)
-                _loaded_mod_names.add(name)
-            for name in _loaded_mod_names:
-                self._preloaded_mods.pop(name)
-            mod_logger.info(f"Finished reloading {name}")
+
+                # TODO: Add functionality for reloading the gui elements.
+
+                mod_logger.info(f"Finished reloading {name}")
+            else:
+                mod_logger.error(f"Cannot find mod {name}")
+        except:
+            mod_logger.exception(traceback.format_exc())
