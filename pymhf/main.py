@@ -16,12 +16,31 @@ import pymem.process
 import pymem.exception
 
 from pymhf.core.caching import hash_bytes
-# from pymhf.core.process import start_process
+from pymhf.core.process import start_process
 from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol, READY_ASK_SEQUENCE
 from pymhf.core.logging import open_log_console
 
 
 CWD = op.dirname(__file__)
+
+
+class WrappedProcess:
+    def __init__(self, proc: Optional[psutil.Process] = None, thread_handle: Optional[int] = None):
+        self.proc = proc
+        self.thread_handle = thread_handle
+        self._is_self_started = False
+        if self.thread_handle is not None:
+            self._is_self_started = True
+
+    def suspend(self):
+        if self.proc is not None:
+            self.proc.suspend()
+
+    def resume(self):
+        if self.proc is not None:
+            self.proc.resume()
+        else:
+            pymem.ressources.kernel32.ResumeThread(self.thread_handle)
 
 
 def get_process_when_ready(
@@ -30,7 +49,7 @@ def get_process_when_ready(
     required_assemblies: Optional[list[str]] = None,
     is_steam: bool = True,
 ):
-    target_process = None
+    target_process: Optional[WrappedProcess] = None
     parent_process = None
     # If we are running something which is under steam, make sure steam is
     # running first.
@@ -57,7 +76,7 @@ def get_process_when_ready(
             if target_process is None:
                 for child in parent_process.children():
                     if child.name() == target:
-                        target_process = child
+                        target_process = WrappedProcess(proc=child)
             else:
                 binary = pymem.Pymem(target)
                 modules = list(pymem.process.enum_process_module(binary.process_handle))
@@ -66,8 +85,8 @@ def get_process_when_ready(
                         run = False
                         break
     else:
-        # process_handle, thread_handle, pid, tid = start_process(binary_path, creationflags=0x4)
-        pass
+        process_handle, thread_handle, pid, tid = start_process(cmd, creationflags=0x4)
+        target_process = WrappedProcess(thread_handle=thread_handle)
 
     if target_process is not None:
         binary = pymem.Pymem(target)
@@ -100,9 +119,9 @@ def load_module(module_path: str):
     binary_path = config["binary"]["path"]
     binary_exe = op.basename(binary_path)
     root_dir = config["binary"]["root_dir"]
-    required_assemblies = [
-        x.strip() for x in config.get("binary", "required_assemblies", fallback="").split(",")
-    ]
+    required_assemblies = []
+    if _required_assemblies := config.get("binary", "required_assemblies", fallback=""):
+        required_assemblies = [x.strip() for x in _required_assemblies.split(",")]
     steam_gameid = config.getint("binary", "steam_gameid", fallback=0)
     log_window_name_override = config.get("pymhf", "log_window_name_override", fallback="pymhf console")
     is_steam = False
@@ -243,11 +262,6 @@ pymhf.core._internal.GAME_ROOT_DIR = \"{root_dir}\"
             # Kill the injected code so that we don't wait forever for the future to end.
             kill_injected_code(loop)
             raise
-        # if proc is None:
-        #     print(f"Opening thread {thread_handle}")
-        #     # thread_handle = pymem.process.open_thread(main_thread.thread_id)
-        #     pymem.ressources.kernel32.ResumeThread(thread_handle)
-        # else:
         proc.resume()
 
         print("pyMHF interactive python command prompt")

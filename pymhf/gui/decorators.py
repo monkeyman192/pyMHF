@@ -11,6 +11,12 @@ def gui_button(text: str):
     return inner
 
 
+def no_gui(cls):
+    """ Mark the mod as not requiring a tab in the gui. """
+    setattr(cls, "_no_gui", True)
+    return cls
+
+
 class gui_variable:
     @staticmethod
     def _set_default_attributes(func: Callable[..., Any], label: Optional[str] = None):

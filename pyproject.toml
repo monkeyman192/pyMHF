@@ -24,7 +24,7 @@ classifiers = [
 dependencies = [
   "cyminhook>=0.1.4", "psutil~=5.9.5", "pymem~=1.12.0", "keyboard", "semver", "pywin32", "dearpygui~=1.11.0",
 ]
-version = "0.1.0"
+version = "0.1.1"
 
 [tool.setuptools]
 packages = ["pymhf", "pymhf.core", "pymhf.extensions", "pymhf.gui"]

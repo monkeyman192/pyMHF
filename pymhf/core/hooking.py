@@ -2,7 +2,7 @@ import ast
 from collections.abc import Callable
 from ctypes import CFUNCTYPE
 from _ctypes import CFuncPtr
-from functools import wraps, partial
+from functools import partial
 import inspect
 import logging
 from typing import Any, Optional, Type
@@ -136,7 +136,6 @@ class FuncHook(cyminhook.MinHook):
             hook_logger.error(f"{self._name} has no known call signature")
             self._invalid = True
         self._initialised = True
-        hook_logger.info(f"Initialized hook for function {self._name}")
 
     def _determine_detour_list(self, detour: HookProtocol) -> Optional[list[HookProtocol]]:
         # Determine when the hook should be run. Don't add the detour yet
@@ -179,7 +178,6 @@ class FuncHook(cyminhook.MinHook):
         if getattr(detour, "_is_one_shot", False):
             def _one_shot(*args, detour=detour, detour_list=detour_list):
                 try:
-                    hook_logger.info(detour_list)
                     detour(*args)
                     self._disabled_detours.append(detour)
                     detour_list.remove(self._oneshot_detours[detour])
@@ -188,11 +186,10 @@ class FuncHook(cyminhook.MinHook):
             self._oneshot_detours[detour] = _one_shot
             detour_list.append(_one_shot)
 
-    def remove_detour(self, detour: Callable[..., Any]):
+    def remove_detour(self, detour: HookProtocol):
         """ Remove the provided detour from this FuncHook. """
         # Determine the detour list to use. If none, then return.
         if (detour_list := self._determine_detour_list(detour)) is None:
-            hook_logger.info("Nothing to do!")
             return
 
         if detour in detour_list:
@@ -227,7 +224,6 @@ class FuncHook(cyminhook.MinHook):
     def bind(self) -> bool:
         """ Actually initialise the base class. Returns whether the hook is bound. """
         if not self._should_enable:
-            hook_logger.info(f"No need to enable {self._name}")
             return False
 
         self.detour = self._compound_detour
@@ -257,12 +253,6 @@ class FuncHook(cyminhook.MinHook):
         # this decorator on a method of a class.
         return partial(self.__call__, instance)
 
-    def _oneshot_detour(self, *args):
-        ret = self._non_oneshot_detour(*args)
-        self.disable()
-        hook_logger.debug(f"Disabling a one-shot hook ({self._name})")
-        return ret
-
     def _compound_detour(self, *args):
         ret = None
         # Loop over the before detours, keeping the last none-None return value.
@@ -288,9 +278,9 @@ class FuncHook(cyminhook.MinHook):
         self.state = "closed"
 
     def enable(self):
-        super().enable()
-        self.state = "enabled"
-        # self._should_enable = True
+        if self._should_enable:
+            super().enable()
+            self.state = "enabled"
 
     def disable(self):
         if self.state == "enabled":
@@ -319,7 +309,11 @@ class HookFactory:
         return ORIGINAL_MAPPING[cls._name](*args)
 
     @staticmethod
-    def _set_detour_as_funchook(detour: Callable[..., Any], cls: Optional["HookFactory"] = None, detour_name: Optional[str] = None):
+    def _set_detour_as_funchook(
+        detour: Callable[..., Any],
+        cls: Optional["HookFactory"] = None,
+        detour_name: Optional[str] = None
+    ):
         """ Set all the standard attributes required for a function hook. """
         setattr(detour, "_is_funchook", True)
         setattr(detour, "_has__result_", False)
@@ -363,27 +357,27 @@ def disable(obj):
     """
     Disable the current function or class.
     """
-    obj._disabled = True
+    setattr(obj, "_disabled", True)
     return obj
 
 
-def one_shot(func: Callable[..., Any]):
-    func._is_one_shot = True
+def one_shot(func: Callable[..., Any]) -> HookProtocol:
+    setattr(func, "_is_one_shot", True)
     return func
 
 
 def on_key_pressed(event: str):
-    def wrapped(func):
-        func._hotkey = event
-        func._hotkey_press = "down"
+    def wrapped(func: Callable[..., Any]) -> HookProtocol:
+        setattr(func, "_hotkey", event)
+        setattr(func, "_hotkey_press", "down")
         return func
     return wrapped
 
 
 def on_key_release(event: str):
-    def wrapped(func):
-        func._hotkey = event
-        func._hotkey_press = "up"
+    def wrapped(func: Callable[..., Any]) -> HookProtocol:
+        setattr(func, "_hotkey", event)
+        setattr(func, "_hotkey_press", "up")
         return func
     return wrapped
 
@@ -462,8 +456,8 @@ class HookManager():
         self.failed_hooks: dict[str, Type[FuncHook]] = {}
         # A mapping of the custom event hooks which can be registered by modules
         # for individual mods.
-        self.callback_funcs: dict[str, set[Callable]] = {}
-        self.hook_registry: dict[Callable, FuncHook] = {}
+        self.custom_callbacks: dict[str, dict[DetourTime, set[HookProtocol]]] = {}
+        self._uninitialized_hooks: set[str] = set()
 
     def resolve_dependencies(self):
         """ Resolve dependencies of hooks.
@@ -472,30 +466,65 @@ class HookManager():
         # TODO: Make work.
         pass
 
-    def add_custom_callbacks(self, callbacks: dict[str, set[Callable]]):
+    def add_custom_callbacks(self, callbacks: set[HookProtocol]):
         """ Add the provided function to the specified callback type. """
-        for cb_type, funcs in callbacks.items():
-            if cb_type not in self.callback_funcs:
-                self.callback_funcs[cb_type] = funcs
+        for cb in callbacks:
+            cb_type = cb._custom_trigger
+            if cb_type not in self.custom_callbacks:
+                self.custom_callbacks[cb_type] = {}
+            detour_time = getattr(cb, "_hook_time", DetourTime.NONE)
+            if detour_time not in self.custom_callbacks[cb_type]:
+                self.custom_callbacks[cb_type][detour_time] = {cb, }
             else:
-                self.callback_funcs[cb_type].update(funcs)
+                self.custom_callbacks[cb_type][detour_time].add(cb)
 
-    def remove_custom_callbacks(self, callbacks: dict[str, set[Callable]]):
+    def remove_custom_callbacks(self, callbacks: set[HookProtocol]):
         # Remove the values in the list which correspond to the data in `callbacks`
-        for cb_type, funcs in callbacks.items():
-            if cb_type in self.callback_funcs:
+        for cb in callbacks:
+            cb_type: str = cb._custom_trigger
+            if cb_type in self.custom_callbacks:
                 # Remove the functions from the set and then check whether it's
                 # empty.
-                self.callback_funcs[cb_type].difference_update(funcs)
-                if not self.callback_funcs[cb_type]:
-                    del self.callback_funcs[cb_type]
+                self.custom_callbacks[cb_type][getattr(cb, "_hook_time", DetourTime.NONE)].discard(cb)
+                if all(not x for x in self.custom_callbacks[cb_type].values()):
+                    del self.custom_callbacks[cb_type]
+
+    def call_custom_callbacks(self, callback_key: str, detour_time: DetourTime = DetourTime.NONE):
+        callbacks = self.custom_callbacks.get(callback_key, {})
+        if callbacks:
+            for cb in callbacks.get(detour_time, set()):
+                cb()
 
     def register_hook(self, hook: HookProtocol):
+        """ Register a hook. There will be on of these for each function which is hooked and each one may
+        have multiple methods assigned to it. """
         hook_func_name = hook._hook_func_name
         if hook_func_name not in self.hooks:
             self.hooks[hook_func_name] = FuncHook(hook_func_name)
+            self._uninitialized_hooks.add(hook_func_name)
         self.hooks[hook_func_name].add_detour(hook)
-        self.hook_registry[hook] = self.hooks[hook_func_name]
+
+    def initialize_hooks(self) -> int:
+        """ Initialize any uninitialized hooks.
+        This will also enable the hooks so that they become active.
+        """
+        count = 0
+        for hook_name in self._uninitialized_hooks:
+            hook = self.hooks[hook_name]
+            hook._init()
+            bound = hook.bind()
+            if bound:
+                count += 1
+            # Try and enable the hook.
+            try:
+                hook.enable()
+                hook_logger.info(f"Enabled hook for {hook_name}")
+            except:
+                hook_logger.error(f"Unable to enable {hook_name} because:")
+                hook_logger.exception(traceback.format_exc())
+        # There are no uninitialized hooks.
+        self._uninitialized_hooks = set()
+        return count
 
     def enable(self, func_name: str):
         """ Enable the hook for the provided function name. """
@@ -527,15 +556,6 @@ class HookManager():
                 hook_logger.info(f"  After Detours:")
                 for func in hook._after_detours:
                     hook_logger.info(f"    {func}")
-
-    def enable_all(self):
-        for func_name, hook in self.hooks.items():
-            try:
-                hook.enable()
-                hook_logger.info(f"Enabled hook for {func_name}")
-            except:
-                hook_logger.error(f"Unable to enable {func_name} because:")
-                hook_logger.exception(traceback.format_exc())
 
 
 hook_manager = HookManager()

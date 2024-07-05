@@ -101,6 +101,12 @@ class GUI:
             )
 
     def add_tab(self, cls: Mod):
+        """ Add the mod as a new tab in the GUI. """
+        # Check to see if the `no_gui` decorator has been applied to the class.
+        # If so, don't add it now.
+        if getattr(cls, "_no_gui", False) == True:
+            return
+
         name = cls.__class__.__name__
         cls._gui = self
 
@@ -119,8 +125,6 @@ class GUI:
 
         for _variable_name, _getter in cls._gui_variables.items():
             self.add_variable(cls, _variable_name, _getter)
-        # logger.info("MOD WIDGETS")
-        # logger.info(self.mod_widgets)
 
     def add_window(self):
         with dpg.window(

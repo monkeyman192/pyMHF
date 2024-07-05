@@ -15,13 +15,13 @@ import os.path as op
 import os
 import traceback
 from types import ModuleType
-from typing import Any, Optional, Callable
+from typing import Any, Optional
 import sys
 
 from pymhf.core.importing import import_file
 from pymhf.core.errors import NoSaveError
 import pymhf.core._internal as _internal
-from pymhf.core.hooking import HookManager, FuncHook
+from pymhf.core.hooking import HookManager
 import pymhf.core.common as common
 from pymhf.core.utils import does_pid_have_focus
 from pymhf.core._types import HookProtocol
@@ -45,6 +45,10 @@ def _is_mod_state_predicate(obj) -> bool:
 
 def _funchook_predicate(value: Any) -> bool:
     return getattr(value, "_is_funchook", False)
+
+
+def _callback_predicate(value: Any) -> bool:
+    return hasattr(value, "_custom_trigger")
 
 
 def _has_hotkey_predicate(value: Any) -> bool:
@@ -87,7 +91,6 @@ class StructDecoder(json.JSONDecoder):
 
     def object_hook(seld, obj: dict):
         if (module := obj.get("module")) is not None:
-            mod_logger.info(module)
             if module == "__main__":
                 return globals()[obj["struct"]](**obj["fields"])
             else:
@@ -148,12 +151,12 @@ class Mod(ABC):
     # Minimum required pyMHF version for this mod.
     __pymhf_required_version__: Optional[str] = None
 
-    callback_funcs: dict[str, set[Callable]]
+    custom_callbacks: dict[str, set[HookProtocol]]
 
     def __init__(self):
         # Find all the hooks defined for the mod.
         self.hooks: set[HookProtocol] = self.get_members(_funchook_predicate)
-        self.callback_funcs = {}
+        self.custom_callbacks = self.get_members(_callback_predicate)
         self._hotkey_funcs = self.get_members(_has_hotkey_predicate)
         self._gui_buttons = {x[1] for x in inspect.getmembers(self, _gui_button_predicate)}
         # For variables, unless there is a better way, store just the name so we
@@ -250,41 +253,49 @@ class ModManager():
             return False
         return self._load_module(module)
 
-    def load_mod_folder(self, folder: str, quiet: bool = False):
+    def load_mod_folder(self, folder: str, bind: bool = True) -> tuple[int, int]:
+        """ Load the mod folder.
+        
+        Params
+        ------
+        folder
+            The path of the folder to be loaded. All mod files within this directory will be loaded and
+            installed.
+        bind
+            Whether or not to actual bind and initialize the hooks within the mod.
+            This should almost always be True except when loading the internal mods initially since it's not
+            necessary.
+            If this function is called with False, then it MUST be called again with True before the hooks
+            are enabled.
+        """
         for file in os.listdir(folder):
             if file.endswith(".py"):
                 self.load_mod(op.join(folder, file))
         # Once all the mods in the folder have been loaded, then parse the mod
         # for function hooks and register then with the hook loader.
+        loaded_mods = len(self._preloaded_mods)
         for mod in self._preloaded_mods.values():
             self.register_funcs(mod)
+
 
         self._preloaded_mods.clear()
 
         bound_hooks = 0
+        if bind:
+            bound_hooks = self.hook_manager.initialize_hooks()
 
-        for hook in self.hook_manager.hooks.values():
-            hook._init()
-            bound = hook.bind()
-            if bound:
-                bound_hooks += 1
-
-        # TODO: This isn't actually the right metric. Need to get the number of
-        # actual mods loaded.
-        return bound_hooks
+        return loaded_mods, bound_hooks
 
     def register_funcs(self, mod: type[Mod], quiet: bool = False):
-        # Instantiate the mod object.
+        """ Register all the functions within the mod as hooks. """
         _mod = mod()
+        # First register each of the methods which are detours.
         for hook in _mod.hooks:
             self.hook_manager.register_hook(hook)
-        self._register_funcs(_mod, quiet)
-        self.mods[_mod._mod_name] = _mod
-
-    def _register_funcs(self, mod: Mod, quiet: bool):
-        # TODO: Update how custom callbacks work/implement them.
-        self.hook_manager.add_custom_callbacks(mod.callback_funcs)
-        for hotkey_func in mod._hotkey_funcs:
+        # Add any custom callbacks which may be defined by the calling library.
+        self.hook_manager.add_custom_callbacks(_mod.custom_callbacks)
+        # Finally, set up any keyboard bindings.
+        for hotkey_func in _mod._hotkey_funcs:
             # Don't need to tell the hook manager, register the keyboard
             # hotkey here...
             # NOTE: The below is a "hack"/"solution" to an issue that the
@@ -304,6 +315,7 @@ class ModManager():
             self.hotkey_callbacks[
                 (hotkey_func._hotkey, hotkey_func._hotkey_press)
             ] = cb
+        self.mods[_mod._mod_name] = _mod
 
     def _gui_reload(self, _sender, _keyword, user_data):
         # Callback to register with the GUI to enable reloading of mods from there.
@@ -315,11 +327,17 @@ class ModManager():
             if (mod := self.mods.get(name)) is not None:
                 # First, remove everything.
                 for hook in mod.hooks:
-                    fh: Optional[FuncHook] = self.hook_manager.hook_registry.get(hook)
+                    hook_name = hook._hook_func_name
+                    fh = self.hook_manager.hooks.get(hook_name)
                     if fh is not None:
                         mod_logger.info(f"Removing hook {hook}: {hook._hook_func_name}")
                         fh.remove_detour(hook)
-                self.hook_manager.remove_custom_callbacks(mod.callback_funcs)
+                        # If the hook has been closed it means that there are now no longer any methods
+                        # assigned as detours to it. Remove the hook from the registry.
+                        if fh.state == "closed":
+                            del self.hook_manager.hooks[hook_name]
+
+                self.hook_manager.remove_custom_callbacks(mod.custom_callbacks)
                 for hotkey_func in mod._hotkey_funcs:
                     cb = self.hotkey_callbacks.pop(
                         (hotkey_func._hotkey, hotkey_func._hotkey_press),
@@ -328,9 +346,10 @@ class ModManager():
                     if cb is not None:
                         keyboard.unhook(cb)
 
-                # Then, reload the module
+                # Then, reload the module.
                 module = self._mod_paths[name]
                 del sys.modules[module.__name__]
+
                 # Then, add everything back.
                 self.load_mod(module.__file__)
                 for mod in self._preloaded_mods.values():
@@ -338,12 +357,7 @@ class ModManager():
 
                 self._preloaded_mods.clear()
 
-                for hook in self.hook_manager.hooks.values():
-                    hook._init()
-                    hook.bind()
-
-                mod_logger.info(self.mod_states)
-                mod_logger.info("Mod states after finishing reloading...")
+                self.hook_manager.initialize_hooks()
 
                 # Get the mod states for the mod if there are any and reapply them to the new mod instance.
                 if mod_state := self.mod_states.get(name):
@@ -352,6 +366,9 @@ class ModManager():
                         setattr(mod, field, state)
 
                 # TODO: Add functionality for reloading the gui elements.
+                # TODO: Add ability to check whether the attributes of the mod state have changed. If so,
+                # remove or add these attributes as required. Might want to have some kind of "copy" method to
+                # actually create a new instance each time but persist the data across.
 
                 mod_logger.info(f"Finished reloading {name}")
             else:
