@@ -118,7 +118,7 @@ def load_module(module_path: str):
         return
     binary_path = config["binary"]["path"]
     binary_exe = op.basename(binary_path)
-    root_dir = config["binary"]["root_dir"]
+    root_dir = config.get("binary", "root_dir", fallback="")
     required_assemblies = []
     if _required_assemblies := config.get("binary", "required_assemblies", fallback=""):
         required_assemblies = [x.strip() for x in _required_assemblies.split(",")]

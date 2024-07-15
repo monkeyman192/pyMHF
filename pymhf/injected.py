@@ -49,7 +49,7 @@ try:
     log_level = config.get("pymhf", "log_level", fallback="info")
 
     internal_mod_folder = config.get("binary", "internal_mod_dir", fallback=None)
-    mod_folder = config.get("binary", "mod_dir")
+    mod_folder = config.get("binary", "mod_dir", fallback=None)
 
     debug_mode = log_level.lower() == "debug"
     if debug_mode:
@@ -180,7 +180,13 @@ try:
     reset = "\u001b[0m"
     logging.info(bold + "Loading mods" + reset)
     try:
-        _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(mod_folder)
+        if mod_folder is not None:
+            _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(mod_folder)
+        else:
+            logging.warning(
+                """You have not configured the `binary.mod_dir` variable in the pymhf.cfg file.
+                Please do so so that you can load mods."""
+            )
     except:
         logging.exception(traceback.format_exc())
     logging.info(f"Loaded {_loaded_mods} mods and {_loaded_hooks} hooks in {time.time() - start_time:.3f}s")
