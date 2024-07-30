@@ -2,8 +2,7 @@
 name = "pyMHF"
 description = "python Modding and Hooking Framework"
 requires-python = ">=3.9"
-# TODO: Add
-license = {file = "LICENSE.txt"}
+license = {file = "LICENSE.md"}
 keywords = ["hooking", "games", "hacking", "modding"]
 authors = [
   {name = "monkeyman192"}
@@ -24,7 +23,7 @@ classifiers = [
 dependencies = [
   "cyminhook>=0.1.4", "psutil~=5.9.5", "pymem~=1.12.0", "keyboard", "semver", "pywin32", "dearpygui~=1.11.0",
 ]
-version = "0.1.2"
+version = "0.1.3"
 
 [tool.setuptools]
 packages = ["pymhf", "pymhf.core", "pymhf.extensions", "pymhf.gui"]
@@ -32,6 +31,9 @@ packages = ["pymhf", "pymhf.core", "pymhf.extensions", "pymhf.gui"]
 [project.urls]
 Homepage = "https://github.com/monkeyman192/pyMHF"
 Repository = "https://github.com/monkeyman192/pyMHF"
+
+[project.scripts]
+pymhf = "pymhf:run"
 
 [build-system]
 requires = ["setuptools>=43.0.0", "wheel"]

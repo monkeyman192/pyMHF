@@ -14,6 +14,7 @@ class DetourTime(Enum):
 
 class HookProtocol(Protocol):
     _is_funchook: bool
+    _is_manual_hook: bool
     _has__result_: bool
     _hook_func_name: str
     _hook_time: DetourTime
@@ -21,3 +22,8 @@ class HookProtocol(Protocol):
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         ...
+
+
+class ManualHookProtocol(HookProtocol):
+    _hook_offset: int
+    _hook_func_def: FUNCDEF

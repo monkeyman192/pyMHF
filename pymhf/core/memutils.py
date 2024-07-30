@@ -88,9 +88,9 @@ def pprint_mem(offset: int, size: int, stride: Optional[int] = None) -> str:
         result = " ".join([f"{x:02X}".upper() for x in range(stride)]) + "\n"
         for chunk in chunks(_data, stride):
             result += " ".join([f"{k:02X}".upper() for k in chunk]) + "\n"
-        return result
+        return "\n" + result
     else:
-        return " ".join([k.hex().upper() for k in _data])
+        return "\n" + " ".join([k.hex().upper() for k in _data])
 
 
 def _hex_repr(val: int, as_hex: bool) -> str:

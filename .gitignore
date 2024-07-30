@@ -6,3 +6,4 @@ build/*
 dist/*
 logs
 mods
+.venv/

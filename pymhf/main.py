@@ -48,6 +48,7 @@ def get_process_when_ready(
     target: str,
     required_assemblies: Optional[list[str]] = None,
     is_steam: bool = True,
+    start_paused: bool = False,
 ):
     target_process: Optional[WrappedProcess] = None
     parent_process = None
@@ -73,19 +74,23 @@ def get_process_when_ready(
         else:
             subprocess.run(cmd)
         while run:
-            if target_process is None:
-                for child in parent_process.children():
-                    if child.name() == target:
-                        target_process = WrappedProcess(proc=child)
-            else:
-                binary = pymem.Pymem(target)
-                modules = list(pymem.process.enum_process_module(binary.process_handle))
-                if len(modules) > 0:
-                    if set(required_assemblies) <= set(x.name for x in modules):
-                        run = False
-                        break
+            try:
+                if target_process is None:
+                    for child in parent_process.children(recursive=True):
+                        if child.name() == target:
+                            target_process = WrappedProcess(proc=child)
+                else:
+                    binary = pymem.Pymem(target)
+                    modules = list(pymem.process.enum_process_module(binary.process_handle))
+                    if len(modules) > 0:
+                        if set(required_assemblies) <= set(x.name for x in modules):
+                            run = False
+                            break
+            except KeyboardInterrupt:
+                raise
     else:
-        process_handle, thread_handle, pid, tid = start_process(cmd, creationflags=0x4)
+        creationflags = 0x4 if start_paused else 0
+        process_handle, thread_handle, pid, tid = start_process(cmd, creationflags=creationflags)
         target_process = WrappedProcess(thread_handle=thread_handle)
 
     if target_process is not None:
@@ -99,7 +104,8 @@ def get_process_when_ready(
             time.sleep(2)
             binary.inject_python_interpreter()
         print("Python injected")
-        target_process.suspend()
+        if start_paused:
+            target_process.suspend()
 
         return binary, target_process
     else:
@@ -123,6 +129,7 @@ def load_module(module_path: str):
     if _required_assemblies := config.get("binary", "required_assemblies", fallback=""):
         required_assemblies = [x.strip() for x in _required_assemblies.split(",")]
     steam_gameid = config.getint("binary", "steam_gameid", fallback=0)
+    start_paused = config.getboolean("binary", "start_paused", fallback=False)
     log_window_name_override = config.get("pymhf", "log_window_name_override", fallback="pymhf console")
     is_steam = False
     if steam_gameid:
@@ -131,7 +138,7 @@ def load_module(module_path: str):
     else:
         cmd = binary_path
 
-    pm_binary, proc = get_process_when_ready(cmd, binary_exe, required_assemblies, is_steam)
+    pm_binary, proc = get_process_when_ready(cmd, binary_exe, required_assemblies, is_steam, start_paused)
 
     if not pm_binary or not proc:
         # TODO: Raise better error messages/reason why it couldn't load.
@@ -233,36 +240,37 @@ pymhf.core._internal.GAME_ROOT_DIR = \"{root_dir}\"
         with open(op.join(CWD, "injected.py"), "r") as f:
             shellcode = f.read()
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
-        print("Injecting hooking code")
+        print(f"Injecting hooking code into proc id {pm_binary.process_id}")
         futures.append(executor.submit(pm_binary.inject_python_shellcode, shellcode))
 
         # Wait for a user input to start the process.
         # TODO: Send a signal back up from the process to trigger this automatically.
-        try:
-            # print("Checking to see if we are ready to run...")
-            # client_completed = asyncio.Future()
-            # client_factory = partial(
-            #     TerminalProtocol,
-            #     message=READY_ASK_SEQUENCE,
-            #     future=client_completed
-            # )
-            # print("A")
-            # factory_coroutine = loop.create_connection(
-            #     client_factory,
-            #     '127.0.0.1',
-            #     6770,
-            # )
-            # print("B")
-            # loop.run_until_complete(factory_coroutine)
-            # print("C")
-            # loop.run_until_complete(client_completed)
+        if start_paused:
+            try:
+            #     # print("Checking to see if we are ready to run...")
+            #     # client_completed = asyncio.Future()
+            #     # client_factory = partial(
+            #     #     TerminalProtocol,
+            #     #     message=READY_ASK_SEQUENCE,
+            #     #     future=client_completed
+            #     # )
+            #     # print("A")
+            #     # factory_coroutine = loop.create_connection(
+            #     #     client_factory,
+            #     #     '127.0.0.1',
+            #     #     6770,
+            #     # )
+            #     # print("B")
+            #     # loop.run_until_complete(factory_coroutine)
+            #     # print("C")
+            #     # loop.run_until_complete(client_completed)
 
-            input("Press something to start binary")
-        except KeyboardInterrupt:
-            # Kill the injected code so that we don't wait forever for the future to end.
-            kill_injected_code(loop)
-            raise
-        proc.resume()
+                input("Press something to start binary")
+            except KeyboardInterrupt:
+                # Kill the injected code so that we don't wait forever for the future to end.
+                kill_injected_code(loop)
+                raise
+            proc.resume()
 
         print("pyMHF interactive python command prompt")
         print("Type any valid python commands to execute them within the games' process")

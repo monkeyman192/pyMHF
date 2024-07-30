@@ -5,7 +5,7 @@ from _ctypes import CFuncPtr
 from functools import partial
 import inspect
 import logging
-from typing import Any, Optional, Type
+from typing import Any, Optional, Type, cast
 import traceback
 
 import cyminhook
@@ -13,8 +13,8 @@ import cyminhook
 import pymhf.core._internal as _internal
 from pymhf.core.module_data import module_data
 from pymhf.core.errors import UnknownFunctionError
-from pymhf.core.memutils import find_bytes
-from pymhf.core._types import FUNCDEF, DetourTime, HookProtocol
+from pymhf.core.memutils import find_bytes, pprint_mem
+from pymhf.core._types import FUNCDEF, DetourTime, HookProtocol, ManualHookProtocol
 from pymhf.core.caching import function_cache, pattern_cache
 
 hook_logger = logging.getLogger("HookManager")
@@ -99,8 +99,8 @@ class FuncHook(cyminhook.MinHook):
                 hook_logger.error(f"{self._name} has no known address (base: 0x{_internal.BASE_ADDRESS:X})")
                 self._invalid = True
         else:
-            # This is a "manual" hook, insofar as the offset and function
-            # argument info is all provided manually.
+            # This is a "manual" hook, insofar as the offset and function argument info is all provided
+            # manually.
             if not self._offset and self._call_func:
                 raise ValueError("Both offset and call_func MUST be provided if defining hooks manually")
             self.target = _internal.BASE_ADDRESS + self._offset
@@ -316,6 +316,7 @@ class HookFactory:
     ):
         """ Set all the standard attributes required for a function hook. """
         setattr(detour, "_is_funchook", True)
+        setattr(detour, "_is_manual_hook", False)
         setattr(detour, "_has__result_", False)
         if cls and hasattr(cls, "_name"):
             setattr(detour, "_hook_func_name", cls._name)
@@ -340,17 +341,44 @@ class HookFactory:
         return detour
 
 
-def hook_function_manual(
-    detour: Callable[..., Any],
+def manual_hook(
     name: str,
     offset: int,
-    restype,
-    argtypes: list,
+    *,
+    func_def: Optional[FUNCDEF] = None,
+    detour_time: str = "before",
 ):
-    HookFactory._set_detour_as_funchook(detour, None, name)
-    # TODO: Lots of work to be done here. Need to wrap this in an extra function
-    # since the outer one needs to take the arguments and the inner one just the
-    # function which takes `detour`.
+    """ Manually hook a function.
+
+    Parameters
+    ----------
+    name:
+        The name of the function to hook. This doesn't need to be known, but any two manual hooks sharing the
+        same name will be combined together so one should remember to keep the name/offset combination unique.
+    offset:
+        The offset in bytes relative to the start of the binary.
+        To determine this, you normally subtract off the exe Imagebase value from the address in IDA (or
+        similar program.)
+    func_def:
+        The function arguments and return value. This is provided as a `pymhf.FUNCDEF` object.
+        This argument is only optional if another function with the same offset and name has already been
+        hooked in the same mod.
+    detour_time:
+        When the detour should run ("before" or "after")
+    """
+    def inner(detour: Callable[..., Any]) -> ManualHookProtocol:
+        HookFactory._set_detour_as_funchook(detour, None, name)
+        if detour_time == "before":
+            setattr(detour, "_hook_time", DetourTime.BEFORE)
+        elif detour_time == "after":
+            setattr(detour, "_hook_time", DetourTime.AFTER)
+        # Set some manual values which can be retrieved when the func hook gets parsed.
+        setattr(detour, "_is_manual_hook", True)
+        setattr(detour, "_hook_offset", offset)
+        if func_def:
+            setattr(detour, "_hook_func_def", func_def)
+        return detour
+    return inner
 
 
 def disable(obj):
@@ -380,72 +408,6 @@ def on_key_release(event: str):
         setattr(func, "_hotkey_press", "up")
         return func
     return wrapped
-
-
-# TODO: Rework/move this functionality into `hook_function` as that name is
-# better for this.
-# This function should basically allow inline/dynamic/runtime hooking of
-# functions. We want to use the current mechanism for registering hooks so that
-# this plays well with everything else that currently exists.
-def manual_hook(
-    name: str,
-    offset: int,
-    func_def: FUNCDEF,
-):
-    def _hook_function(detour):
-        should_enable = getattr(detour, "_should_enable", True)
-        return FuncHook(
-            detour,
-            name=name,
-            detour_time=DetourTime.AFTER,
-            should_enable=should_enable,
-            offset=offset,
-            call_func=func_def,
-        )
-    return _hook_function
-
-
-def hook_function(
-    function_name: str,
-    *,
-    offset: Optional[int] = None,
-    pattern: Optional[str] = None
-):
-    """ Specify parameters for the function to hook.
-
-    Parameters
-    ----------
-    function_name:
-        The name of the function to hook. This will be looked up against the
-        known functions for the game and hooked if found.
-    offset:
-        The offset relative to the base address of the exe where the function
-        starts.
-        NOTE: Currently doesn't work.
-    pattern:
-        A byte pattern in the form `"AB CD ?? EF ..."`
-        This will be the same pattern as used by IDA and cheat engine.
-        NOTE: Currently doesn't work.
-    """
-    def _hook_function(klass: FuncHook):
-        klass._pattern = None
-        klass.target = 0
-        if not offset and not pattern:
-            if function_name in module_data.FUNC_OFFSETS:
-                klass.target = _internal.BASE_ADDRESS + module_data.FUNC_OFFSETS[function_name]
-            else:
-                raise UnknownFunctionError(f"{function_name} has no known address")
-        else:
-            if pattern:
-                klass._pattern = pattern
-        if function_name in module_data.FUNC_CALL_SIGS:
-            signature = module_data.FUNC_CALL_SIGS[function_name]
-        else:
-            raise UnknownFunctionError(f"{function_name} has no known call signature")
-        klass.signature = signature
-        klass._name = function_name
-        return klass
-    return _hook_function
 
 
 class HookManager():
@@ -499,8 +461,26 @@ class HookManager():
         """ Register a hook. There will be on of these for each function which is hooked and each one may
         have multiple methods assigned to it. """
         hook_func_name = hook._hook_func_name
+        # Check to see if this function hook name exists within the hook mapping.
+        # If it doesn't then we need to initialise the FuncHook and then add the detour to it.
+        # If it does then we simply add the detour to it.
         if hook_func_name not in self.hooks:
-            self.hooks[hook_func_name] = FuncHook(hook_func_name)
+            # Check to see if it's a manual hook. If so, we initialize the FuncHook object differently.
+            if hook._is_manual_hook:
+                hook = cast(ManualHookProtocol, hook)
+                funcdef = hook._hook_func_def
+                if funcdef is None:
+                    raise SyntaxError(
+                        "When creating a manual hook, the first detour for any given name MUST have a "
+                        "func_def argument."
+                    )
+                self.hooks[hook_func_name] = FuncHook(
+                    hook_func_name,
+                    offset=hook._hook_offset,
+                    call_func=funcdef,
+                )
+            else:
+                self.hooks[hook_func_name] = FuncHook(hook_func_name)
             self._uninitialized_hooks.add(hook_func_name)
         self.hooks[hook_func_name].add_detour(hook)
 
