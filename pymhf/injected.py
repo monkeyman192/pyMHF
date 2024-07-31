@@ -170,6 +170,14 @@ try:
     # First, load our internal mod before anything else.
     if internal_mod_folder is not None:
         logging.debug(f"Loading internal mods: {internal_mod_folder}")
+        # If the mod folder isn't absolute, assume it's relative to the library directory.
+        if not op.isabs(internal_mod_folder):
+            internal_mod_folder = op.join(_internal.MODULE_PATH, internal_mod_folder)
+        if not op.exists(internal_mod_folder):
+            logging.warning(
+                f"Cannot load internal mod directory: {internal_mod_folder}. "
+                "Please make sure it exists or that the path is correct in the pymhf.cfg file."
+            )
         mod_manager.load_mod_folder(internal_mod_folder, bind=False)
 
     logging.info("pyMHF injection complete!")
