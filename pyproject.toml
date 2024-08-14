@@ -21,9 +21,16 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies = [
-  "cyminhook>=0.1.4", "psutil~=5.9.5", "pymem~=1.12.0", "keyboard", "semver", "pywin32", "dearpygui~=1.11.0",
+  "cyminhook>=0.1.4",
+  "psutil~=5.9.5",
+  "pymem~=1.12.0",
+  "keyboard",
+  "semver",
+  "pywin32",
+  "dearpygui~=1.11.0",
+  "questionary",
 ]
-version = "0.1.3"
+version = "0.1.4"
 
 [tool.setuptools.package-dir]
 pymhf = "pymhf"

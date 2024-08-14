@@ -7,7 +7,7 @@ PID: int = -1
 BINARY_HASH: str = ""
 BASE_ADDRESS: int = -1
 SIZE_OF_IMAGE: int = -1
-GAME_ROOT_DIR: str = ""
+CFG_DIR: str = ""
 
 _executor: ThreadPoolExecutor = None  # type: ignore
 

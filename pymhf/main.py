@@ -112,19 +112,24 @@ def get_process_when_ready(
         return None, None
 
 
-def load_module(module_path: str):
+def load_module(plugin_name: str, module_path: str, is_local: bool = False):
     # Parse the config file first so we can load anything we need to know.
     config = configparser.ConfigParser()
-    # Currently it's in the same directory as this file...
-    cfg_file = op.join(module_path, "pymhf.cfg")
+    # If we are not running local, then we try find the config file in the user APPDATA directory.
+    if not is_local:
+        appdata_data = os.environ.get("APPDATA", op.expanduser("~"))
+        cfg_folder = op.join(appdata_data, "pymhf", plugin_name)
+        cfg_file = op.join(cfg_folder, "pymhf.cfg")
+    else:
+        cfg_folder = module_path
+        cfg_file = op.join(module_path, "pymhf.cfg")
     read = config.read(cfg_file)
     if not read:
         print(f"No pymhf.cfg file found in specified directory: {module_path}")
         print("Cannot proceed with loading")
         return
-    binary_path = config["binary"]["path"]
-    binary_exe = op.basename(binary_path)
-    root_dir = config.get("binary", "root_dir", fallback="")
+    binary_path = None
+    binary_exe = config.get("binary", "exe")
     required_assemblies = []
     if _required_assemblies := config.get("binary", "required_assemblies", fallback=""):
         required_assemblies = [x.strip() for x in _required_assemblies.split(",")]
@@ -136,6 +141,7 @@ def load_module(module_path: str):
         cmd = f"steam://rungameid/{steam_gameid}"
         is_steam = True
     else:
+        binary_path = config["binary"]["path"]
         cmd = binary_path
 
     pm_binary, proc = get_process_when_ready(cmd, binary_exe, required_assemblies, is_steam, start_paused)
@@ -144,6 +150,11 @@ def load_module(module_path: str):
         # TODO: Raise better error messages/reason why it couldn't load.
         print("FATAL ERROR: Cannot start process!")
         return
+
+    # When we start from steam, the binary path will be None, so retreive it from from the psutils Process
+    # object.
+    if binary_path is None:
+        binary_path = proc.proc.exe()
 
     print(f"Found PID: {pm_binary.process_id}")
 
@@ -172,9 +183,12 @@ def load_module(module_path: str):
         # Have a small nap just to give it some time.
         time.sleep(0.5)
         print(f"Opened the console log with PID: {log_pid}")
-        with open(binary_path, "rb") as f:
-            binary_hash = hash_bytes(f)
-        print(f"Exe hash is: {binary_hash}")
+        if binary_path is not None:
+            with open(binary_path, "rb") as f:
+                binary_hash = hash_bytes(f)
+            print(f"Exe hash is: {binary_hash}")
+        else:
+            binary_hash = 0
 
         # Wait some time for the data to be written to memory.
         time.sleep(3)
@@ -224,14 +238,14 @@ sys.path = {saved_path}
             module_path = module_path.replace("\\", "\\\\")
             pm_binary.inject_python_shellcode(
                 f"""
-pymhf.core._internal.MODULE_PATH = '{module_path}'
-pymhf.core._internal.BASE_ADDRESS = {binary_base}
-pymhf.core._internal.SIZE_OF_IMAGE = {binary_size}
-pymhf.core._internal.CWD = '{cwd}'
-pymhf.core._internal.PID = {pm_binary.process_id}
-pymhf.core._internal.HANDLE = {pm_binary.process_handle}
-pymhf.core._internal.BINARY_HASH = '{binary_hash}'
-pymhf.core._internal.GAME_ROOT_DIR = \"{root_dir}\"
+pymhf.core._internal.MODULE_PATH = {module_path!r}
+pymhf.core._internal.BASE_ADDRESS = {binary_base!r}
+pymhf.core._internal.SIZE_OF_IMAGE = {binary_size!r}
+pymhf.core._internal.CWD = {cwd!r}
+pymhf.core._internal.PID = {pm_binary.process_id!r}
+pymhf.core._internal.HANDLE = {pm_binary.process_handle!r}
+pymhf.core._internal.BINARY_HASH = {binary_hash!r}
+pymhf.core._internal.CFG_DIR = {cfg_folder!r}
                 """
             )
         except Exception as e:

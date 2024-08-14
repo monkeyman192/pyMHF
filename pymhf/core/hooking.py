@@ -272,6 +272,8 @@ class FuncHook(cyminhook.MinHook):
             func(*args)
         for func in self._after_detours_with_results:
             func(*args, _result_=result)
+        # TODO: Need to capture the above return value potentially and return that...
+        return result
 
     def close(self):
         super().close()

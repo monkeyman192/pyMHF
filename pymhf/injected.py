@@ -43,8 +43,7 @@ try:
     #     sys.exit(-1)
 
     config = AutosavingConfig()
-    # Currently it's in the same directory as this file...
-    cfg_file = op.join(_internal.MODULE_PATH, "pymhf.cfg")
+    cfg_file = op.join(_internal.CFG_DIR, "pymhf.cfg")
     read = config.read(cfg_file)
     log_level = config.get("pymhf", "log_level", fallback="info")
 
