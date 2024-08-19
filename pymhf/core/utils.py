@@ -2,7 +2,6 @@ from ctypes import windll, create_unicode_buffer, byref, c_ulong
 from configparser import ConfigParser
 from typing import Optional
 import pywinctl as pwc
-from pywinctl import Window
 
 #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file
 
@@ -28,7 +27,7 @@ def is_window_active(windowName):
 def activate_window(windowName):
     if is_window_launched(windowName):
         get_window(windowName).activate()
-        
+
 
 def safe_assign_enum(enum, index: int):
     """ Safely try and get the enum with the associated integer value.
