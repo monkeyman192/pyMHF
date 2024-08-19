@@ -2,6 +2,7 @@ from ctypes import windll, create_unicode_buffer, byref, c_ulong
 from configparser import ConfigParser
 from typing import Optional
 import pywinctl as pwc
+from pywinctl import Window
 
 #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file
 
