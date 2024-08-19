@@ -29,6 +29,7 @@ dependencies = [
   "pywin32",
   "dearpygui~=1.11.0",
   "questionary",
+  "pywinctl",
 ]
 version = "0.1.7+dev2"
 
