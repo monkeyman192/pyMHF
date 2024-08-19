@@ -1,6 +1,9 @@
 from ctypes import windll, create_unicode_buffer, byref, c_ulong
 from configparser import ConfigParser
 from typing import Optional
+import pywinctl as pwc
+
+#Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file
 
 # from pymhf import _internal
 
@@ -8,6 +11,30 @@ from typing import Optional
 # def dump_resource(res, fname):
 #     with open(op.join(_internal.CWD, fname), "w") as f:
 #         f.write(json.dumps(res, indent=2))
+
+def is_window_launched(windowName):
+    return pwc.getWindowsWithTitle(windowName) is not None
+
+
+def get_window(windowName):
+    return pwc.getWindowsWithTitle(windowName)[0]
+
+
+def is_window_active(windowName):
+    return windowName == pwc.getActiveWindowTitle()
+
+
+def activate_window(windowName):
+    if is_window_launched(windowName):
+        get_window(windowName).activate()
+
+
+def set_nms_window_focus():
+    activate_window("No Man's Sky")
+
+
+def set_gui_window_focus():
+    activate_window("pyMHF")
 
 
 def safe_assign_enum(enum, index: int):
