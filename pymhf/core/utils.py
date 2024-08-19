@@ -28,15 +28,7 @@ def is_window_active(windowName):
 def activate_window(windowName):
     if is_window_launched(windowName):
         get_window(windowName).activate()
-
-
-def set_nms_window_focus():
-    activate_window("No Man's Sky")
-
-
-def set_gui_window_focus():
-    activate_window("pyMHF")
-
+        
 
 def safe_assign_enum(enum, index: int):
     """ Safely try and get the enum with the associated integer value.
