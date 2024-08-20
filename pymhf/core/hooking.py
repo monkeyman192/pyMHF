@@ -268,11 +268,14 @@ class FuncHook(cyminhook.MinHook):
 
         # Now loop over the after functions. We'll need to handle the cases of
         # functions which take the `_result_` kwarg, and those that don't.
+        after_ret = None
         for func in self._after_detours:
-            func(*args)
+            after_ret = func(*args)
         for func in self._after_detours_with_results:
-            func(*args, _result_=result)
-        # TODO: Need to capture the above return value potentially and return that...
+            after_ret = func(*args, _result_=result)
+
+        if after_ret is not None:
+            return after_ret
         return result
 
     def close(self):

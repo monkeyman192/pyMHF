@@ -30,7 +30,7 @@ dependencies = [
   "dearpygui~=1.11.0",
   "questionary",
 ]
-version = "0.1.4"
+version = "0.1.5-pre1"
 
 [tool.setuptools.package-dir]
 pymhf = "pymhf"
