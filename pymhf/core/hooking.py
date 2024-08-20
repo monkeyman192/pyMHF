@@ -382,6 +382,8 @@ def manual_hook(
         setattr(detour, "_hook_offset", offset)
         if func_def:
             setattr(detour, "_hook_func_def", func_def)
+        if "_result_" in inspect.signature(detour).parameters.keys():
+            setattr(detour, "_has__result_", True)
         return detour
     return inner
 
