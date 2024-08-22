@@ -186,6 +186,8 @@ try:
     bold = "\u001b[4m"
     reset = "\u001b[0m"
     logging.info(bold + "Loading mods" + reset)
+    _loaded_mods = 0
+    _loaded_hooks = 0
     try:
         if mod_folder is not None:
             _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(mod_folder)

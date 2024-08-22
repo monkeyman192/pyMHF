@@ -13,7 +13,7 @@ import cyminhook
 import pymhf.core._internal as _internal
 from pymhf.core.module_data import module_data
 from pymhf.core.errors import UnknownFunctionError
-from pymhf.core.memutils import find_bytes, pprint_mem
+from pymhf.core.memutils import find_pattern_in_binary
 from pymhf.core._types import FUNCDEF, DetourTime, HookProtocol, ManualHookProtocol
 from pymhf.core.caching import function_cache, pattern_cache
 
@@ -34,6 +34,9 @@ def _detour_is_valid(f):
 
 ORIGINAL_MAPPING = dict()
 
+# A VERY rudimentary cache untill we implement gh-2.
+pattern_cache: dict[str, int] = {}
+
 
 # TODO: Move to a different file with `Mod` from mod_loader.py
 class FuncHook(cyminhook.MinHook):
@@ -51,10 +54,12 @@ class FuncHook(cyminhook.MinHook):
         detour_name: str,
         *,
         offset: Optional[int] = None,
+        pattern: Optional[int] = None,
         call_func: Optional[FUNCDEF] = None,
         overload: Optional[str] = None,
     ):
         self._offset = offset
+        self._pattern = pattern
         self._call_func = call_func
         # TODO: This probably needs to be a dictionary so that we may add and
         # remove function hooks without duplication and allow lookup based on
@@ -75,6 +80,20 @@ class FuncHook(cyminhook.MinHook):
     def _init(self):
         """ Actually initialise all the data. This is defined separately so that
         any function which is marked with @disable doesn't get initialised. """
+
+        # First, let's see if we have a pattern and no offset. If so we need to find our offset.
+        if self._pattern is not None and self._offset is None:
+            # Lookup the pattern in the pattern cache. If that fails find it in the binary.
+            if (offset := pattern_cache.get(self._pattern)) is None:
+                offset = find_pattern_in_binary(self._pattern, False)
+            if offset is not None:
+                self._offset = offset - _internal.BASE_ADDRESS
+                hook_logger.debug(f"Found {self._pattern} at 0x{offset - _internal.BASE_ADDRESS:X}")
+            else:
+                hook_logger.error(f"Could not find pattern {self._pattern}...")
+                self._invalid = True
+                return
+
         if not self._offset and not self._call_func:
             _offset = module_data.FUNC_OFFSETS.get(self._name)
             if _offset is not None:
@@ -223,7 +242,7 @@ class FuncHook(cyminhook.MinHook):
 
     def bind(self) -> bool:
         """ Actually initialise the base class. Returns whether the hook is bound. """
-        if not self._should_enable:
+        if not self._should_enable or self._invalid:
             return False
 
         self.detour = self._compound_detour
@@ -348,7 +367,8 @@ class HookFactory:
 
 def manual_hook(
     name: str,
-    offset: int,
+    offset: Optional[int] = None,
+    pattern: Optional[str] = None,
     *,
     func_def: Optional[FUNCDEF] = None,
     detour_time: str = "before",
@@ -372,6 +392,8 @@ def manual_hook(
         When the detour should run ("before" or "after")
     """
     def inner(detour: Callable[..., Any]) -> ManualHookProtocol:
+        if offset is None and pattern is None:
+            raise ValueError(f"One of pattern or offset must be set for the manual hook: {detour}")
         HookFactory._set_detour_as_funchook(detour, None, name)
         if detour_time == "before":
             setattr(detour, "_hook_time", DetourTime.BEFORE)
@@ -380,6 +402,7 @@ def manual_hook(
         # Set some manual values which can be retrieved when the func hook gets parsed.
         setattr(detour, "_is_manual_hook", True)
         setattr(detour, "_hook_offset", offset)
+        setattr(detour, "_hook_pattern", pattern)
         if func_def:
             setattr(detour, "_hook_func_def", func_def)
         if "_result_" in inspect.signature(detour).parameters.keys():
@@ -484,6 +507,7 @@ class HookManager():
                 self.hooks[hook_func_name] = FuncHook(
                     hook_func_name,
                     offset=hook._hook_offset,
+                    pattern=hook._hook_pattern,
                     call_func=funcdef,
                 )
             else:
@@ -502,6 +526,9 @@ class HookManager():
             bound = hook.bind()
             if bound:
                 count += 1
+            else:
+                # If the mod didn't get bound, we don't try and enable it!
+                continue
             # Try and enable the hook.
             try:
                 hook.enable()
