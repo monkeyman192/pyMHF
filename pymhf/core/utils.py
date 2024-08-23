@@ -8,7 +8,6 @@ from _internal import PID
 import ctypes
 
 
-EnumWindows = ctypes.windll.user32.EnumWindows
 
 def get_hwnds_for_pid(pid):
     def callback(hwnd, hwnds):
