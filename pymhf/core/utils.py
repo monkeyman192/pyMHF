@@ -2,10 +2,39 @@ from ctypes import windll, create_unicode_buffer, byref, c_ulong
 from configparser import ConfigParser
 from typing import Optional
 import pywinctl as pwc
+import win32gui
+import win32process
+from _internal import PID
+import ctypes
 
-#Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file
 
-# from pymhf import _internal
+EnumWindows = ctypes.windll.user32.EnumWindows
+EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
+GetWindowText = ctypes.windll.user32.GetWindowTextW
+GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
+
+def get_hwnds_for_pid(pid):
+    def callback(hwnd, hwnds):
+        #if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
+        _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
+
+        if found_pid == pid:
+            hwnds.append(hwnd)
+        return True
+    hwnds = []
+    win32gui.EnumWindows(callback, hwnds)
+    return hwnds 
+            
+def getWindowTitleByPid(pid):
+        windows = {x.getHandle(): x for x in pwc.getAllWindows()}
+        hwnds = get_hwnds_for_pid(pid)
+        for hwnd in hwnds:
+            if windows[hwnd]:
+                return windows[hwnd]
+
+
+def set_main_window_focus():
+    return getWindowTitleByPid(PID)  #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file
 
 
 # def dump_resource(res, fname):
