@@ -15,7 +15,6 @@ GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
 
 def get_hwnds_for_pid(pid):
     def callback(hwnd, hwnds):
-        #if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
         _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
 
         if found_pid == pid:
