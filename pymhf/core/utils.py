@@ -29,7 +29,7 @@ def getWindowTitleByPid(pid):
 
 
 def set_main_window_focus():
-    return getWindowTitleByPid(PID)  #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file
+    getWindowTitleByPid(PID).activate()  #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file
 
 
 # def dump_resource(res, fname):
