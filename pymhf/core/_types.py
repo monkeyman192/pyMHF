@@ -25,6 +25,7 @@ class HookProtocol(Protocol):
 
 
 class ManualHookProtocol(HookProtocol):
-    _hook_offset: int
-    _hook_pattern: str
+    _hook_offset: Optional[int]
+    _hook_pattern: Optional[str]
+    _hook_binary: Optional[str]
     _hook_func_def: FUNCDEF

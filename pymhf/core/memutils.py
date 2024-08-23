@@ -7,6 +7,7 @@ from types import ModuleType, FunctionType
 from typing import Type, TypeVar, Optional, Iterable, Union
 
 import pymhf.core._internal as _internal
+import pymhf.core.caching as cache
 
 import pymem
 import pymem.pattern
@@ -232,15 +233,21 @@ def pattern_to_bytes(patt: str) -> bytes:
 def find_pattern_in_binary(
     pattern: str,
     return_multiple: bool = False,
-    binary: Optional[str] = None
+    binary: Optional[str] = None,
 ) -> Union[int, list[int], None]:
+    """
+    Find a pattern in the specified binary. This is for the most part a wrapper around pymem's
+    pattern_scan_module function so that we can just call this with a module name (often the name of the
+    binary we ran, but it could be some other dll under the same process.)
+    """
     if binary is None:
         binary = _internal.EXE_NAME
     if binary not in hm_cache:
         try:
-            pm_process = pymem.Pymem(binary)
+            pm_process = pymem.Pymem(_internal.EXE_NAME)
             handle = pm_process.process_handle
-            module = pymem.process.module_from_name(handle, binary)
+            if (module := cache.module_map.get(binary)) is None:
+                return None
             hm_cache[binary] = (handle, module)
         except TypeError:
             return None

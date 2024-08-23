@@ -12,6 +12,9 @@ import time
 import traceback
 from typing import Optional
 
+import pymem
+import pymem.process
+
 
 socket_logger_loaded = False
 executor = None
@@ -70,6 +73,7 @@ try:
     )
     from pymhf.core.memutils import getsize
     from pymhf.core.mod_loader import ModManager
+    import pymhf.core.caching as cache
     from pymhf.gui.gui import GUI
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -164,6 +168,9 @@ try:
     locale.setlocale(locale.LC_CTYPE, "C")
 
     executor = ThreadPoolExecutor(2, thread_name_prefix="pyMHF_Internal_Executor")
+
+    binary = pymem.Pymem(_internal.EXE_NAME)
+    cache.module_map = {x.name: x for x in pymem.process.enum_process_module(binary.process_handle)}
 
     mod_manager = ModManager(hook_manager)
     # First, load our internal mod before anything else.
