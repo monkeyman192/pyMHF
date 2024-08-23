@@ -41,22 +41,6 @@ def set_main_window_focus():
 #     with open(op.join(_internal.CWD, fname), "w") as f:
 #         f.write(json.dumps(res, indent=2))
 
-def is_window_launched(windowName):
-    return pwc.getWindowsWithTitle(windowName) is not None
-
-
-def get_window(windowName):
-    return pwc.getWindowsWithTitle(windowName)[0]
-
-
-def is_window_active(windowName):
-    return windowName == pwc.getActiveWindowTitle()
-
-
-def activate_window(windowName):
-    if is_window_launched(windowName):
-        get_window(windowName).activate()
-
 
 def safe_assign_enum(enum, index: int):
     """ Safely try and get the enum with the associated integer value.
