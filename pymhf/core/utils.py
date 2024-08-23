@@ -20,7 +20,7 @@ def get_hwnds_for_pid(pid):
     win32gui.EnumWindows(callback, hwnds)
     return hwnds 
             
-def getWindowTitleByPid(pid):
+def getWindowByPid(pid):
         windows = {x.getHandle(): x for x in pwc.getAllWindows()}
         hwnds = get_hwnds_for_pid(pid)
         for hwnd in hwnds:
@@ -29,7 +29,7 @@ def getWindowTitleByPid(pid):
 
 
 def set_main_window_focus():
-    getWindowTitleByPid(PID).activate()  #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file
+    getWindowByPid(PID).activate()  #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file
 
 
 # def dump_resource(res, fname):
