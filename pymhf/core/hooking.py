@@ -89,8 +89,8 @@ class FuncHook(cyminhook.MinHook):
             if (offset := pattern_cache.get(self._pattern)) is None:
                 offset = find_pattern_in_binary(self._pattern, False, self._binary)
             if offset is not None:
-                self._offset = offset - _internal.BASE_ADDRESS
-                hook_logger.debug(f"Found {self._pattern} at 0x{offset - _internal.BASE_ADDRESS:X}")
+                self._offset = offset
+                hook_logger.debug(f"Found {self._pattern} at 0x{offset:X}")
             else:
                 hook_logger.error(f"Could not find pattern {self._pattern}...")
                 self._invalid = True

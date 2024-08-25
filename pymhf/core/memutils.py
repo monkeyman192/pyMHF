@@ -12,6 +12,7 @@ import pymhf.core.caching as cache
 import pymem
 import pymem.pattern
 import pymem.process
+from pymem.ressources.structure import MODULEINFO
 
 
 # Custom objects know their class.
@@ -24,8 +25,6 @@ mem_logger = logging.getLogger("MemUtils")
 
 MEM_ACCESS_R = 0x100   # Read only.
 MEM_ACCESS_RW = 0x200  # Read and Write access.
-
-BLOB_SIZE = 0x1_000_000  # 16Mb
 
 
 ctypes.pythonapi.PyMemoryView_FromMemory.argtypes = (
@@ -41,7 +40,12 @@ ctypes.pythonapi.PyMemoryView_FromMemory.restype = ctypes.py_object
 CTYPES = Union[ctypes._SimpleCData, ctypes.Structure, ctypes._Pointer]
 Struct = TypeVar("Struct", bound=CTYPES)
 
-hm_cache = {}
+# Temporary solution to avoid having to get the handles and suche every time we need to do a look up.
+# "handle-module" cache
+hm_cache: dict[str, tuple[int, MODULEINFO]] = {}
+# Temporary solution to create a mapping of pattern/binary pairs to the offset within the binary.
+offset_cache = {}
+
 config = configparser.ConfigParser()
 
 
@@ -251,6 +255,15 @@ def find_pattern_in_binary(
             hm_cache[binary] = (handle, module)
         except TypeError:
             return None
+    # Create a key which is the original pattern and the binary so that we may cache the result.
+    key = (pattern, binary)
+    if (_offset := offset_cache.get(key)) is not None:
+        return _offset
     handle, module = hm_cache[binary]
     patt = pattern_to_bytes(pattern)
-    return pymem.pattern.pattern_scan_module(handle, module, patt, return_multiple=return_multiple)
+    _offset = pymem.pattern.pattern_scan_module(handle, module, patt, return_multiple=return_multiple)
+    _offset = _offset - module.lpBaseOfDll
+    # Cache even if there is no result (so we don't repeatedly look for it when it's not there in case there
+    # is an issue.)
+    offset_cache[key] = _offset
+    return _offset
