@@ -7,6 +7,8 @@ import os
 import os.path as op
 from typing import Optional
 
+from pymem.ressources.structure import MODULEINFO
+
 import pymhf.core._internal as _internal
 
 
@@ -81,3 +83,6 @@ def load_caches(binary_hash: str):
     pattern_cache.load(binary_hash)
     globals_cache.load(binary_hash)
     builtins_cache.load(binary_hash)
+
+
+module_map: dict[str, MODULEINFO] = {}

@@ -1,18 +1,46 @@
 from ctypes import CFUNCTYPE
 from logging import getLogger
-from typing import Optional
+from typing import Optional, Any
 
 import pymhf.core._internal as _internal
 from pymhf.core.module_data import module_data
 from pymhf.core._types import FUNCDEF
+from pymhf.core.memutils import find_pattern_in_binary
 
 
 calling_logger = getLogger("CallingManager")
 
 
-def call_function(name: str, *args, overload: Optional[str] = None):
-    _sig = module_data.FUNC_CALL_SIGS[name]
-    offset = module_data.FUNC_OFFSETS[name]
+def call_function(
+    name: str,
+    *args,
+    overload: Optional[str] = None,
+    pattern: Optional[str] = None,
+    func_def: Optional[FUNCDEF] = None,
+) -> Any:
+    """ Call a named function.
+
+    Parameters
+    ----------
+    name
+        The name of the function to be called.
+        For now the function signature will be looked up from the known signatures by name.
+    *args
+        The args to pass to the function call.
+    overload
+        The overload name to be called if required.
+    pattern
+        The pattern which can be used to find where the function is.
+        If provided this will be used instead of the offset as determined by the name.
+    """
+    if func_def is not None:
+        _sig = func_def
+    else:
+        _sig = module_data.FUNC_CALL_SIGS[name]
+    if pattern:
+        offset = find_pattern_in_binary(pattern, False)
+    else:
+        offset = module_data.FUNC_OFFSETS[name]
     if isinstance(_sig, FUNCDEF):
         sig = CFUNCTYPE(_sig.restype, *_sig.argtypes)
     else:

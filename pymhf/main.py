@@ -246,6 +246,7 @@ pymhf.core._internal.PID = {pm_binary.process_id!r}
 pymhf.core._internal.HANDLE = {pm_binary.process_handle!r}
 pymhf.core._internal.BINARY_HASH = {binary_hash!r}
 pymhf.core._internal.CFG_DIR = {cfg_folder!r}
+pymhf.core._internal.EXE_NAME = {binary_exe!r}
                 """
             )
         except Exception as e:

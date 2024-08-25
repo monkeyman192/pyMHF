@@ -12,6 +12,9 @@ import time
 import traceback
 from typing import Optional
 
+import pymem
+import pymem.process
+
 
 socket_logger_loaded = False
 executor = None
@@ -70,6 +73,7 @@ try:
     )
     from pymhf.core.memutils import getsize
     from pymhf.core.mod_loader import ModManager
+    import pymhf.core.caching as cache
     from pymhf.gui.gui import GUI
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -165,6 +169,9 @@ try:
 
     executor = ThreadPoolExecutor(2, thread_name_prefix="pyMHF_Internal_Executor")
 
+    binary = pymem.Pymem(_internal.EXE_NAME)
+    cache.module_map = {x.name: x for x in pymem.process.enum_process_module(binary.process_handle)}
+
     mod_manager = ModManager(hook_manager)
     # First, load our internal mod before anything else.
     if internal_mod_folder is not None:
@@ -186,6 +193,8 @@ try:
     bold = "\u001b[4m"
     reset = "\u001b[0m"
     logging.info(bold + "Loading mods" + reset)
+    _loaded_mods = 0
+    _loaded_hooks = 0
     try:
         if mod_folder is not None:
             _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(mod_folder)

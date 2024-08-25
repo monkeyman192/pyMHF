@@ -194,8 +194,6 @@ class ModManager():
         This will be called when initially loading the mods, and also when we
         wish to reload a mod.
         """
-        from pymhf import __version__ as _pymhf_version
-        pymhf_version = semver.Version.parse(_pymhf_version)
 
         d: dict[str, type[Mod]] = dict(
             inspect.getmembers(
@@ -214,6 +212,8 @@ class ModManager():
         mod_name = list(d.keys())[0]
         mod = d[mod_name]
         if mod.__pymhf_required_version__ is not None:
+            from pymhf import __version__ as _pymhf_version
+            pymhf_version = semver.Version.parse(_pymhf_version)
             try:
                 mod_version = semver.Version.parse(mod.__pymhf_required_version__)
             except ValueError:
