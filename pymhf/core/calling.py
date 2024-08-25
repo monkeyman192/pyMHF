@@ -11,7 +11,13 @@ from pymhf.core.memutils import find_pattern_in_binary
 calling_logger = getLogger("CallingManager")
 
 
-def call_function(name: str, *args, overload: Optional[str] = None, pattern: Optional[str] = None) -> Any:
+def call_function(
+    name: str,
+    *args,
+    overload: Optional[str] = None,
+    pattern: Optional[str] = None,
+    func_def: Optional[FUNCDEF] = None,
+) -> Any:
     """ Call a named function.
 
     Parameters
@@ -27,7 +33,10 @@ def call_function(name: str, *args, overload: Optional[str] = None, pattern: Opt
         The pattern which can be used to find where the function is.
         If provided this will be used instead of the offset as determined by the name.
     """
-    _sig = module_data.FUNC_CALL_SIGS[name]
+    if func_def is not None:
+        _sig = func_def
+    else:
+        _sig = module_data.FUNC_CALL_SIGS[name]
     if pattern:
         offset = find_pattern_in_binary(pattern, False)
     else:
