@@ -4,12 +4,13 @@ from typing import Optional
 import pywinctl as pwc
 import win32gui
 import win32process
-from _internal import PID
+import pymem
+from _internal import PID, EXE_Name
 import ctypes
 
 
 
-def get_hwnds_for_pid(pid):
+""" def get_hwnds_for_pid(pid):
     def callback(hwnd, hwnds):
         _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
 
@@ -20,17 +21,28 @@ def get_hwnds_for_pid(pid):
     win32gui.EnumWindows(callback, hwnds)
     return hwnds 
             
-def getWindowByPid(pid):
+def getWindowTitleByHandleAndPid(pid, handle):
         windows = {x.getHandle(): x for x in pwc.getAllWindows()}
+        print(f'{windows}')
         hwnds = get_hwnds_for_pid(pid)
+        print(f'{hwnds}')
         for hwnd in hwnds:
-            if windows[hwnd]:
-                return windows[hwnd]
-
+            try:
+                if windows[hwnd]:
+                    print(f'{windows[hwnd]}')
+            except Exception:
+                print("noKey")
 
 def set_main_window_focus():
-    getWindowByPid(PID).activate()  #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file
+    getWindowTitleByHandleAndPid(16256, pymem.Pymem(EXE_NAME).process_handle)  #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file """
+ 
 
+def getWindowByHandle(handle):
+    windows = {x.getHandle(): x for x in pwc.getAllWindows()}
+    return windows[handle]
+
+def set_main_window_focus():
+    getWindowByHandle(pymem.Pymem(EXE_Name).process_handle).activate()
 
 # def dump_resource(res, fname):
 #     with open(op.join(_internal.CWD, fname), "w") as f:
