@@ -10,57 +10,14 @@ import logging
 import pymhf.core._internal as _internal
 from pymhf.core._internal import PID, EXE_NAME
 import ctypes
-
-
-
-def get_hwnds_for_pid(pid):
-    def callback(hwnd, hwnds):
-        _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
-
-        if found_pid == pid:
-            hwnds.append(hwnd)
-        return True
-    hwnds = []
-    win32gui.EnumWindows(callback, hwnds)
-    return hwnds 
-            
-"""def getWindowTitleByHandleAndPid(pid, handle):
-        windows = {x.getHandle(): x for x in pwc.getAllWindows()}
-        print(f'{windows}')
-        hwnds = get_hwnds_for_pid(pid)
-        print(f'{hwnds}')
-        for hwnd in hwnds:
-            try:
-                if windows[hwnd]:
-                    print(f'{windows[hwnd]}')
-            except Exception:
-                print("noKey")
-
-def set_main_window_focus():
-    getWindowTitleByHandleAndPid(16256, pymem.Pymem(EXE_NAME).process_handle)  #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file """
  
 
 def getWindowByHandle(pid, handle):
-    #logging.info(f'PID: {pid}')
-    #logging.info(f'handle: {handle}')
     windows = {x.getHandle(): x for x in pwc.getAllWindows()}
-    """ logging.info(f'{windows}')
-    hwnds = get_hwnds_for_pid(pid)
-    logging.info(f'hwnds: {hwnds}')
-    for hwnd in hwnds:
-        if windows[hwnd]:
-            window = windows[hwnd]
-            t_pid = c_ulong()
-            windll.user32.GetWindowThreadProcessId(hwnd, byref(t_pid))
-            logging.info(f'handle({hwnd}), pid({t_pid}), parent({window.getParent()}), children({window.getChildren()}): {window}') """
     if windows[handle]:
         return windows[handle]
     else:
         return None
-
-def getHandleByPid(pid):
-    hwnds = get_hwnds_for_pid(pid)
-    return hwnds[0]
         
 
 def set_main_window_focus():
