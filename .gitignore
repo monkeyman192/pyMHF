@@ -7,3 +7,5 @@ dist/*
 logs
 mods
 .venv/
+local_scripts/*
+!local_scripts/.gitignore

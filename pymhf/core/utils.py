@@ -5,12 +5,15 @@ import pywinctl as pwc
 import win32gui
 import win32process
 import pymem
-from _internal import PID, EXE_Name
+import pprint
+import logging
+import pymhf.core._internal as _internal
+from pymhf.core._internal import PID, EXE_NAME
 import ctypes
 
 
 
-""" def get_hwnds_for_pid(pid):
+def get_hwnds_for_pid(pid):
     def callback(hwnd, hwnds):
         _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
 
@@ -21,7 +24,7 @@ import ctypes
     win32gui.EnumWindows(callback, hwnds)
     return hwnds 
             
-def getWindowTitleByHandleAndPid(pid, handle):
+"""def getWindowTitleByHandleAndPid(pid, handle):
         windows = {x.getHandle(): x for x in pwc.getAllWindows()}
         print(f'{windows}')
         hwnds = get_hwnds_for_pid(pid)
@@ -37,12 +40,38 @@ def set_main_window_focus():
     getWindowTitleByHandleAndPid(16256, pymem.Pymem(EXE_NAME).process_handle)  #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file """
  
 
-def getWindowByHandle(handle):
+def getWindowByHandle(pid, handle):
+    #logging.info(f'PID: {pid}')
+    #logging.info(f'handle: {handle}')
     windows = {x.getHandle(): x for x in pwc.getAllWindows()}
-    return windows[handle]
+    """ logging.info(f'{windows}')
+    hwnds = get_hwnds_for_pid(pid)
+    logging.info(f'hwnds: {hwnds}')
+    for hwnd in hwnds:
+        if windows[hwnd]:
+            window = windows[hwnd]
+            t_pid = c_ulong()
+            windll.user32.GetWindowThreadProcessId(hwnd, byref(t_pid))
+            logging.info(f'handle({hwnd}), pid({t_pid}), parent({window.getParent()}), children({window.getChildren()}): {window}') """
+    if windows[handle]:
+        return windows[handle]
+    else:
+        return None
+
+def getHandleByPid(pid):
+    hwnds = get_hwnds_for_pid(pid)
+    return hwnds[0]
+        
 
 def set_main_window_focus():
-    getWindowByHandle(pymem.Pymem(EXE_Name).process_handle).activate()
+    #logging.info(f'{_internal.EXE_NAME}')
+    pm_process = pymem.Pymem( _internal.EXE_NAME)
+    main_window = getWindowByHandle(pm_process.process_id, _internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file 
+    if main_window:
+        main_window.activate()
+    else:
+        logging.info("noKey")
+
 
 # def dump_resource(res, fname):
 #     with open(op.join(_internal.CWD, fname), "w") as f:
