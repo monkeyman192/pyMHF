@@ -11,6 +11,20 @@ import pymhf.core._internal as _internal
 from pymhf.core._internal import PID, EXE_NAME
 import ctypes
  
+def get_hwnds_for_pid(pid):
+    def callback(hwnd, hwnds):
+        _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
+
+        if found_pid == pid:
+            hwnds.append(hwnd)
+        return True
+    hwnds = []
+    win32gui.EnumWindows(callback, hwnds)
+    return hwnds 
+
+def getHandleByPid(pid):
+   hwnds = get_hwnds_for_pid(pid)
+   return hwnds[0]
 
 def getWindowByHandle(pid, handle):
     windows = {x.getHandle(): x for x in pwc.getAllWindows()}

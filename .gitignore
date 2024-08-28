@@ -9,3 +9,5 @@ mods
 .venv/
 local_scripts/*
 !local_scripts/.gitignore
+launch_run_nms.bat
+run_nms.py
