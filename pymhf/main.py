@@ -60,9 +60,7 @@ def get_process_when_ready(
                 parent_process = p
                 break
         if parent_process is None:
-            print("Steam not running! For now, start it yourself and try again...")
-            # TODO: Return?
-            # return
+            raise ProcessLookupError("Steam not running! For now, start it yourself and try again...")
 
     run = True
     if parent_process is not None:

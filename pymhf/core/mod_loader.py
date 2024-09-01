@@ -15,7 +15,7 @@ import os.path as op
 import os
 import traceback
 from types import ModuleType
-from typing import Any, Optional
+from typing import Any, Optional, Union, TYPE_CHECKING
 import sys
 
 from pymhf.core.importing import import_file
@@ -25,9 +25,13 @@ from pymhf.core.hooking import HookManager
 import pymhf.core.common as common
 from pymhf.core.utils import does_pid_have_focus
 from pymhf.core._types import HookProtocol
+from pymhf.gui.protocols import ButtonProtocol, VariableProtocol
 
 import keyboard
 import semver
+
+if TYPE_CHECKING:
+    from pymhf.gui.gui import GUI
 
 
 mod_logger = logging.getLogger("ModManager")
@@ -145,7 +149,7 @@ class ModState(ABC):
 
 
 class Mod(ABC):
-    __author__: str = "Name(s) of the mod author(s)"
+    __author__: Union[str, list[str]] = "Name(s) of the mod author(s)"
     __description__: str = "Short description of the mod"
     __version__: str = "Mod version"
     # Minimum required pyMHF version for this mod.
@@ -158,10 +162,13 @@ class Mod(ABC):
         self.hooks: set[HookProtocol] = self.get_members(_funchook_predicate)
         self.custom_callbacks = self.get_members(_callback_predicate)
         self._hotkey_funcs = self.get_members(_has_hotkey_predicate)
-        self._gui_buttons = {x[1] for x in inspect.getmembers(self, _gui_button_predicate)}
+        self._gui_buttons: dict[str, ButtonProtocol] = {
+            x[1].__qualname__: x[1] for x in inspect.getmembers(self, _gui_button_predicate)
+        }
+        self._gui = None
         # For variables, unless there is a better way, store just the name so we
         # can our own special binding of the name to the GUI.
-        self._gui_variables = {}
+        self._gui_variables: dict[str, VariableProtocol] = {}
         for x in inspect.getmembers(self.__class__, _gui_variable_predicate):
             if x[1].fset is not None:
                 x[1].fget._has_setter = True
@@ -274,8 +281,8 @@ class ModManager():
         # Once all the mods in the folder have been loaded, then parse the mod
         # for function hooks and register then with the hook loader.
         loaded_mods = len(self._preloaded_mods)
-        for mod in self._preloaded_mods.values():
-            self.register_funcs(mod)
+        for _mod in self._preloaded_mods.values():
+            self.instantiate_mod(_mod)
 
 
         self._preloaded_mods.clear()
@@ -286,7 +293,7 @@ class ModManager():
 
         return loaded_mods, bound_hooks
 
-    def register_funcs(self, mod: type[Mod], quiet: bool = False):
+    def instantiate_mod(self, mod: type[Mod], quiet: bool = False) -> Mod:
         """ Register all the functions within the mod as hooks. """
         _mod = mod()
         # First register each of the methods which are detours.
@@ -316,12 +323,13 @@ class ModManager():
                 (hotkey_func._hotkey, hotkey_func._hotkey_press)
             ] = cb
         self.mods[_mod._mod_name] = _mod
+        return _mod
 
-    def _gui_reload(self, _sender, _keyword, user_data):
+    def _gui_reload(self, _sender, _keyword, user_data: tuple[Mod, "GUI"]):
         # Callback to register with the GUI to enable reloading of mods from there.
-        self.reload(user_data)
+        self.reload(*user_data)
 
-    def reload(self, name: str):
+    def reload(self, name: str, gui: "GUI"):
         """ Reload a mod with the given name. """
         try:
             if (mod := self.mods.get(name)) is not None:
@@ -352,20 +360,23 @@ class ModManager():
 
                 # Then, add everything back.
                 self.load_mod(module.__file__)
-                for mod in self._preloaded_mods.values():
-                    self.register_funcs(mod)
+                for _mod in self._preloaded_mods.values():
+                    mod = self.instantiate_mod(_mod)
+
+                    # Get the mod states for the mod if there are any and reapply them to the new mod
+                    # instance.
+                    if mod_state := self.mod_states.get(name):
+                        for ms in mod_state:
+                            field, state = ms
+                            setattr(mod, field, state)
+
+                    # Return to GUI land to reload the mod.
+                    gui.reload_tab(mod)
 
                 self._preloaded_mods.clear()
 
                 self.hook_manager.initialize_hooks()
 
-                # Get the mod states for the mod if there are any and reapply them to the new mod instance.
-                if mod_state := self.mod_states.get(name):
-                    for ms in mod_state:
-                        field, state = ms
-                        setattr(mod, field, state)
-
-                # TODO: Add functionality for reloading the gui elements.
                 # TODO: Add ability to check whether the attributes of the mod state have changed. If so,
                 # remove or add these attributes as required. Might want to have some kind of "copy" method to
                 # actually create a new instance each time but persist the data across.

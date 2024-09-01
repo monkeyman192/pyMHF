@@ -207,7 +207,7 @@ try:
         logging.exception(traceback.format_exc())
     logging.info(f"Loaded {_loaded_mods} mods and {_loaded_hooks} hooks in {time.time() - start_time:.3f}s")
 
-    # hook_manager.debug_show_states()
+    # hook_manager._debug_show_states()
 
     for func_name, hook_class in hook_manager.failed_hooks.items():
         offset = hook_class.target
