@@ -249,6 +249,7 @@ class GUI:
                         callback=on_update,
                         user_data=(cls, variable),
                         on_enter=False,
+                        **getter._extra_args,
                     )
                 elif getter._variable_type == VariableType.STRING:
                     input_id = dpg.add_input_text(
@@ -256,6 +257,7 @@ class GUI:
                         callback=on_update,
                         user_data=(cls, variable),
                         on_enter=False,
+                        **getter._extra_args,
                     )
                 elif getter._variable_type == VariableType.FLOAT:
                     input_id = dpg.add_input_double(
@@ -263,12 +265,14 @@ class GUI:
                         callback=on_update,
                         user_data=(cls, variable),
                         on_enter=False,
+                        **getter._extra_args,
                     )
                 elif getter._variable_type == VariableType.BOOLEAN:
                     input_id = dpg.add_checkbox(
                         source=tag,
                         callback=on_update,
                         user_data=(cls, variable),
+                        **getter._extra_args,
                     )
                 if input_id is not None:
                     self.widgets[name]["variables"][variable].append((input_id, WidgetType.VARIABLE))

@@ -22,6 +22,7 @@ class VariableProtocol(Protocol):
     _variable_type: VariableType
     _label_text: str
     _has_setter: bool
+    _extra_args: dict
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         ...
