@@ -7,6 +7,8 @@ import win32process
 import pymem
 import pprint
 import logging
+import keyboard
+import mouse
 import pymhf.core._internal as _internal
 from pymhf.core._internal import PID, EXE_NAME
 import ctypes
@@ -35,13 +37,44 @@ def getWindowByHandle(pid, handle):
         
 
 def set_main_window_focus():
-    #logging.info(f'{_internal.EXE_NAME}')
     pm_process = pymem.Pymem( _internal.EXE_NAME)
     main_window = getWindowByHandle(pm_process.process_id, _internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file 
     if main_window:
-        main_window.activate()
+        if main_window.activate():
+            logging.info("Main window is foreground window")
+        else:
+            logging.info("Main window is NOT foreground window")
     else:
         logging.info("noKey")
+
+def debug_set_main_window_focus(write, delay, restore):
+    pm_process = pymem.Pymem( _internal.EXE_NAME)
+    main_window = getWindowByHandle(pm_process.process_id, _internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file 
+    logging.info(f'Monitor: {main_window.getDisplay()}')
+    if win32gui.IsWindowEnabled(main_window.getHandle()):
+        logging.info("Main window is enabled for input")
+    else:
+        logging.info("Main window is NOT enabled for input")
+    if main_window:
+        if main_window.activate():
+            logging.info("Main window is foreground window")
+        else:
+            logging.info("Main window is NOT foreground window")
+            """ logging.info(f'Main window maximized: {main_window.isMaximized()}')
+            logging.info(f'Main window is Alive: {main_window.isAlive()}')
+            #logging.info(f'Active window: {pwc.getActiveWindowTitle()}')
+            keyboard.write(write,delay=delay,restore_state_after=restore)
+            windll.user32. """
+
+    else:
+        logging.info("noKey")
+
+def get_main_window():
+    pm_process = pymem.Pymem( _internal.EXE_NAME)
+    main_window = getWindowByHandle(pm_process.process_id, _internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file 
+    return main_window   
+
+
 
 
 # def dump_resource(res, fname):
