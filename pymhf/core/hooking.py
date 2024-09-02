@@ -2,7 +2,6 @@ import ast
 from collections.abc import Callable
 from ctypes import CFUNCTYPE
 from _ctypes import CFuncPtr
-from functools import partial
 import inspect
 import logging
 from typing import Any, Optional, Type, cast
@@ -30,9 +29,6 @@ def _detour_is_valid(f):
         if isinstance(node, ast.Return):
             return True
     return False
-
-
-ORIGINAL_MAPPING = dict()
 
 # A VERY rudimentary cache untill we implement gh-2.
 pattern_cache: dict[str, int] = {}
@@ -262,17 +258,8 @@ class FuncHook(cyminhook.MinHook):
             hook_logger.error(e.status.name[3:].replace("_", " "))
             self.state = "failed"
             return False
-        ORIGINAL_MAPPING[self._name] = self.original
         self.state = "initialized"
         return True
-
-    def __call__(self, *args, **kwargs):
-        return self.detour(*args, **kwargs)
-
-    def __get__(self, instance, owner=None):
-        # Pass the instance through to the __call__ function so that we can use
-        # this decorator on a method of a class.
-        return partial(self.__call__, instance)
 
     def _compound_detour(self, *args):
         ret = None
@@ -326,13 +313,8 @@ class HookFactory:
     @classmethod
     def overload(cls, overload_args):
         # TODO: Improve type hinting and possible make this have a generic arg
-        # arg type to simplify the logic...
+        # type to simplify the logic...
         raise NotImplementedError
-
-    @classmethod
-    def original(cls, *args):
-        """ Call the original function with the given arguments. """
-        return ORIGINAL_MAPPING[cls._name](*args)
 
     @staticmethod
     def _set_detour_as_funchook(
@@ -354,6 +336,11 @@ class HookFactory:
 
     @classmethod
     def after(cls, detour: Callable[..., Any]) -> HookProtocol:
+        """
+        Run the detour *after* the original function.
+        An optional `_result_` argument can be added as the final argument.
+        If this argument is provided it will be the result of calling the original function.
+        """
         HookFactory._set_detour_as_funchook(detour, cls)
         setattr(detour, "_hook_time", DetourTime.AFTER)
         if "_result_" in inspect.signature(detour).parameters.keys():
@@ -362,6 +349,12 @@ class HookFactory:
 
     @classmethod
     def before(cls, detour: Callable[..., Any]) -> HookProtocol:
+        """
+        Run the detour *before* the original function.
+        If this detour returns any values they must be the same types and order as the original arguments to
+        the function. If this happens these values will be passed into the original function instead of the
+        original arguments.
+        """
         HookFactory._set_detour_as_funchook(detour, cls)
         setattr(detour, "_hook_time", DetourTime.BEFORE)
         return detour
@@ -429,6 +422,7 @@ def disable(obj):
 
 
 def one_shot(func: Callable[..., Any]) -> HookProtocol:
+    """ Run this detour once only. """
     setattr(func, "_is_one_shot", True)
     return func
 
@@ -569,7 +563,7 @@ class HookManager():
             hook_logger.error(f"Couldn't disable hook for function '{func_name}'")
             return
 
-    def debug_show_states(self):
+    def _debug_show_states(self):
         # Return the states of all the registered hooks
         for func_name, hook in self.hooks.items():
             hook_logger.info(f"Functions registered for {func_name}:")
