@@ -60,8 +60,9 @@ try:
     module = import_file(_internal.MODULE_PATH)
 
     from pymhf.core.module_data import module_data
-    module_data.FUNC_OFFSETS = module.__pymhf_functions__.FUNC_OFFSETS
-    module_data.FUNC_CALL_SIGS = module.__pymhf_functions__.FUNC_CALL_SIGS
+    module_data.FUNC_OFFSETS = getattr(module.__pymhf_functions__, "FUNC_OFFSETS", {})
+    module_data.FUNC_PATTERNS = getattr(module.__pymhf_functions__, "FUNC_PATTERNS", {})
+    module_data.FUNC_CALL_SIGS = getattr(module.__pymhf_functions__, "FUNC_CALL_SIGS", {})
 
     from pymhf.core.hooking import hook_manager
     from pymhf.core.protocols import (
