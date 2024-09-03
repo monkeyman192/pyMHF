@@ -68,7 +68,7 @@ class FuncHook(cyminhook.MinHook):
         # Disabled detours will go here. This will include hooks disabled by the
         # @disable decorator, as well as hooks which are one-shots and have been
         # run.
-        self._disabled_detours: list[HookProtocol] = []
+        self._disabled_detours: set[HookProtocol] = set()
         self._oneshot_detours: dict[HookProtocol, HookProtocol] = {}
         self.overload = overload
         self.state = None
@@ -202,7 +202,7 @@ class FuncHook(cyminhook.MinHook):
         """ Add the provided detour to this FuncHook. """
         # If the hook has the `_disabled` attribute, then don't add the detour.
         if getattr(detour, "_disabled", False):
-            self._disabled_detours.append(detour)
+            self._disabled_detours.add(detour)
             return
 
         # Determine the detour list to use. If none, then return.
@@ -217,11 +217,14 @@ class FuncHook(cyminhook.MinHook):
         # If the hook is a one-shot, wrap it so that it can remove itself once
         # it's executed.
         if getattr(detour, "_is_one_shot", False):
-            def _one_shot(*args, detour=detour, detour_list=detour_list):
+            def _one_shot(*args, detour: HookProtocol = detour, detour_list: list[HookProtocol] = detour_list):
+                # NOTE: This may not work well if the code is called from multiple threads at the same time.
                 try:
                     detour(*args)
-                    self._disabled_detours.append(detour)
+                    self._disabled_detours.add(detour)
                     detour_list.remove(self._oneshot_detours[detour])
+                except ValueError:
+                    hook_logger.warning(f"Had an issue removing one-shot from detour list.")
                 except:
                     hook_logger.exception(traceback.format_exc())
             self._oneshot_detours[detour] = _one_shot
