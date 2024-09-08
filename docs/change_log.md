@@ -2,7 +2,7 @@
 
 ## Current
 
-### 0.1.6
+### 0.1.6 (08/09/2024)
 
 - Add ability for GUI widgets to reload when their associated mod gets reloaded ([gh-4](https://github.com/monkeyman192/pyMHF/issues/4))
 - Add `extra_args` option to GUI field type decorators (eg, `FLOAT`) which are passed through to DearPyGui ([gh-8](https://github.com/monkeyman192/pyMHF/issues/8))
