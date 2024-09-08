@@ -59,9 +59,7 @@ class FuncHook(cyminhook.MinHook):
         self._pattern = pattern
         self._call_func = call_func
         self._binary = binary
-        # TODO: This probably needs to be a dictionary so that we may add and
-        # remove function hooks without duplication and allow lookup based on
-        # name. Name will probably have to be be mod class name . func name.
+
         self._before_detours: list[HookProtocol] = []
         self._after_detours: list[HookProtocol] = []
         self._after_detours_with_results: list[HookProtocol] = []
@@ -75,11 +73,18 @@ class FuncHook(cyminhook.MinHook):
         self._name = detour_name
         self._initialised = False
 
+    @property
+    def name(self):
+        if self.overload is not None:
+            return f"{self._name}({self.overload})"
+        else:
+            return self._name
+
     def _init(self):
         """ Actually initialise all the data. This is defined separately so that any function which is marked
         with @disable doesn't get initialised.
         """
-
+        offset = None
         # 1. Check to see if an offset is provided. If so, use this as the offset to find the address at.
         if self._offset is not None:
             self.target = _internal.BASE_ADDRESS + self._offset
@@ -101,15 +106,31 @@ class FuncHook(cyminhook.MinHook):
                 return
 
         # 3. If there is still no offset, look up the pattern in the module_data to get offset
-        # TODO: Implement overload lookups too.
         elif ((_pattern := module_data.FUNC_PATTERNS.get(self._name)) is not None):
-            if (offset := pattern_cache.get(_pattern)) is None:
-                offset = find_pattern_in_binary(_pattern, False, self._binary)
+            if isinstance(_pattern, str):
+                if (offset := pattern_cache.get(_pattern)) is None:
+                    offset = find_pattern_in_binary(_pattern, False, self._binary)
+            else:
+                if (overload_pattern := _pattern.get(self.overload)) is not None:
+                    _pattern = overload_pattern
+                    if overload_pattern in pattern_cache:
+                        offset = pattern_cache[overload_pattern]
+                    else:
+                        offset = find_pattern_in_binary(overload_pattern, False, self._binary)
+                else:
+                    first = list(_pattern.items())[0]
+                    _pattern = first
+                    hook_logger.warning(
+                        f"No overload was provided for {self._name}. "
+                    )
+                    hook_logger.warning(
+                        f"Falling back to the first overload ({first[0]})")
+                    offset = find_pattern_in_binary(first[1], False, self._binary)
             if offset is not None:
                 self._offset = offset
                 pattern_cache[_pattern] = offset
                 self.target = _internal.BASE_ADDRESS + offset
-                hook_logger.debug(f"Found {_pattern} at 0x{offset:X}")
+                hook_logger.debug(f"Found {self.name} with pattern {_pattern!r} at 0x{offset:X}")
 
         # 4. If there is still no offset, look up the offset in the module_data.
         if not self.target:
@@ -119,8 +140,8 @@ class FuncHook(cyminhook.MinHook):
                     self.target = _internal.BASE_ADDRESS + _offset
                 else:
                     # This is an overload
-                    if self.overload is not None:
-                        self.target = _internal.BASE_ADDRESS + _offset[self.overload]
+                    if (overload_offset := _offset.get(self.overload)) is not None:
+                        self.target = _internal.BASE_ADDRESS + overload_offset
                     else:
                         # Need to fallback on something. Raise a warning that no
                         # overload was defined and that it will fallback to the
@@ -353,8 +374,13 @@ class HookFactory:
         setattr(detour, "_is_funchook", True)
         setattr(detour, "_is_manual_hook", False)
         setattr(detour, "_has__result_", False)
-        if cls and hasattr(cls, "_name"):
-            setattr(detour, "_hook_func_name", cls._name)
+        if cls:
+            if hasattr(cls, "_overload"):
+                setattr(detour, "_func_overload", cls._overload)
+            else:
+                setattr(detour, "_func_overload", None)
+            if hasattr(cls, "_name"):
+                setattr(detour, "_hook_func_name", cls._name)
         else:
             if detour_name is None:
                 raise ValueError("class used as detour must have a name")
@@ -521,6 +547,9 @@ class HookManager():
         """ Register a hook. There will be on of these for each function which is hooked and each one may
         have multiple methods assigned to it. """
         hook_func_name = hook._hook_func_name
+        # If the hook has an overload, add it here so that we can disambiguate them.
+        if hook._func_overload is not None:
+            hook_func_name += f"({hook._func_overload})"
         # Check to see if this function hook name exists within the hook mapping.
         # If it doesn't then we need to initialise the FuncHook and then add the detour to it.
         # If it does then we simply add the detour to it.
@@ -535,7 +564,7 @@ class HookManager():
                         "func_def argument."
                     )
                 self.hooks[hook_func_name] = FuncHook(
-                    hook_func_name,
+                    hook._hook_func_name,
                     offset=hook._hook_offset,
                     pattern=hook._hook_pattern,
                     call_func=funcdef,
@@ -543,7 +572,7 @@ class HookManager():
                 )
             else:
                 # TODO: have a way to differentiate the binary here.
-                self.hooks[hook_func_name] = FuncHook(hook_func_name)
+                self.hooks[hook_func_name] = FuncHook(hook._hook_func_name, overload=hook._func_overload)
             self._uninitialized_hooks.add(hook_func_name)
         self.hooks[hook_func_name].add_detour(hook)
 
