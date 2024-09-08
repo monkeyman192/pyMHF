@@ -262,7 +262,8 @@ def find_pattern_in_binary(
     handle, module = hm_cache[binary]
     patt = pattern_to_bytes(pattern)
     _offset = pymem.pattern.pattern_scan_module(handle, module, patt, return_multiple=return_multiple)
-    _offset = _offset - module.lpBaseOfDll
+    if _offset:
+        _offset = _offset - module.lpBaseOfDll
     # Cache even if there is no result (so we don't repeatedly look for it when it's not there in case there
     # is an issue.)
     offset_cache[key] = _offset

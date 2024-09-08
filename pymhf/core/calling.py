@@ -40,7 +40,12 @@ def call_function(
     if pattern:
         offset = find_pattern_in_binary(pattern, False)
     else:
-        offset = module_data.FUNC_OFFSETS[name]
+        if (_pattern := module_data.FUNC_PATTERNS.get(name)) is not None:
+            offset = find_pattern_in_binary(_pattern, False)
+        else:
+            offset = module_data.FUNC_OFFSETS.get(name)
+        if offset is None:
+            raise NameError(f"Cannot find function {name}")
     if isinstance(_sig, FUNCDEF):
         sig = CFUNCTYPE(_sig.restype, *_sig.argtypes)
     else:
