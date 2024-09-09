@@ -33,8 +33,7 @@ def getWindowByHandle(pid, handle):
     if windows[handle]:
         return windows[handle]
     else:
-        return None
-        
+        return None       
 
 def set_main_window_focus()->bool:
     logging.info("--set_main_window_focus()")

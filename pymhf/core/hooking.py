@@ -548,7 +548,7 @@ class HookManager():
         have multiple methods assigned to it. """
         hook_func_name = hook._hook_func_name
         # If the hook has an overload, add it here so that we can disambiguate them.
-        if hook._func_overload is not None:
+        if getattr(hook, "_func_overload", None) is not None:
             hook_func_name += f"({hook._func_overload})"
         # Check to see if this function hook name exists within the hook mapping.
         # If it doesn't then we need to initialise the FuncHook and then add the detour to it.
