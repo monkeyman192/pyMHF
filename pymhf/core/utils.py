@@ -6,7 +6,7 @@ import win32gui
 import win32process
 import pymem
 import logging
-from pymhf.core._internal import PID, EXE_NAME, MAIN_HWND
+from pymhf.core._internal import EXE_NAME, MAIN_HWND
  
 def get_hwnds_for_pid(pid):
     def callback(hwnd, hwnds):
