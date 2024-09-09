@@ -4,8 +4,6 @@ from typing import Optional
 import pywinctl as pwc
 import win32gui
 import win32process
-import pymem
-import logging
 import pymhf.core._internal as _internal
  
 def get_hwnds_for_pid(pid):
@@ -36,10 +34,10 @@ def set_main_window_focus()->bool:
     status = is_main_window_foreground()
     main_window = None
     if not status:       
-            main_window = getWindowByHandle(_internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file       
-            if main_window:
-                if main_window.activate():
-                    status = True
+        main_window = getWindowByHandle(_internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file       
+        if main_window:
+            if main_window.activate():
+                status = True
     return status
 
 def is_main_window_foreground():
