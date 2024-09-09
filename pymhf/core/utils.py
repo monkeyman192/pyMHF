@@ -31,13 +31,14 @@ def getWindowByHandle(pid, handle):
         return None       
 
 def set_main_window_focus()->bool:
-    status = False
+    status = is_main_window_foreground()
     try:
-        pm_process = pymem.Pymem(EXE_NAME)
-        main_window = getWindowByHandle(pm_process.process_id, MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file 
-        if main_window:
-            if main_window.activate():
-                status = True
+        if not status:
+            pm_process = pymem.Pymem(EXE_NAME)
+            main_window = getWindowByHandle(pm_process.process_id, MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file 
+            if main_window:
+                if main_window.activate():
+                    status = True
     except Exception as e:
         logging.error(e)
     return status
