@@ -36,38 +36,84 @@ def getWindowByHandle(pid, handle):
         return None
         
 
-def set_main_window_focus():
-    pm_process = pymem.Pymem( _internal.EXE_NAME)
-    main_window = getWindowByHandle(pm_process.process_id, _internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file 
-    if main_window:
-        if main_window.activate():
-            logging.info("Main window is foreground window")
+def set_main_window_focus()->bool:
+    logging.info("--set_main_window_focus()")
+    foreground = False
+    try:
+        pm_process = pymem.Pymem( _internal.EXE_NAME)
+        main_window = getWindowByHandle(pm_process.process_id, _internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file 
+        if main_window:
+            if main_window.activate():
+                logging.info("----Main window is foreground window")
+                foreground = True
+            else:
+                logging.info("----Main window is NOT foreground window")
         else:
-            logging.info("Main window is NOT foreground window")
-    else:
-        logging.info("noKey")
+            logging.info("----noKey")
+    except Exception as e:
+        logging.error(e)
+    return foreground
 
 def debug_set_main_window_focus(write, delay, restore):
+    logging.info("--debug_set_main_window_focus()")
+    pid = get_foreground_pid()
+    title = get_foreground_window_title()
+    focused_hwnd = win32gui.GetFocus()
+    logging.info(f'----Foreground: title->{title}, pid->{pid}')
+    logging.info(f'----Keyboard focus: {focused_hwnd}')
     pm_process = pymem.Pymem( _internal.EXE_NAME)
     main_window = getWindowByHandle(pm_process.process_id, _internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file 
     logging.info(f'Monitor: {main_window.getDisplay()}')
     if win32gui.IsWindowEnabled(main_window.getHandle()):
-        logging.info("Main window is enabled for input")
+        logging.info("----Main window is enabled for input")
     else:
-        logging.info("Main window is NOT enabled for input")
+        logging.info("----Main window is NOT enabled for input")
     if main_window:
         if main_window.activate():
-            logging.info("Main window is foreground window")
+            logging.info("----Main window is foreground window")
         else:
-            logging.info("Main window is NOT foreground window")
+            logging.info("----Main window is NOT foreground window")
             """ logging.info(f'Main window maximized: {main_window.isMaximized()}')
-            logging.info(f'Main window is Alive: {main_window.isAlive()}')
+            logging.info(f'Main window is Alive: {main_window.isAlive()}') """
             #logging.info(f'Active window: {pwc.getActiveWindowTitle()}')
-            keyboard.write(write,delay=delay,restore_state_after=restore)
+            """ keyboard.write(write,delay=delay,restore_state_after=restore)
             windll.user32. """
 
     else:
-        logging.info("noKey")
+        logging.info("----noKey")
+    pid = get_foreground_pid()
+    title = get_foreground_window_title()
+    focused_hwnd = win32gui.GetFocus()
+    logging.info(f'----Foreground: title->{title}, pid->{pid}')
+    logging.info(f'----Keyboard focus: {focused_hwnd}')
+
+def eval_foreground():
+    logging.info("--eval_foreground()")
+    pid = get_foreground_pid()
+    title = get_foreground_window_title()
+    focused_hwnd = win32gui.GetFocus()
+    logging.info(f'----Foreground: title->{title}, pid->{pid}, handle->{_internal.MAIN_HWND}')
+    logging.info(f'----Keyboard focus: {focused_hwnd}')
+    try:
+        pm_process = pymem.Pymem( _internal.EXE_NAME)
+        main_window = getWindowByHandle(pm_process.process_id, _internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file 
+        display = main_window.getDisplay()
+        logging.info(f'----Monitor: {display}')
+        handle = main_window.getHandle()
+        pid = pm_process.process_id
+        win_title = win32gui.GetWindowText(handle)
+        logging.info(f'----Main Window: title->{win_title}, pid->{pid}, handle->{handle}')
+        if win32gui.IsWindowEnabled(handle):
+            logging.info("----Main window is enabled for input")
+        else:
+            logging.info("----Main window is NOT enabled for input")
+        if win_title == title:
+            logging.info("----Main window is foreground window")
+        else:
+            logging.info("----Main window is NOT foreground window")
+    except Exception as e:
+        logging.error(e)
+
 
 def get_main_window():
     pm_process = pymem.Pymem( _internal.EXE_NAME)

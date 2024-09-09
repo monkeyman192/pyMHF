@@ -256,7 +256,7 @@ class GUI:
                         source=tag,
                         callback=on_update,
                         user_data=(cls, variable),
-                        on_enter=False,
+                        on_enter=True,
                         **getter._extra_args,
                     )
                 elif getter._variable_type == VariableType.FLOAT:
