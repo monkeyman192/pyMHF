@@ -7,7 +7,6 @@ import win32process
 import pymem
 import logging
 import pymhf.core._internal as _internal
-#from pymhf.core._internal import EXE_NAME, MAIN_HWND
  
 def get_hwnds_for_pid(pid):
     def callback(hwnd, hwnds):
@@ -26,35 +25,21 @@ def getHandleByPid(pid):
 
 def getWindowByHandle(handle):
     windows = {}
-    try:
-        windows = {x.getHandle(): x for x in pwc.getAllWindows()}
-        if windows[handle]:
-            return windows[handle]
-        else:
-            return None       
-    except Exception as e:
-        logging.info("getwindowbyhandle")
-        logging.info(f'handle: {handle}')
-        logging.info(f'windows: {windows}')        
-        logging.error(e)
+    windows = {x.getHandle(): x for x in pwc.getAllWindows()}
+    if windows[handle]:
+        return windows[handle]
+    else:
+        return None       
+
 
 def set_main_window_focus()->bool:
-    logging.info("set_main_window_focus")
     status = is_main_window_foreground()
     main_window = None
-    if not status:
-        try:            
-            main_window = getWindowByHandle(_internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file 
-        except Exception as e:
-            logging.info("main_window = getWindowByHandle")
-            logging.error(e)
-        try:            
+    if not status:       
+            main_window = getWindowByHandle(_internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file       
             if main_window:
                 if main_window.activate():
                     status = True
-        except Exception as e:
-            logging.info("if main_window")
-            logging.error(e)
     return status
 
 def is_main_window_foreground():
