@@ -59,48 +59,89 @@ class FuncHook(cyminhook.MinHook):
         self._pattern = pattern
         self._call_func = call_func
         self._binary = binary
-        # TODO: This probably needs to be a dictionary so that we may add and
-        # remove function hooks without duplication and allow lookup based on
-        # name. Name will probably have to be be mod class name . func name.
+
         self._before_detours: list[HookProtocol] = []
         self._after_detours: list[HookProtocol] = []
         self._after_detours_with_results: list[HookProtocol] = []
         # Disabled detours will go here. This will include hooks disabled by the
         # @disable decorator, as well as hooks which are one-shots and have been
         # run.
-        self._disabled_detours: list[HookProtocol] = []
+        self._disabled_detours: set[HookProtocol] = set()
         self._oneshot_detours: dict[HookProtocol, HookProtocol] = {}
         self.overload = overload
         self.state = None
         self._name = detour_name
         self._initialised = False
 
-    def _init(self):
-        """ Actually initialise all the data. This is defined separately so that
-        any function which is marked with @disable doesn't get initialised. """
+    @property
+    def name(self):
+        if self.overload is not None:
+            return f"{self._name}({self.overload})"
+        else:
+            return self._name
 
-        # First, let's see if we have a pattern and no offset. If so we need to find our offset.
-        if self._pattern is not None and self._offset is None:
+    def _init(self):
+        """ Actually initialise all the data. This is defined separately so that any function which is marked
+        with @disable doesn't get initialised.
+        """
+        offset = None
+        # 1. Check to see if an offset is provided. If so, use this as the offset to find the address at.
+        if self._offset is not None:
+            self.target = _internal.BASE_ADDRESS + self._offset
+
+        # 2. If there is no offset provided, check to see if a pattern is provided. If so use this to find
+        #    the offset.
+        elif self._pattern is not None:
             # Lookup the pattern in the pattern cache. If that fails find it in the binary.
             if (offset := pattern_cache.get(self._pattern)) is None:
                 offset = find_pattern_in_binary(self._pattern, False, self._binary)
             if offset is not None:
                 self._offset = offset
+                pattern_cache[self._pattern] = offset
+                self.target = _internal.BASE_ADDRESS + offset
                 hook_logger.debug(f"Found {self._pattern} at 0x{offset:X}")
             else:
-                hook_logger.error(f"Could not find pattern {self._pattern}...")
+                hook_logger.error(f"Could not find pattern {self._pattern}... Hook won't be added")
                 self._invalid = True
                 return
 
-        if not self._offset and not self._call_func:
+        # 3. If there is still no offset, look up the pattern in the module_data to get offset
+        elif ((_pattern := module_data.FUNC_PATTERNS.get(self._name)) is not None):
+            if isinstance(_pattern, str):
+                if (offset := pattern_cache.get(_pattern)) is None:
+                    offset = find_pattern_in_binary(_pattern, False, self._binary)
+            else:
+                if (overload_pattern := _pattern.get(self.overload)) is not None:
+                    _pattern = overload_pattern
+                    if overload_pattern in pattern_cache:
+                        offset = pattern_cache[overload_pattern]
+                    else:
+                        offset = find_pattern_in_binary(overload_pattern, False, self._binary)
+                else:
+                    first = list(_pattern.items())[0]
+                    _pattern = first
+                    hook_logger.warning(
+                        f"No overload was provided for {self._name}. "
+                    )
+                    hook_logger.warning(
+                        f"Falling back to the first overload ({first[0]})")
+                    offset = find_pattern_in_binary(first[1], False, self._binary)
+            if offset is not None:
+                self._offset = offset
+                pattern_cache[_pattern] = offset
+                self.target = _internal.BASE_ADDRESS + offset
+                hook_logger.debug(f"Found {self.name} with pattern {_pattern!r} at 0x{offset:X}")
+
+        # 4. If there is still no offset, look up the offset in the module_data.
+        if not self.target:
             _offset = module_data.FUNC_OFFSETS.get(self._name)
             if _offset is not None:
                 if isinstance(_offset, int):
                     self.target = _internal.BASE_ADDRESS + _offset
                 else:
                     # This is an overload
-                    if self.overload is not None:
-                        self.target = _internal.BASE_ADDRESS + _offset[self.overload]
+                    if (overload_offset := _offset.get(self.overload)) is not None:
+                        self.target = _internal.BASE_ADDRESS + overload_offset
                     else:
                         # Need to fallback on something. Raise a warning that no
                         # overload was defined and that it will fallback to the
@@ -113,45 +154,49 @@ class FuncHook(cyminhook.MinHook):
                             f"Falling back to the first overload ({first[0]})")
                         self.target = _internal.BASE_ADDRESS + first[1]
             else:
-                hook_logger.error(f"{self._name} has no known address (base: 0x{_internal.BASE_ADDRESS:X})")
+                hook_logger.error(
+                    f"Cannot find the function {self._name} in {_internal.EXE_NAME}"
+                )
                 self._invalid = True
-        else:
-            # This is a "manual" hook, insofar as the offset and function argument info is all provided
-            # manually.
-            if not self._offset and self._call_func:
-                raise ValueError("Both offset and call_func MUST be provided if defining hooks manually")
-            self.target = _internal.BASE_ADDRESS + self._offset
+                return
+
+        # 5. if func_sig is provided, use it, otherwise look it up.
+        if self._call_func is not None:
             self.signature = CFUNCTYPE(self._call_func.restype, *self._call_func.argtypes)
-            self._initialised = True
-            return
-        if (sig := module_data.FUNC_CALL_SIGS.get(self._name)) is not None:
-            if isinstance(sig, FUNCDEF):
-                self.signature = CFUNCTYPE(sig.restype, *sig.argtypes)
-                hook_logger.debug(f"Function {self._name} return type: {sig.restype} args: {sig.argtypes}")
-                if self.overload is not None:
-                    hook_logger.warning(
-                        f"An overload was provided for {self._name} but no overloaded"
-                         " function definitions exist. This function may fail."
-                    )
-            else:
-                # Look up the overload:
-                if (osig := sig.get(self.overload)) is not None:  # type: ignore
-                    self.signature = CFUNCTYPE(osig.restype, *osig.argtypes)
-                    hook_logger.debug(f"Function {self._name} return type: {osig.restype} args: {osig.argtypes}")
-                else:
-                    # Need to fallback on something. Raise a warning that no
-                    # overload was defined and that it will fallback to the
-                    # first entry in the dict.
-                    first = list(sig.items())[0]
-                    hook_logger.warning(
-                        f"No function arguments overload was provided for {self._name}. "
-                    )
-                    hook_logger.warning(
-                        f"Falling back to the first overload ({first[0]})")
-                    self.signature = CFUNCTYPE(first[1].restype, *first[1].argtypes)
         else:
-            hook_logger.error(f"{self._name} has no known call signature")
-            self._invalid = True
+            if (sig := module_data.FUNC_CALL_SIGS.get(self._name)) is not None:
+                if isinstance(sig, FUNCDEF):
+                    self.signature = CFUNCTYPE(sig.restype, *sig.argtypes)
+                    hook_logger.debug(
+                        f"Function {self._name} return type: {sig.restype} args: {sig.argtypes}"
+                    )
+                    if self.overload is not None:
+                        hook_logger.warning(
+                            f"An overload was provided for {self._name} but no overloaded"
+                            " function definitions exist. This function may fail."
+                        )
+                else:
+                    # Look up the overload:
+                    if (osig := sig.get(self.overload)) is not None:  # type: ignore
+                        self.signature = CFUNCTYPE(osig.restype, *osig.argtypes)
+                        hook_logger.debug(
+                            f"Function {self._name} return type: {osig.restype} args: {osig.argtypes}"
+                        )
+                    else:
+                        # Need to fallback on something. Raise a warning that no overload was defined and that
+                        # it will fallback to the first entry in the dict.
+                        first = list(sig.items())[0]
+                        hook_logger.warning(
+                            f"No function arguments overload was provided for {self._name}. "
+                        )
+                        hook_logger.warning(
+                            f"Falling back to the first overload ({first[0]})")
+                        self.signature = CFUNCTYPE(first[1].restype, *first[1].argtypes)
+            else:
+                hook_logger.error(f"{self._name} has no known call signature")
+                self._invalid = True
+                return
+
         self._initialised = True
 
     def _determine_detour_list(self, detour: HookProtocol) -> Optional[list[HookProtocol]]:
@@ -178,7 +223,7 @@ class FuncHook(cyminhook.MinHook):
         """ Add the provided detour to this FuncHook. """
         # If the hook has the `_disabled` attribute, then don't add the detour.
         if getattr(detour, "_disabled", False):
-            self._disabled_detours.append(detour)
+            self._disabled_detours.add(detour)
             return
 
         # Determine the detour list to use. If none, then return.
@@ -193,11 +238,14 @@ class FuncHook(cyminhook.MinHook):
         # If the hook is a one-shot, wrap it so that it can remove itself once
         # it's executed.
         if getattr(detour, "_is_one_shot", False):
-            def _one_shot(*args, detour=detour, detour_list=detour_list):
+            def _one_shot(*args, detour: HookProtocol = detour, detour_list: list[HookProtocol] = detour_list):
+                # NOTE: This may not work well if the code is called from multiple threads at the same time.
                 try:
                     detour(*args)
-                    self._disabled_detours.append(detour)
+                    self._disabled_detours.add(detour)
                     detour_list.remove(self._oneshot_detours[detour])
+                except ValueError:
+                    hook_logger.warning(f"Had an issue removing one-shot from detour list.")
                 except:
                     hook_logger.exception(traceback.format_exc())
             self._oneshot_detours[detour] = _one_shot
@@ -326,8 +374,13 @@ class HookFactory:
         setattr(detour, "_is_funchook", True)
         setattr(detour, "_is_manual_hook", False)
         setattr(detour, "_has__result_", False)
-        if cls and hasattr(cls, "_name"):
-            setattr(detour, "_hook_func_name", cls._name)
+        if cls:
+            if hasattr(cls, "_overload"):
+                setattr(detour, "_func_overload", cls._overload)
+            else:
+                setattr(detour, "_func_overload", None)
+            if hasattr(cls, "_name"):
+                setattr(detour, "_hook_func_name", cls._name)
         else:
             if detour_name is None:
                 raise ValueError("class used as detour must have a name")
@@ -494,6 +547,9 @@ class HookManager():
         """ Register a hook. There will be on of these for each function which is hooked and each one may
         have multiple methods assigned to it. """
         hook_func_name = hook._hook_func_name
+        # If the hook has an overload, add it here so that we can disambiguate them.
+        if hook._func_overload is not None:
+            hook_func_name += f"({hook._func_overload})"
         # Check to see if this function hook name exists within the hook mapping.
         # If it doesn't then we need to initialise the FuncHook and then add the detour to it.
         # If it does then we simply add the detour to it.
@@ -508,7 +564,7 @@ class HookManager():
                         "func_def argument."
                     )
                 self.hooks[hook_func_name] = FuncHook(
-                    hook_func_name,
+                    hook._hook_func_name,
                     offset=hook._hook_offset,
                     pattern=hook._hook_pattern,
                     call_func=funcdef,
@@ -516,7 +572,7 @@ class HookManager():
                 )
             else:
                 # TODO: have a way to differentiate the binary here.
-                self.hooks[hook_func_name] = FuncHook(hook_func_name)
+                self.hooks[hook_func_name] = FuncHook(hook._hook_func_name, overload=hook._func_overload)
             self._uninitialized_hooks.add(hook_func_name)
         self.hooks[hook_func_name].add_detour(hook)
 

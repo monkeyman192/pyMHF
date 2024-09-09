@@ -244,14 +244,17 @@ class GUI:
             self.widgets[name]["variables"][variable] = [(txt_id, WidgetType.TEXT)]
             if getter._has_setter:
                 if getter._variable_type == VariableType.INTEGER:
+                    extra_args = {"on_enter": False}
+                    extra_args.update(getter._extra_args)
                     input_id = dpg.add_input_int(
                         source=tag,
                         callback=on_update,
                         user_data=(cls, variable),
-                        on_enter=False,
-                        **getter._extra_args,
+                        **extra_args,
                     )
                 elif getter._variable_type == VariableType.STRING:
+                    extra_args = {"on_enter": False}
+                    extra_args.update(getter._extra_args)
                     input_id = dpg.add_input_text(
                         source=tag,
                         callback=on_update,
@@ -260,19 +263,22 @@ class GUI:
                         **getter._extra_args,
                     )
                 elif getter._variable_type == VariableType.FLOAT:
+                    extra_args = {"on_enter": False}
+                    extra_args.update(getter._extra_args)
                     input_id = dpg.add_input_double(
                         source=tag,
                         callback=on_update,
                         user_data=(cls, variable),
-                        on_enter=False,
-                        **getter._extra_args,
+                        **extra_args,
                     )
                 elif getter._variable_type == VariableType.BOOLEAN:
+                    extra_args = {}
+                    extra_args.update(getter._extra_args)
                     input_id = dpg.add_checkbox(
                         source=tag,
                         callback=on_update,
                         user_data=(cls, variable),
-                        **getter._extra_args,
+                        **extra_args,
                     )
                 if input_id is not None:
                     self.widgets[name]["variables"][variable].append((input_id, WidgetType.VARIABLE))

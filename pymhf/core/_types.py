@@ -19,6 +19,7 @@ class HookProtocol(Protocol):
     _hook_func_name: str
     _hook_time: DetourTime
     _custom_trigger: Optional[str]
+    _func_overload: Optional[str]
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         ...
@@ -29,3 +30,4 @@ class ManualHookProtocol(HookProtocol):
     _hook_pattern: Optional[str]
     _hook_binary: Optional[str]
     _hook_func_def: FUNCDEF
+    _func_overload: Optional[str]

@@ -63,8 +63,9 @@ try:
     module = import_file(_internal.MODULE_PATH)
 
     from pymhf.core.module_data import module_data
-    module_data.FUNC_OFFSETS = module.__pymhf_functions__.FUNC_OFFSETS
-    module_data.FUNC_CALL_SIGS = module.__pymhf_functions__.FUNC_CALL_SIGS
+    module_data.FUNC_OFFSETS = getattr(module.__pymhf_functions__, "FUNC_OFFSETS", {})
+    module_data.FUNC_PATTERNS = getattr(module.__pymhf_functions__, "FUNC_PATTERNS", {})
+    module_data.FUNC_CALL_SIGS = getattr(module.__pymhf_functions__, "FUNC_CALL_SIGS", {})
 
     from pymhf.core.hooking import hook_manager
     from pymhf.core.protocols import (
@@ -182,12 +183,13 @@ try:
         # If the mod folder isn't absolute, assume it's relative to the library directory.
         if not op.isabs(internal_mod_folder):
             internal_mod_folder = op.join(_internal.MODULE_PATH, internal_mod_folder)
-        if not op.exists(internal_mod_folder):
+        if op.exists(internal_mod_folder):
+            mod_manager.load_mod_folder(internal_mod_folder, bind=False)
+        else:
             logging.warning(
                 f"Cannot load internal mod directory: {internal_mod_folder}. "
                 "Please make sure it exists or that the path is correct in the pymhf.cfg file."
             )
-        mod_manager.load_mod_folder(internal_mod_folder, bind=False)
 
     logging.info("pyMHF injection complete!")
 
