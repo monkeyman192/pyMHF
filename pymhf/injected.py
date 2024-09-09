@@ -216,7 +216,10 @@ try:
     pm_process = pymem.Pymem( _internal.EXE_NAME)
     hwnd = utils.getHandleByPid(pm_process.process_id)
     if hwnd:
+        logging.info(f'MAIN_HWND: {hwnd}')
         _internal.MAIN_HWND = hwnd
+    else:
+        logging.error("Unable to capture main window handle.")
 
     for func_name, hook_class in hook_manager.failed_hooks.items():
         offset = hook_class.target
