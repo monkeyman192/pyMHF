@@ -596,7 +596,8 @@ class HookManager():
             # Try and enable the hook.
             try:
                 hook.enable()
-                hook_logger.info(f"Enabled hook for {hook_name}")
+                hook_logger.info(f"Enabled hook for {hook_name} at {_internal.EXE_NAME}+"
+                                 f"0x{hook.target - _internal.BASE_ADDRESS:X}")
             except:
                 hook_logger.error(f"Unable to enable {hook_name} because:")
                 hook_logger.exception(traceback.format_exc())
