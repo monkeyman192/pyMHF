@@ -1,8 +1,12 @@
 from ctypes import windll, create_unicode_buffer, byref, c_ulong
 from configparser import ConfigParser
+import logging
 from typing import Optional
 
 # from pymhf import _internal
+
+
+logger = logging.getLogger(__name__)
 
 
 # def dump_resource(res, fname):
@@ -64,5 +68,14 @@ class AutosavingConfig(ConfigParser):
             with open(self._filename, "w", encoding=self._encoding) as f:
                 self.write(f, space_around_delimiters=True)
         except Exception as e:
-            import logging
-            logging.exception(e)
+            logger.exception("Error saving file")
+
+
+def saferun(func, *args, **kwargs):
+    """ Safely run the specified function with args and kwargs. Any exception raised will be shown and """
+    ret = None
+    try:
+        ret = func(*args, **kwargs)
+    except:
+        logger.exception(f"There was an exception while calling {func}:")
+    return ret

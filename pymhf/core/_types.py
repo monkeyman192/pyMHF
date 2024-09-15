@@ -12,6 +12,11 @@ class DetourTime(Enum):
     AFTER = 2
 
 
+class KeyPressProtocol(Protocol):
+    _hotkey: str
+    _hotkey_press: str
+
+
 class HookProtocol(Protocol):
     _is_funchook: bool
     _is_manual_hook: bool
