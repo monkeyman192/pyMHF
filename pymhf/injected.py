@@ -50,6 +50,7 @@ try:
 
     config = AutosavingConfig()
     cfg_file = op.join(_internal.CFG_DIR, "pymhf.cfg")
+    logging.info(f'cfg_dir: {_internal.CFG_DIR}')
     read = config.read(cfg_file)
     log_level = config.get("pymhf", "log_level", fallback="info")
 
@@ -213,13 +214,7 @@ try:
     logging.info(f"Loaded {_loaded_mods} mods and {_loaded_hooks} hooks in {time.time() - start_time:.3f}s")
 
     # hook_manager.debug_show_states()
-    pm_process = pymem.Pymem( _internal.EXE_NAME)
-    hwnd = utils.getHandleByPid(pm_process.process_id)
-    if hwnd:
-        logging.info(f'MAIN_HWND: {hwnd}')
-        _internal.MAIN_HWND = hwnd
-    else:
-        logging.error("Unable to capture main window handle.")
+    _internal.MAIN_HWND = utils.get_main_window_handle()
 
     for func_name, hook_class in hook_manager.failed_hooks.items():
         offset = hook_class.target
