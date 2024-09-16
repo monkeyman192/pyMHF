@@ -23,7 +23,7 @@ from pymhf.core.errors import NoSaveError
 import pymhf.core._internal as _internal
 from pymhf.core.hooking import HookManager
 import pymhf.core.common as common
-from pymhf.core.utils import does_pid_have_focus
+from pymhf.core.utils import does_pid_have_focus, saferun
 from pymhf.core._types import HookProtocol
 from pymhf.gui.protocols import ButtonProtocol, VariableProtocol
 
@@ -316,7 +316,7 @@ class ModManager():
                     e.name == name and
                     e.event_type == event_type and
                     does_pid_have_focus(_internal.PID) and
-                    func()
+                    saferun(func)
                 )
             )
             self.hotkey_callbacks[
@@ -385,4 +385,4 @@ class ModManager():
             else:
                 mod_logger.error(f"Cannot find mod {name}")
         except:
-            mod_logger.exception(traceback.format_exc())
+            mod_logger.error(traceback.format_exc())

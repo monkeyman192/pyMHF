@@ -13,7 +13,7 @@ import pymhf.core._internal as _internal
 from pymhf.core.module_data import module_data
 # from pymhf.core.errors import UnknownFunctionError
 from pymhf.core.memutils import find_pattern_in_binary
-from pymhf.core._types import FUNCDEF, DetourTime, HookProtocol, ManualHookProtocol
+from pymhf.core._types import FUNCDEF, DetourTime, HookProtocol, ManualHookProtocol, KeyPressProtocol
 # from pymhf.core.caching import function_cache, pattern_cache
 
 hook_logger = logging.getLogger("HookManager")
@@ -247,7 +247,7 @@ class FuncHook(cyminhook.MinHook):
                 except ValueError:
                     hook_logger.warning(f"Had an issue removing one-shot from detour list.")
                 except:
-                    hook_logger.exception(traceback.format_exc())
+                    hook_logger.error(traceback.format_exc())
             self._oneshot_detours[detour] = _one_shot
             detour_list.append(_one_shot)
 
@@ -312,10 +312,16 @@ class FuncHook(cyminhook.MinHook):
     def _compound_detour(self, *args):
         ret = None
         # Loop over the before detours, keeping the last none-None return value.
-        for func in self._before_detours:
-            r = func(*args)
-            if r is not None:
-                ret = r
+        try:
+            for i, func in enumerate(self._before_detours):
+                r = func(*args)
+                if r is not None:
+                    ret = r
+        except:
+            bad_detour = self._before_detours.pop(i)
+            hook_logger.error(f"There was an error with detour {bad_detour}. It has been disabled.")
+            hook_logger.error(traceback.format_exc())
+            self._disabled_detours.add(bad_detour)
         # If we get a return value that is not None, then pass it through.
         if ret is not None:
             result = self.original(*ret)
@@ -325,10 +331,22 @@ class FuncHook(cyminhook.MinHook):
         # Now loop over the after functions. We'll need to handle the cases of
         # functions which take the `_result_` kwarg, and those that don't.
         after_ret = None
-        for func in self._after_detours:
-            after_ret = func(*args)
-        for func in self._after_detours_with_results:
-            after_ret = func(*args, _result_=result)
+        try:
+            for i, func in enumerate(self._after_detours):
+                after_ret = func(*args)
+            i = None
+            for j, func in enumerate(self._after_detours_with_results):
+                after_ret = func(*args, _result_=result)
+            j = None
+        except:
+            if i is not None:
+                bad_detour = self._after_detours.pop(i)
+            else:
+                bad_detour = self._after_detours_with_results.pop(j)
+            hook_logger.error(f"There was an error with detour {bad_detour}. It has been disabled.")
+            hook_logger.error(traceback.format_exc())
+            self._disabled_detours.add(bad_detour)
+
 
         if after_ret is not None:
             return after_ret
@@ -474,14 +492,14 @@ def disable(obj):
     return obj
 
 
-def one_shot(func: Callable[..., Any]) -> HookProtocol:
+def one_shot(func: HookProtocol) -> HookProtocol:
     """ Run this detour once only. """
     setattr(func, "_is_one_shot", True)
     return func
 
 
 def on_key_pressed(event: str):
-    def wrapped(func: Callable[..., Any]) -> HookProtocol:
+    def wrapped(func: Callable[..., Any]) -> KeyPressProtocol:
         setattr(func, "_hotkey", event)
         setattr(func, "_hotkey_press", "down")
         return func
@@ -489,7 +507,7 @@ def on_key_pressed(event: str):
 
 
 def on_key_release(event: str):
-    def wrapped(func: Callable[..., Any]) -> HookProtocol:
+    def wrapped(func: Callable[..., Any]) -> KeyPressProtocol:
         setattr(func, "_hotkey", event)
         setattr(func, "_hotkey_press", "up")
         return func
@@ -600,7 +618,7 @@ class HookManager():
                                  f"0x{hook.target - _internal.BASE_ADDRESS:X}")
             except:
                 hook_logger.error(f"Unable to enable {hook_name} because:")
-                hook_logger.exception(traceback.format_exc())
+                hook_logger.error(traceback.format_exc())
         # There are no uninitialized hooks.
         self._uninitialized_hooks = set()
         return count
