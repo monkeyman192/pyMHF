@@ -30,8 +30,6 @@ try:
     )
     rootLogger.addHandler(socketHandler)
     logging.info("Loading pyMHF...")
-    import sys
-    logging.info(sys.executable)
     socket_logger_loaded = True
 
     import pymhf.core._internal as _internal
@@ -213,13 +211,7 @@ try:
     logging.info(f"Loaded {_loaded_mods} mods and {_loaded_hooks} hooks in {time.time() - start_time:.3f}s")
 
     # hook_manager._debug_show_states()
-    pm_process = pymem.Pymem( _internal.EXE_NAME)
-    hwnd = utils.getHandleByPid(pm_process.process_id)
-    if hwnd:
-        logging.info(f'MAIN_HWND: {hwnd}')
-        _internal.MAIN_HWND = hwnd
-    else:
-        logging.error("Unable to capture main window handle.")
+    _internal.MAIN_HWND = utils.get_main_window_handle()
 
     for func_name, hook_class in hook_manager.failed_hooks.items():
         offset = hook_class.target

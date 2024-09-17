@@ -5,18 +5,34 @@ from typing import Optional
 import pywinctl as pwc
 import win32gui
 import win32process
-import pymem
 import logging
-import keyboard
-import mouse
 import pymhf.core._internal as _internal
-#from pymhf.core._internal import EXE_NAME, MAIN_HWND
-import ctypes
 
 
+logger = logging.getLogger(__name__)
 
-def get_hwnds_for_pid(pid):
-    def callback(hwnd, hwnds):
+
+def get_main_window_handle() -> Optional[int]:
+    """ Return the handle of the main running application window if possible.
+    This will correspond to the HWND for the window belonging to the PID of the main running process.
+    """
+    windows = {x.getHandle(): x for x in pwc.getAllWindows()}
+    main_pid_hwnds = get_hwnds_for_pid(_internal.PID)
+    wins = [x for x, y in windows.items() if (x in main_pid_hwnds and y.title != "pyMHF")]
+    if len(wins) == 0:
+        logger.error(f"Cannot find window handle for PID {_internal.PID}")
+        return None
+    elif len(wins) > 1:
+        logger.error(f"Found multiple windows for PID {_internal.PID}: {main_pid_hwnds}.\n"
+                     "Picking the first arbitrarily but this may not be correct.")
+        return wins[0]
+    else:
+        return wins[0]
+
+
+def get_hwnds_for_pid(pid: int) -> list[int]:
+    """ Return all HWND's for the provided PID. """
+    def callback(hwnd: int, hwnds: list[int]):
         _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
 
         if found_pid == pid:
@@ -24,8 +40,9 @@ def get_hwnds_for_pid(pid):
         return True
     hwnds = []
     win32gui.EnumWindows(callback, hwnds)
-    return hwnds 
-            
+    return hwnds
+
+
 """def getWindowTitleByHandleAndPid(pid, handle):
         windows = {x.getHandle(): x for x in pwc.getAllWindows()}
         print(f'{windows}')
@@ -40,44 +57,31 @@ def get_hwnds_for_pid(pid):
 
 def set_main_window_focus():
     getWindowTitleByHandleAndPid(16256, pymem.Pymem(EXE_NAME).process_handle)  #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file """
- 
 
-def getWindowByHandle(handle):
-    windows = {}
-    try:
-        windows = {x.getHandle(): x for x in pwc.getAllWindows()}
-        if windows[handle]:
-            return windows[handle]
-        else:
-            return None       
-    except Exception as e:
-        logging.info("getwindowbyhandle")
-        logging.info(f'handle: {handle}')
-        logging.info(f'windows: {windows}')        
-        logging.error(e)
 
-def set_main_window_focus()->bool:
+def get_window_by_handle(handle: int) -> Optional[pwc.Window]:
+    windows = {x.getHandle(): x for x in pwc.getAllWindows()}
+    return windows.get(handle)
+
+
+def set_main_window_focus() -> bool:
     logging.info("set_main_window_focus")
     status = is_main_window_foreground()
     main_window = None
-    if not status:       
-        main_window = getWindowByHandle(_internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file       
-        if main_window:
+    if not status:
+        if (main_window := get_window_by_handle(_internal.MAIN_HWND)):
             if main_window.activate():
                 status = True
     return status
 
-def is_main_window_foreground():
+
+def is_main_window_foreground() -> bool:
     return win32gui.GetForegroundWindow() == _internal.MAIN_HWND
 
+
 def get_main_window():
-    main_window = getWindowByHandle(_internal.MAIN_HWND) #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file 
-    return main_window   
-
-
-
-
-logger = logging.getLogger(__name__)
+    main_window = get_window_by_handle(_internal.MAIN_HWND)
+    return main_window
 
 
 # def dump_resource(res, fname):
