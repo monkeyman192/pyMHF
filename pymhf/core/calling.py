@@ -41,19 +41,7 @@ def call_function(
         offset = find_pattern_in_binary(pattern, False)
     else:
         if (_pattern := module_data.FUNC_PATTERNS.get(name)) is not None:
-            if isinstance(_pattern, str):
-                offset = find_pattern_in_binary(_pattern, False)
-            else:
-                if (opattern := _pattern.get(overload)) is not None:
-                    offset = find_pattern_in_binary(opattern, False)
-                else:
-                    first = list(_pattern.items())[0]
-                    calling_logger.warning(
-                        f"No pattern overload was provided for {name}. "
-                    )
-                    calling_logger.warning(
-                        f"Falling back to the first overload ({first[0]})")
-                    offset = find_pattern_in_binary(first[1], False)
+            offset = find_pattern_in_binary(_pattern, False)
         else:
             offset = module_data.FUNC_OFFSETS.get(name)
         if offset is None:
