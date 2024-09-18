@@ -1,11 +1,13 @@
-from ctypes import windll, create_unicode_buffer, byref, c_ulong
+from collections.abc import Callable
 from configparser import ConfigParser
+from ctypes import windll, create_unicode_buffer, byref, c_ulong
 import logging
 from typing import Optional
+
 import pywinctl as pwc
 import win32gui
 import win32process
-import logging
+
 import pymhf.core._internal as _internal
 
 
@@ -43,36 +45,21 @@ def get_hwnds_for_pid(pid: int) -> list[int]:
     return hwnds
 
 
-"""def getWindowTitleByHandleAndPid(pid, handle):
-        windows = {x.getHandle(): x for x in pwc.getAllWindows()}
-        print(f'{windows}')
-        hwnds = get_hwnds_for_pid(pid)
-        print(f'{hwnds}')
-        for hwnd in hwnds:
-            try:
-                if windows[hwnd]:
-                    print(f'{windows[hwnd]}')
-            except Exception:
-                print("noKey")
-
-def set_main_window_focus():
-    getWindowTitleByHandleAndPid(16256, pymem.Pymem(EXE_NAME).process_handle)  #Window class methods and properties detailed at https://github.com/Kalmat/PyWinCtl?tab=readme-ov-file """
-
-
 def get_window_by_handle(handle: int) -> Optional[pwc.Window]:
     windows = {x.getHandle(): x for x in pwc.getAllWindows()}
     return windows.get(handle)
 
 
-def set_main_window_focus() -> bool:
-    logging.info("set_main_window_focus")
-    status = is_main_window_foreground()
-    main_window = None
-    if not status:
+def set_main_window_active(callback: Optional[Callable[[], None]] = None):
+    """ Set the main window as active.
+    If a callback is provided, it will be called after activating the window.
+    This callback must not take any arguments and any return value will be ignored.
+    """
+    if not is_main_window_foreground():
         if (main_window := get_window_by_handle(_internal.MAIN_HWND)):
-            if main_window.activate():
-                status = True
-    return status
+            main_window.activate()
+            if callback is not None:
+                callback()
 
 
 def is_main_window_foreground() -> bool:
