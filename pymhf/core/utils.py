@@ -55,6 +55,11 @@ def set_main_window_active(callback: Optional[Callable[[], None]] = None):
     If a callback is provided, it will be called after activating the window.
     This callback must not take any arguments and any return value will be ignored.
     """
+    # Make sure that we have the MAIN_HWND in case it wasn't found earlier.
+    if not _internal.MAIN_HWND:
+        _internal.MAIN_HWND = get_main_window_handle()
+        if not _internal.MAIN_HWND:
+            logger.error(f"Cannot set main window active as we can't find it...")
     if not is_main_window_foreground():
         if (main_window := get_window_by_handle(_internal.MAIN_HWND)):
             main_window.activate()
