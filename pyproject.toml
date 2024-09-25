@@ -40,7 +40,6 @@ pymhf = "pymhf"
 dev-dependencies = [
   "pytest",
   "ruff",
-  "twine",
 ]
 
 [tool.ruff]
