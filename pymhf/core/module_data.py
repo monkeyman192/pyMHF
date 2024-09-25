@@ -13,6 +13,7 @@ from pymhf.core._types import FUNCDEF
 # NOTE: The above is just temporary. Need to figure out a more robust way to specify this.
 # (Well, the order of 2 and 3 should be swapped likely. Need a way to specify which to use...)
 
+
 class ModuleData:
     FUNC_OFFSETS: dict[str, Union[int, dict[str, int]]]
     FUNC_PATTERNS: dict[str, Union[str, dict[str, str]]]

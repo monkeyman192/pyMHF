@@ -1,40 +1,36 @@
 import asyncio
 import builtins
-from concurrent.futures import ThreadPoolExecutor
 import ctypes
 import ctypes.wintypes
-from functools import partial
 import locale
 import logging
 import logging.handlers
 import os.path as op
 import time
 import traceback
-import pymhf.core.utils as utils
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from typing import Optional
 
 import pymem
 import pymem.process
 
+import pymhf.core.utils as utils
 
 socket_logger_loaded = False
 executor = None
 ready = False
 
 try:
-    rootLogger = logging.getLogger('')
+    rootLogger = logging.getLogger("")
     rootLogger.setLevel(logging.INFO)
-    socketHandler = logging.handlers.SocketHandler(
-        "localhost",
-        logging.handlers.DEFAULT_TCP_LOGGING_PORT
-    )
+    socketHandler = logging.handlers.SocketHandler("localhost", logging.handlers.DEFAULT_TCP_LOGGING_PORT)
     rootLogger.addHandler(socketHandler)
     logging.info("Loading pyMHF...")
     socket_logger_loaded = True
 
     import pymhf.core._internal as _internal
     from pymhf.core.importing import import_file
-
     from pymhf.core.utils import AutosavingConfig
 
     # # Before any pymhf imports occur, set the os.environ value for the
@@ -61,22 +57,24 @@ try:
     module = import_file(_internal.MODULE_PATH)
 
     from pymhf.core.module_data import module_data
+
     module_data.FUNC_OFFSETS = getattr(module.__pymhf_functions__, "FUNC_OFFSETS", {})
     module_data.FUNC_PATTERNS = getattr(module.__pymhf_functions__, "FUNC_PATTERNS", {})
     module_data.FUNC_CALL_SIGS = getattr(module.__pymhf_functions__, "FUNC_CALL_SIGS", {})
 
+    import pymhf.core.caching as cache
     from pymhf.core.hooking import hook_manager
-    from pymhf.core.protocols import (
-        ExecutionEndedException,
-        custom_exception_handler,
-        ESCAPE_SEQUENCE,
-        READY_ASK_SEQUENCE,
-        READY_ACK_SEQUENCE
-    )
     from pymhf.core.memutils import getsize
     from pymhf.core.mod_loader import ModManager
-    import pymhf.core.caching as cache
+    from pymhf.core.protocols import (
+        ESCAPE_SEQUENCE,
+        READY_ACK_SEQUENCE,
+        READY_ASK_SEQUENCE,
+        ExecutionEndedException,
+        custom_exception_handler,
+    )
     from pymhf.gui.gui import GUI
+
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     hook_logger = logging.getLogger("HookManager")
@@ -88,7 +86,7 @@ try:
     # python thread that is running the show.
     try:
         loop = asyncio.get_event_loop()
-    except (RuntimeError, ValueError) as e:
+    except (RuntimeError, ValueError):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
@@ -99,19 +97,20 @@ try:
     # then the hack done to persist data to the current global context will not
     # work.
     class ExecutingProtocol(asyncio.Protocol):
-        """ A protocol factory to be passed to a asyncio loop.create_server call
+        """A protocol factory to be passed to a asyncio loop.create_server call
         which will accept requests, execute them and persist any variables to
         globals()."""
+
         def connection_made(self, transport: asyncio.transports.WriteTransport):
             self.transport: asyncio.transports.WriteTransport = transport
             # peername = transport.get_extra_info('peername')
             # self.write(f'Connection from {peername} ')
             # Overwrite print so that any `print` statements called in the commands
             # to be executed will be written back out of the socket they came in.
-            globals()['print'] = partial(builtins.print, file=self)
+            globals()["print"] = partial(builtins.print, file=self)
 
         def write(self, value: str):
-            """ Method to allow this protocol to be used as a file to write to.
+            """Method to allow this protocol to be used as a file to write to.
             This allows us to have `print` write to this protocol."""
             self.transport.write(value.encode())
 
@@ -128,13 +127,13 @@ try:
                 return
             try:
                 exec(__data.decode())
-            except:
+            except Exception:
                 print(traceback.format_exc())
             else:
                 self.persist_to_globals(locals())
 
         def persist_to_globals(self, data: dict):
-            """ Take the dictionary which was determined by calling `locals()`, and
+            """Take the dictionary which was determined by calling `locals()`, and
             update `gloabsl()` with it."""
             data.pop("self")
             data.pop(f"_{type(self).__name__}__data")
@@ -146,11 +145,10 @@ try:
 
         def connection_lost(self, exc):
             # Once the connection is lost. Restore `print` back to normal.
-            globals()['print'] = builtins.print
-
+            globals()["print"] = builtins.print
 
     def top_globals(limit: Optional[int] = 10):
-        """ Return the top N objects in globals() by size (in bytes). """
+        """Return the top N objects in globals() by size (in bytes)."""
         globs = globals()
         data = []
         for key, value in globs.items():
@@ -164,6 +162,7 @@ try:
             return data[:limit]
         else:
             return data
+
     # Patch the locale to make towupper work.
     # Python must change this so we change it back otherwise calls to `towupper`
     # in the various functions to set and get keypresses don't work correctly.
@@ -206,7 +205,7 @@ try:
                 """You have not configured the `binary.mod_dir` variable in the pymhf.cfg file.
                 Please do so so that you can load mods."""
             )
-    except:
+    except Exception:
         logging.error(traceback.format_exc())
     logging.info(f"Loaded {_loaded_mods} mods and {_loaded_hooks} hooks in {time.time() - start_time:.3f}s")
 
@@ -219,7 +218,7 @@ try:
         hook_logger.error(f"Hook {func_name} first 0x20 bytes: {_data.value.hex()}")
 
     # Each client connection will create a new protocol instance
-    coro = loop.create_server(ExecutingProtocol, '127.0.0.1', 6770)
+    coro = loop.create_server(ExecutingProtocol, "127.0.0.1", 6770)
     server = loop.run_until_complete(coro)
     # logging.info("Executing protocol is ready to go!")
 
@@ -236,7 +235,7 @@ try:
         # goes wrong in here it will just fail "silently".
         futures.append(executor.submit(gui.run))
 
-    logging.info(f'Serving on executor {server.sockets[0].getsockname()}')
+    logging.info(f"Serving on executor {server.sockets[0].getsockname()}")
     loop.run_forever()
 
     # Close the server.
@@ -244,7 +243,7 @@ try:
     loop.run_until_complete(server.wait_closed())
     loop.close()
 
-except Exception as e:
+except Exception:
     # If we hit this, something has gone wrong. Log to the current directory.
 
     try:
@@ -260,10 +259,9 @@ except Exception as e:
             if socket_logger_loaded:
                 logging.error("An error occurred while loading pymhf:")
                 logging.error(traceback.format_exc())
-    except:
+    except Exception:
         with open(op.join(op.expanduser("~"), "CRITICAL_ERROR.txt"), "w") as f:
             traceback.print_exc(file=f)
 finally:
     if executor is not None:
         executor.shutdown(wait=False, cancel_futures=True)
-

@@ -36,9 +36,26 @@ version = "0.1.7+dev2"
 [tool.setuptools.package-dir]
 pymhf = "pymhf"
 
+[tool.uv]
+dev-dependencies = [
+  "pytest",
+  "ruff",
+  "twine",
+]
+
+[tool.ruff]
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+preview = true
+
+[tool.ruff.lint.extend-per-file-ignores]
+"cpptypes.py" = ["E501"]
+
 [project.urls]
 Homepage = "https://github.com/monkeyman192/pyMHF"
-Repository = "https://github.com/monkeyman192/pyMHF"
+Repository = "https://github.com/monkeyman192/pyMHF.git"
 
 [project.scripts]
 pymhf = "pymhf:run"

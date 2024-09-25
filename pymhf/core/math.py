@@ -1,5 +1,6 @@
 from typing import Union
 
+
 class Vector3f:
     def __init__(self, x: float, y: float, z: float):
         self.x = x
@@ -21,7 +22,7 @@ class Vector3f:
         return self * other
 
     def __matmul__(self, other: "Vector3f") -> float:
-        """ Dot product """
+        """Dot product"""
         return self.x * other.x + self.y * other.y + self.z * other.z
 
     def __neg__(self):
@@ -32,7 +33,7 @@ class Vector3f:
 
 
 if __name__ == "__main__":
-    v = Vector3f(1,2,3)
+    v = Vector3f(1, 2, 3)
     k = 3 * v
     print(v)
     print(k)

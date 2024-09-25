@@ -1,19 +1,27 @@
 import ast
-from collections.abc import Callable
-from ctypes import CFUNCTYPE
-from _ctypes import CFuncPtr
 import inspect
 import logging
-from typing import Any, Optional, Type, cast
 import traceback
+from _ctypes import CFuncPtr
+from collections.abc import Callable
+from ctypes import CFUNCTYPE
+from typing import Any, Optional, Type, cast
 
 import cyminhook
 
 import pymhf.core._internal as _internal
-from pymhf.core.module_data import module_data
+from pymhf.core._types import (
+    FUNCDEF,
+    DetourTime,
+    HookProtocol,
+    KeyPressProtocol,
+    ManualHookProtocol,
+)
+
 # from pymhf.core.errors import UnknownFunctionError
 from pymhf.core.memutils import find_pattern_in_binary
-from pymhf.core._types import FUNCDEF, DetourTime, HookProtocol, ManualHookProtocol, KeyPressProtocol
+from pymhf.core.module_data import module_data
+
 # from pymhf.core.caching import function_cache, pattern_cache
 
 hook_logger = logging.getLogger("HookManager")
@@ -29,6 +37,7 @@ def _detour_is_valid(f):
         if isinstance(node, ast.Return):
             return True
     return False
+
 
 # A VERY rudimentary cache untill we implement gh-2.
 pattern_cache: dict[str, int] = {}
@@ -81,7 +90,7 @@ class FuncHook(cyminhook.MinHook):
             return self._name
 
     def _init(self):
-        """ Actually initialise all the data. This is defined separately so that any function which is marked
+        """Actually initialise all the data. This is defined separately so that any function which is marked
         with @disable doesn't get initialised.
         """
         offset = None
@@ -106,7 +115,7 @@ class FuncHook(cyminhook.MinHook):
                 return
 
         # 3. If there is still no offset, look up the pattern in the module_data to get offset
-        elif ((_pattern := module_data.FUNC_PATTERNS.get(self._name)) is not None):
+        elif (_pattern := module_data.FUNC_PATTERNS.get(self._name)) is not None:
             if isinstance(_pattern, str):
                 if (offset := pattern_cache.get(_pattern)) is None:
                     offset = find_pattern_in_binary(_pattern, False, self._binary)
@@ -120,11 +129,8 @@ class FuncHook(cyminhook.MinHook):
                 else:
                     first = list(_pattern.items())[0]
                     _pattern = first
-                    hook_logger.warning(
-                        f"No overload was provided for {self._name}. "
-                    )
-                    hook_logger.warning(
-                        f"Falling back to the first overload ({first[0]})")
+                    hook_logger.warning(f"No overload was provided for {self._name}. ")
+                    hook_logger.warning(f"Falling back to the first overload ({first[0]})")
                     offset = find_pattern_in_binary(first[1], False, self._binary)
             if offset is not None:
                 self._offset = offset
@@ -147,16 +153,11 @@ class FuncHook(cyminhook.MinHook):
                         # overload was defined and that it will fallback to the
                         # first entry in the dict.
                         first = list(_offset.items())[0]
-                        hook_logger.warning(
-                            f"No overload was provided for {self._name}. "
-                        )
-                        hook_logger.warning(
-                            f"Falling back to the first overload ({first[0]})")
+                        hook_logger.warning(f"No overload was provided for {self._name}. ")
+                        hook_logger.warning(f"Falling back to the first overload ({first[0]})")
                         self.target = _internal.BASE_ADDRESS + first[1]
             else:
-                hook_logger.error(
-                    f"Cannot find the function {self._name} in {_internal.EXE_NAME}"
-                )
+                hook_logger.error(f"Cannot find the function {self._name} in {_internal.EXE_NAME}")
                 self._invalid = True
                 return
 
@@ -186,11 +187,8 @@ class FuncHook(cyminhook.MinHook):
                         # Need to fallback on something. Raise a warning that no overload was defined and that
                         # it will fallback to the first entry in the dict.
                         first = list(sig.items())[0]
-                        hook_logger.warning(
-                            f"No function arguments overload was provided for {self._name}. "
-                        )
-                        hook_logger.warning(
-                            f"Falling back to the first overload ({first[0]})")
+                        hook_logger.warning(f"No function arguments overload was provided for {self._name}. ")
+                        hook_logger.warning(f"Falling back to the first overload ({first[0]})")
                         self.signature = CFUNCTYPE(first[1].restype, *first[1].argtypes)
             else:
                 hook_logger.error(f"{self._name} has no known call signature")
@@ -220,7 +218,7 @@ class FuncHook(cyminhook.MinHook):
         return detour_list
 
     def add_detour(self, detour: HookProtocol):
-        """ Add the provided detour to this FuncHook. """
+        """Add the provided detour to this FuncHook."""
         # If the hook has the `_disabled` attribute, then don't add the detour.
         if getattr(detour, "_disabled", False):
             self._disabled_detours.add(detour)
@@ -228,7 +226,9 @@ class FuncHook(cyminhook.MinHook):
 
         # Determine the detour list to use. If none, then return.
         if (detour_list := self._determine_detour_list(detour)) is None:
-            hook_logger.error(f"Unable to assign {detour} to a detour type. Please check it. It has not been added.")
+            hook_logger.error(
+                f"Unable to assign {detour} to a detour type. Please check it. It has not been added."
+            )
             return
 
         if not getattr(detour, "_is_one_shot", False):
@@ -238,21 +238,29 @@ class FuncHook(cyminhook.MinHook):
         # If the hook is a one-shot, wrap it so that it can remove itself once
         # it's executed.
         if getattr(detour, "_is_one_shot", False):
-            def _one_shot(*args, detour: HookProtocol = detour, detour_list: list[HookProtocol] = detour_list):
+
+            def _one_shot(
+                *args,
+                detour: HookProtocol = detour,
+                detour_list: list[HookProtocol] = detour_list,
+            ):
                 # NOTE: This may not work well if the code is called from multiple threads at the same time.
                 try:
                     detour(*args)
                     self._disabled_detours.add(detour)
                     detour_list.remove(self._oneshot_detours[detour])
                 except ValueError:
-                    hook_logger.warning(f"Had an issue removing one-shot from detour list.")
-                except:
+                    hook_logger.warning(
+                        f"Had an issue removing one-shot {detour._hook_func_name} from detour list."
+                    )
+                except Exception:
                     hook_logger.error(traceback.format_exc())
+
             self._oneshot_detours[detour] = _one_shot
             detour_list.append(_one_shot)
 
     def remove_detour(self, detour: HookProtocol):
-        """ Remove the provided detour from this FuncHook. """
+        """Remove the provided detour from this FuncHook."""
         # Determine the detour list to use. If none, then return.
         if (detour_list := self._determine_detour_list(detour)) is None:
             return
@@ -281,13 +289,13 @@ class FuncHook(cyminhook.MinHook):
     @property
     def _should_enable(self):
         return (
-            len(self._before_detours) > 0 or
-            len(self._after_detours) > 0 or
-            len(self._after_detours_with_results)
+            len(self._before_detours) > 0
+            or len(self._after_detours) > 0
+            or len(self._after_detours_with_results)
         )
 
     def bind(self) -> bool:
-        """ Actually initialise the base class. Returns whether the hook is bound. """
+        """Actually initialise the base class. Returns whether the hook is bound."""
         if not self._should_enable or self._invalid:
             return False
 
@@ -317,7 +325,7 @@ class FuncHook(cyminhook.MinHook):
                 r = func(*args)
                 if r is not None:
                     ret = r
-        except:
+        except Exception:
             bad_detour = self._before_detours.pop(i)
             hook_logger.error(f"There was an error with detour {bad_detour}. It has been disabled.")
             hook_logger.error(traceback.format_exc())
@@ -338,7 +346,7 @@ class FuncHook(cyminhook.MinHook):
             for j, func in enumerate(self._after_detours_with_results):
                 after_ret = func(*args, _result_=result)
             j = None
-        except:
+        except Exception:
             if i is not None:
                 bad_detour = self._after_detours.pop(i)
             else:
@@ -346,7 +354,6 @@ class FuncHook(cyminhook.MinHook):
             hook_logger.error(f"There was an error with detour {bad_detour}. It has been disabled.")
             hook_logger.error(traceback.format_exc())
             self._disabled_detours.add(bad_detour)
-
 
         if after_ret is not None:
             return after_ret
@@ -386,9 +393,9 @@ class HookFactory:
     def _set_detour_as_funchook(
         detour: Callable[..., Any],
         cls: Optional["HookFactory"] = None,
-        detour_name: Optional[str] = None
+        detour_name: Optional[str] = None,
     ):
-        """ Set all the standard attributes required for a function hook. """
+        """Set all the standard attributes required for a function hook."""
         setattr(detour, "_is_funchook", True)
         setattr(detour, "_is_manual_hook", False)
         setattr(detour, "_has__result_", False)
@@ -439,7 +446,7 @@ def manual_hook(
     detour_time: str = "before",
     binary: Optional[str] = None,
 ):
-    """ Manually hook a function.
+    """Manually hook a function.
 
     Parameters
     ----------
@@ -464,6 +471,7 @@ def manual_hook(
         If provided, this will be the name of the binary which the function being hooked is within.
         `offset` and `pattern` are found relative to/within the memory region of this binary.
     """
+
     def inner(detour: Callable[..., Any]) -> ManualHookProtocol:
         if offset is None and pattern is None:
             raise ValueError(f"One of pattern or offset must be set for the manual hook: {detour}")
@@ -481,6 +489,7 @@ def manual_hook(
         if "_result_" in inspect.signature(detour).parameters.keys():
             setattr(detour, "_has__result_", True)
         return detour
+
     return inner
 
 
@@ -493,7 +502,7 @@ def disable(obj):
 
 
 def one_shot(func: HookProtocol) -> HookProtocol:
-    """ Run this detour once only. """
+    """Run this detour once only."""
     setattr(func, "_is_one_shot", True)
     return func
 
@@ -503,6 +512,7 @@ def on_key_pressed(event: str):
         setattr(func, "_hotkey", event)
         setattr(func, "_hotkey_press", "down")
         return func
+
     return wrapped
 
 
@@ -511,10 +521,11 @@ def on_key_release(event: str):
         setattr(func, "_hotkey", event)
         setattr(func, "_hotkey_press", "up")
         return func
+
     return wrapped
 
 
-class HookManager():
+class HookManager:
     def __init__(self):
         self.hooks: dict[str, FuncHook] = {}
         # Keep a mapping of any hooks that try to be registered but fail.
@@ -526,21 +537,23 @@ class HookManager():
         self._uninitialized_hooks: set[str] = set()
 
     def resolve_dependencies(self):
-        """ Resolve dependencies of hooks.
+        """Resolve dependencies of hooks.
         This will get all the functions which are to be hooked and construct
         compound hooks as required."""
         # TODO: Make work.
         pass
 
     def add_custom_callbacks(self, callbacks: set[HookProtocol]):
-        """ Add the provided function to the specified callback type. """
+        """Add the provided function to the specified callback type."""
         for cb in callbacks:
             cb_type = cb._custom_trigger
             if cb_type not in self.custom_callbacks:
                 self.custom_callbacks[cb_type] = {}
             detour_time = getattr(cb, "_hook_time", DetourTime.NONE)
             if detour_time not in self.custom_callbacks[cb_type]:
-                self.custom_callbacks[cb_type][detour_time] = {cb, }
+                self.custom_callbacks[cb_type][detour_time] = {
+                    cb,
+                }
             else:
                 self.custom_callbacks[cb_type][detour_time].add(cb)
 
@@ -562,8 +575,8 @@ class HookManager():
                 cb()
 
     def register_hook(self, hook: HookProtocol):
-        """ Register a hook. There will be on of these for each function which is hooked and each one may
-        have multiple methods assigned to it. """
+        """Register a hook. There will be on of these for each function which is hooked and each one may
+        have multiple methods assigned to it."""
         hook_func_name = hook._hook_func_name
         # If the hook has an overload, add it here so that we can disambiguate them.
         if getattr(hook, "_func_overload", None) is not None:
@@ -598,7 +611,7 @@ class HookManager():
         self.hooks[hook_func_name].add_detour(hook)
 
     def initialize_hooks(self) -> int:
-        """ Initialize any uninitialized hooks.
+        """Initialize any uninitialized hooks.
         This will also enable the hooks so that they become active.
         """
         count = 0
@@ -614,9 +627,11 @@ class HookManager():
             # Try and enable the hook.
             try:
                 hook.enable()
-                hook_logger.info(f"Enabled hook for {hook_name} at {_internal.EXE_NAME}+"
-                                 f"0x{hook.target - _internal.BASE_ADDRESS:X}")
-            except:
+                hook_logger.info(
+                    f"Enabled hook for {hook_name} at {_internal.EXE_NAME}+"
+                    f"0x{hook.target - _internal.BASE_ADDRESS:X}"
+                )
+            except Exception:
                 hook_logger.error(f"Unable to enable {hook_name} because:")
                 hook_logger.error(traceback.format_exc())
         # There are no uninitialized hooks.
@@ -624,7 +639,7 @@ class HookManager():
         return count
 
     def enable(self, func_name: str):
-        """ Enable the hook for the provided function name. """
+        """Enable the hook for the provided function name."""
         if hook := self.hooks.get(func_name):
             hook.enable()
             hook_logger.info(f"Enabled hook for function '{func_name}'")
@@ -633,7 +648,7 @@ class HookManager():
             return
 
     def disable(self, func_name: str):
-        """ Disable the hook for the provided function name. """
+        """Disable the hook for the provided function name."""
         if hook := self.hooks.get(func_name):
             hook.disable()
             hook_logger.info(f"Disabled hook for function '{func_name}'")
@@ -646,11 +661,11 @@ class HookManager():
         for func_name, hook in self.hooks.items():
             hook_logger.info(f"Functions registered for {func_name}:")
             if hook._before_detours:
-                hook_logger.info(f"  Before Detours:")
+                hook_logger.info("  Before Detours:")
                 for func in hook._before_detours:
                     hook_logger.info(f"    {func}")
             if hook._after_detours:
-                hook_logger.info(f"  After Detours:")
+                hook_logger.info("  After Detours:")
                 for func in hook._after_detours:
                     hook_logger.info(f"    {func}")
 

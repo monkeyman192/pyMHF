@@ -1,7 +1,7 @@
+import logging
 from collections.abc import Callable
 from configparser import ConfigParser
-from ctypes import windll, create_unicode_buffer, byref, c_ulong
-import logging
+from ctypes import byref, c_ulong, create_unicode_buffer, windll
 from typing import Optional
 
 import pywinctl as pwc
@@ -9,7 +9,6 @@ import win32gui
 import win32process
 
 import pymhf.core._internal as _internal
-
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +81,7 @@ def get_main_window():
 
 
 def safe_assign_enum(enum, index: int):
-    """ Safely try and get the enum with the associated integer value.
+    """Safely try and get the enum with the associated integer value.
     If the index isn't one in the enum return the original index."""
     try:
         return enum(index)
@@ -95,7 +94,7 @@ def get_foreground_window_title() -> Optional[str]:
     length = windll.user32.GetWindowTextLengthW(hWnd)
     buf = create_unicode_buffer(length + 1)
     windll.user32.GetWindowTextW(hWnd, buf, length + 1)
-    
+
     # 1-liner alternative: return buf.value if buf.value else None
     if buf.value:
         return buf.value
@@ -134,15 +133,16 @@ class AutosavingConfig(ConfigParser):
             super().set(section, option, val)
             with open(self._filename, "w", encoding=self._encoding) as f:
                 self.write(f, space_around_delimiters=True)
-        except Exception as e:
+        except Exception:
             logger.exception("Error saving file")
 
 
 def saferun(func, *args, **kwargs):
-    """ Safely run the specified function with args and kwargs. Any exception raised will be shown and """
+    """Safely run the specified function with args and kwargs.
+    Any exception raised will be shown and ignored"""
     ret = None
     try:
         ret = func(*args, **kwargs)
-    except:
+    except Exception:
         logger.exception(f"There was an exception while calling {func}:")
     return ret

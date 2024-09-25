@@ -1,16 +1,16 @@
-from importlib.metadata import version, PackageNotFoundError, entry_points
-import configparser
 import argparse
+import configparser
 import os
 import os.path as op
 import shutil
-
-from .main import load_module  # noqa
-from .core.hooking import FuncHook  # noqa
-from .core.mod_loader import Mod, ModState  # noqa
-from .core._types import FUNCDEF  # noqa
+from importlib.metadata import PackageNotFoundError, entry_points, version
 
 import questionary
+
+from .core._types import FUNCDEF  # noqa
+from .core.hooking import FuncHook  # noqa
+from .core.mod_loader import Mod, ModState  # noqa
+from .main import load_module  # noqa
 
 try:
     __version__ = version("pymhf")
@@ -21,7 +21,7 @@ except PackageNotFoundError:
 def _is_int(val: str) -> bool:
     try:
         int(val)
-    except:
+    except (ValueError, TypeError):
         return False
     return True
 
@@ -53,12 +53,12 @@ CONFIG_SELECT_Q = questionary.select(
 # Need to support the following commands:
 # --config -> will configure the library
 def run():
-    """ Main entrypoint which can be used to run programs with pymhf.
+    """Main entrypoint which can be used to run programs with pymhf.
     This will take the first argument as the name of a module which has been installed."""
 
     parser = argparse.ArgumentParser(
         prog="pyMHF program runner",
-        description='Run the registered plugin',
+        description="Run the registered plugin",
     )
     parser.add_argument("plugin_name")
     parser.add_argument(
@@ -105,10 +105,12 @@ def run():
             required_lib = lib
 
     if required_lib is None:
-        print(f"Cannot find {plugin_name} as an installed plugin. "
-              "Please ensure it has been installed and try again")
+        print(
+            f"Cannot find {plugin_name} as an installed plugin. "
+            "Please ensure it has been installed and try again"
+        )
         return
-    
+
     loaded_lib = required_lib.load()
     initial_config = False
 

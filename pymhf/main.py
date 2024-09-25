@@ -1,25 +1,24 @@
 import asyncio
 import concurrent.futures
 import configparser
-from functools import partial
 import os
 import os.path as op
-from signal import SIGTERM
 import subprocess
 import time
-from typing import Optional
 import webbrowser
+from functools import partial
+from signal import SIGTERM
+from typing import Optional
 
 import psutil
 import pymem
-import pymem.process
 import pymem.exception
+import pymem.process
 
 from pymhf.core.caching import hash_bytes
-from pymhf.core.process import start_process
-from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol, READY_ASK_SEQUENCE
 from pymhf.core.logging import open_log_console
-
+from pymhf.core.process import start_process
+from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol
 
 CWD = op.dirname(__file__)
 
@@ -88,7 +87,9 @@ def get_process_when_ready(
                 raise
     else:
         creationflags = 0x4 if start_paused else 0
-        process_handle, thread_handle, pid, tid = start_process(cmd, creationflags=creationflags)
+        process_handle, thread_handle, pid, tid = start_process(  # noqa
+            cmd, creationflags=creationflags
+        )
         target_process = WrappedProcess(thread_handle=thread_handle)
 
     if target_process is not None:
@@ -163,14 +164,10 @@ def load_module(plugin_name: str, module_path: str, is_local: bool = False):
     def kill_injected_code(loop: asyncio.AbstractEventLoop):
         # End one last "escape sequence" message:
         client_completed = asyncio.Future()
-        client_factory = partial(
-            TerminalProtocol,
-            message=ESCAPE_SEQUENCE.decode(),
-            future=client_completed
-        )
+        client_factory = partial(TerminalProtocol, message=ESCAPE_SEQUENCE.decode(), future=client_completed)
         factory_coroutine = loop.create_connection(
             client_factory,
-            '127.0.0.1',
+            "127.0.0.1",
             6770,
         )
         loop.run_until_complete(factory_coroutine)
@@ -220,6 +217,7 @@ def load_module(plugin_name: str, module_path: str, is_local: bool = False):
         try:
             cwd = CWD.replace("\\", "\\\\")
             import sys
+
             saved_path = [x.replace("\\", "\\\\") for x in sys.path]
             # TODO: This can fail sometimes.... Figure out why??
             pm_binary.inject_python_shellcode(
@@ -260,23 +258,23 @@ pymhf.core._internal.EXE_NAME = {binary_exe!r}
         # TODO: Send a signal back up from the process to trigger this automatically.
         if start_paused:
             try:
-            #     # print("Checking to see if we are ready to run...")
-            #     # client_completed = asyncio.Future()
-            #     # client_factory = partial(
-            #     #     TerminalProtocol,
-            #     #     message=READY_ASK_SEQUENCE,
-            #     #     future=client_completed
-            #     # )
-            #     # print("A")
-            #     # factory_coroutine = loop.create_connection(
-            #     #     client_factory,
-            #     #     '127.0.0.1',
-            #     #     6770,
-            #     # )
-            #     # print("B")
-            #     # loop.run_until_complete(factory_coroutine)
-            #     # print("C")
-            #     # loop.run_until_complete(client_completed)
+                #     # print("Checking to see if we are ready to run...")
+                #     # client_completed = asyncio.Future()
+                #     # client_factory = partial(
+                #     #     TerminalProtocol,
+                #     #     message=READY_ASK_SEQUENCE,
+                #     #     future=client_completed
+                #     # )
+                #     # print("A")
+                #     # factory_coroutine = loop.create_connection(
+                #     #     client_factory,
+                #     #     '127.0.0.1',
+                #     #     6770,
+                #     # )
+                #     # print("B")
+                #     # loop.run_until_complete(factory_coroutine)
+                #     # print("C")
+                #     # loop.run_until_complete(client_completed)
 
                 input("Press something to start binary")
             except KeyboardInterrupt:
@@ -291,14 +289,10 @@ pymhf.core._internal.EXE_NAME = {binary_exe!r}
             try:
                 input_ = input(">>> ")
                 client_completed = asyncio.Future()
-                client_factory = partial(
-                    TerminalProtocol,
-                    message=input_,
-                    future=client_completed
-                )
+                client_factory = partial(TerminalProtocol, message=input_, future=client_completed)
                 factory_coroutine = loop.create_connection(
                     client_factory,
-                    '127.0.0.1',
+                    "127.0.0.1",
                     6770,
                 )
                 loop.run_until_complete(factory_coroutine)
@@ -331,7 +325,7 @@ pymhf.core._internal.EXE_NAME = {binary_exe!r}
             pm_binary.inject_python_shellcode(close_shellcode)
             print("Just injected the close command?")
             # Kill the process.
-        except:
+        except Exception:
             pass
         finally:
             print("Forcibly shutting down process")
@@ -340,7 +334,7 @@ pymhf.core._internal.EXE_NAME = {binary_exe!r}
                 try:
                     os.kill(_pid, SIGTERM)
                     print(f"Just killed process {_pid}")
-                except:
+                except Exception:
                     # If we can't kill it, it's probably already dead. Just continue.
                     print(f"Failed to kill process {_pid}. It was likely already dead...")
                     pass

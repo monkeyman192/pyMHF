@@ -1,7 +1,6 @@
 from collections import namedtuple
 from enum import Enum
-from typing import Any, Callable, Optional, Protocol
-
+from typing import Any, Optional, Protocol
 
 FUNCDEF = namedtuple("FUNCDEF", ["restype", "argtypes"])
 
@@ -26,8 +25,7 @@ class HookProtocol(Protocol):
     _custom_trigger: Optional[str]
     _func_overload: Optional[str]
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        ...
+    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
 
 
 class ManualHookProtocol(HookProtocol):

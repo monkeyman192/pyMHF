@@ -2,12 +2,11 @@ import importlib
 import importlib.util
 import logging
 import os.path as op
+import string
+import sys
 import traceback
 from types import ModuleType
 from typing import Optional
-import string
-import sys
-
 
 logger = logging.getLogger("pymfh.core.importing")
 
@@ -16,9 +15,9 @@ VALID_CHARS = string.ascii_letters + string.digits + "_"
 
 
 def _clean_name(name: str) -> str:
-    """ Remove any disallowed characters from the filename so that we get a
+    """Remove any disallowed characters from the filename so that we get a
     valid module name."""
-    out = ''
+    out = ""
     for char in name:
         if char not in VALID_CHARS:
             out += "_"

@@ -1,19 +1,18 @@
-import ctypes
 import configparser
-from gc import get_referents
+import ctypes
 import logging
 import sys
-from types import ModuleType, FunctionType
-from typing import Type, TypeVar, Optional, Iterable, Union
-
-import pymhf.core._internal as _internal
-import pymhf.core.caching as cache
+from gc import get_referents
+from types import FunctionType, ModuleType
+from typing import Iterable, Optional, Type, TypeVar, Union
 
 import pymem
 import pymem.pattern
 import pymem.process
 from pymem.ressources.structure import MODULEINFO
 
+import pymhf.core._internal as _internal
+import pymhf.core.caching as cache
 
 # Custom objects know their class.
 # Function objects seem to know way too much, including modules.
@@ -23,7 +22,7 @@ BLACKLIST = type, ModuleType, FunctionType
 
 mem_logger = logging.getLogger("MemUtils")
 
-MEM_ACCESS_R = 0x100   # Read only.
+MEM_ACCESS_R = 0x100  # Read only.
 MEM_ACCESS_RW = 0x200  # Read and Write access.
 
 
@@ -52,7 +51,7 @@ config = configparser.ConfigParser()
 def getsize(obj):
     """sum size of object & members."""
     if isinstance(obj, BLACKLIST):
-        raise TypeError('getsize() does not take argument of type: ' + str(type(obj)))
+        raise TypeError("getsize() does not take argument of type: " + str(type(obj)))
     seen_ids = set()
     size = 0
     objects = [obj]
@@ -71,17 +70,16 @@ def getsize(obj):
     return size, _len
 
 
-
 def chunks(lst: Iterable, n: int):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        yield lst[i : i + n]
 
 
 def match(patt: bytes, input: bytes):
-    """ Check whether or not the pattern matches the provided bytes. """
+    """Check whether or not the pattern matches the provided bytes."""
     for i, char in enumerate(patt):
-        if not (char == b'.' or char == input[i]):
+        if not (char == b"." or char == input[i]):
             return False
     return True
 
@@ -158,14 +156,14 @@ def get_addressof(obj) -> int:
     try:
         # If it's a pointer, this is the branch that is used.
         return ctypes.cast(obj, ctypes.c_void_p).value
-    except:
+    except Exception:
         # TODO: Get correct error type.
         # Otherwise fallback to the usual method.
         return ctypes.addressof(obj)
 
 
 def _get_memview(offset: int, type_: Type[ctypes.Structure]) -> memoryview:
-    """ Return a memoryview which covers the region of memory specified by the
+    """Return a memoryview which covers the region of memory specified by the
     struct provided.
 
     Parameters
@@ -183,7 +181,7 @@ def _get_memview(offset: int, type_: Type[ctypes.Structure]) -> memoryview:
 
 
 def _get_memview_with_size(offset: int, size: int) -> Optional[memoryview]:
-    """ Return a memoryview which covers the region of memory specified by the
+    """Return a memoryview which covers the region of memory specified by the
     struct provided.
 
     Parameters
@@ -203,7 +201,7 @@ def _get_memview_with_size(offset: int, size: int) -> Optional[memoryview]:
 
 
 def map_struct(offset: int, type_: Type[Struct]) -> Struct:
-    """ Return an instance of the `type_` struct provided which shares memory
+    """Return an instance of the `type_` struct provided which shares memory
     with the provided offset.
     Note that the amount of memory to read is automatically determined by the
     size of the struct provided.
@@ -226,7 +224,7 @@ def map_struct(offset: int, type_: Type[Struct]) -> Struct:
 
 
 def pattern_to_bytes(patt: str) -> bytes:
-    """ Take a pattern that looks like `8C 14 23 56 ?? 12` (etc) and convert it to a bytes object which can
+    """Take a pattern that looks like `8C 14 23 56 ?? 12` (etc) and convert it to a bytes object which can
     be searched with pymem.
     The format is what is provided by the IDA plugin `SigMakerEx` and the `??` values indicate a wildcard.
     """
