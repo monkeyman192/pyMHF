@@ -1,5 +1,4 @@
 from enum import Enum
-import traceback
 import logging
 from typing import TypedDict, Union, Optional
 # import win32gui
@@ -144,6 +143,7 @@ class GUI:
         removed_buttons = existing_button_names - mod_button_names
         for button_name in removed_buttons:
             dpg.delete_item(button_widgets[button_name])
+            button_widgets.pop(button_name)
 
     def reload_variables(self, cls: Mod, widgets: Widgets):
         """ Reload all variables associated with a mod.
@@ -178,6 +178,7 @@ class GUI:
             dpg.delete_item(tag)
             for var_id, _ in variable_widgets[variable_name]:
                 dpg.delete_item(var_id)
+            variable_widgets.pop(variable_name)
 
 
     def add_tab(self, cls: Mod):
@@ -336,8 +337,7 @@ class GUI:
                 dpg.render_dearpygui_frame()
             dpg.destroy_context()
         except:
-            logger.error("Unable to create GUI window!")
-            logger.exception(traceback.format_exc())
+            logger.exception("Unable to create GUI window!")
 
     def exit(self):
         dpg.stop_dearpygui()

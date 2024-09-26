@@ -1,5 +1,7 @@
-from ctypes import windll, create_unicode_buffer, byref, c_ulong, addressof
+from collections.abc import Callable
 from configparser import ConfigParser
+from ctypes import windll, create_unicode_buffer, byref, c_ulong
+import logging
 from typing import Optional
 import logging
 import pywinctl as pwc
@@ -74,6 +76,76 @@ def get_main_window():
     return main_window   
 
 
+import pywinctl as pwc
+import win32gui
+import win32process
+
+import pymhf.core._internal as _internal
+
+
+logger = logging.getLogger(__name__)
+
+
+def get_main_window_handle() -> Optional[int]:
+    """ Return the handle of the main running application window if possible.
+    This will correspond to the HWND for the window belonging to the PID of the main running process.
+    """
+    windows = {x.getHandle(): x for x in pwc.getAllWindows()}
+    main_pid_hwnds = get_hwnds_for_pid(_internal.PID)
+    wins = [x for x, y in windows.items() if (x in main_pid_hwnds and y.title != "pyMHF")]
+    if len(wins) == 0:
+        logger.error(f"Cannot find window handle for PID {_internal.PID}")
+        return None
+    elif len(wins) > 1:
+        logger.error(f"Found multiple windows for PID {_internal.PID}: {main_pid_hwnds}.\n"
+                     "Picking the first arbitrarily but this may not be correct.")
+        return wins[0]
+    else:
+        return wins[0]
+
+
+def get_hwnds_for_pid(pid: int) -> list[int]:
+    """ Return all HWND's for the provided PID. """
+    def callback(hwnd: int, hwnds: list[int]):
+        _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
+
+        if found_pid == pid:
+            hwnds.append(hwnd)
+        return True
+    hwnds = []
+    win32gui.EnumWindows(callback, hwnds)
+    return hwnds
+
+
+def get_window_by_handle(handle: int) -> Optional[pwc.Window]:
+    windows = {x.getHandle(): x for x in pwc.getAllWindows()}
+    return windows.get(handle)
+
+
+def set_main_window_active(callback: Optional[Callable[[], None]] = None):
+    """ Set the main window as active.
+    If a callback is provided, it will be called after activating the window.
+    This callback must not take any arguments and any return value will be ignored.
+    """
+    # Make sure that we have the MAIN_HWND in case it wasn't found earlier.
+    if not _internal.MAIN_HWND:
+        _internal.MAIN_HWND = get_main_window_handle()
+        if not _internal.MAIN_HWND:
+            logger.error(f"Cannot set main window active as we can't find it...")
+    if not is_main_window_foreground():
+        if (main_window := get_window_by_handle(_internal.MAIN_HWND)):
+            main_window.activate()
+            if callback is not None:
+                callback()
+
+
+def is_main_window_foreground() -> bool:
+    return win32gui.GetForegroundWindow() == _internal.MAIN_HWND
+
+
+def get_main_window():
+    main_window = get_window_by_handle(_internal.MAIN_HWND)
+    return main_window
 
 
 # def dump_resource(res, fname):
@@ -135,5 +207,14 @@ class AutosavingConfig(ConfigParser):
             with open(self._filename, "w", encoding=self._encoding) as f:
                 self.write(f, space_around_delimiters=True)
         except Exception as e:
-            import logging
-            logging.exception(e)
+            logger.exception("Error saving file")
+
+
+def saferun(func, *args, **kwargs):
+    """ Safely run the specified function with args and kwargs. Any exception raised will be shown and """
+    ret = None
+    try:
+        ret = func(*args, **kwargs)
+    except:
+        logger.exception(f"There was an exception while calling {func}:")
+    return ret

@@ -210,10 +210,10 @@ try:
                 Please do so so that you can load mods."""
             )
     except:
-        logging.exception(traceback.format_exc())
+        logging.error(traceback.format_exc())
     logging.info(f"Loaded {_loaded_mods} mods and {_loaded_hooks} hooks in {time.time() - start_time:.3f}s")
 
-    # hook_manager.debug_show_states()
+    # hook_manager._debug_show_states()
     _internal.MAIN_HWND = utils.get_main_window_handle()
 
     for func_name, hook_class in hook_manager.failed_hooks.items():
@@ -262,7 +262,7 @@ except Exception as e:
             traceback.print_exc(file=f)
             if socket_logger_loaded:
                 logging.error("An error occurred while loading pymhf:")
-                logging.exception(traceback.format_exc())
+                logging.error(traceback.format_exc())
     except:
         with open(op.join(op.expanduser("~"), "CRITICAL_ERROR.txt"), "w") as f:
             traceback.print_exc(file=f)

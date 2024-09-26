@@ -45,4 +45,4 @@ def import_file(fpath: str) -> Optional[ModuleType]:
             print("failed")
     except Exception:
         logger.error(f"Error loading {fpath}")
-        logger.exception(traceback.format_exc())
+        logger.error(traceback.format_exc())
