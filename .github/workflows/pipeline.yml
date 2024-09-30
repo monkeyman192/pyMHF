@@ -38,6 +38,7 @@ jobs:
         run: |
           uv run ruff check ./pymhf
           uv run ruff format --check ./pymhf
+          uv run python -m twine check ./dist/*
       - name: Upload Wheels
         uses: actions/upload-artifact@v4
         with:

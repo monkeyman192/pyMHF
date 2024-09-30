@@ -1,6 +1,7 @@
 [project]
 name = "pyMHF"
 description = "python Modding and Hooking Framework"
+readme = "README.md"
 requires-python = ">=3.9"
 license = {file = "LICENSE.md"}
 keywords = ["hooking", "games", "hacking", "modding"]
@@ -42,6 +43,7 @@ dev-dependencies = [
   "pytest",
   "ruff",
   "setuptools_scm",
+  "twine",
 ]
 
 [tool.ruff]
