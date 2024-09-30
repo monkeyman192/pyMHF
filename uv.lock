@@ -221,6 +221,18 @@ wheels = [
 ]
 
 [[package]]
+name = "ewmhlib"
+version = "0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-xlib", marker = "sys_platform == 'linux'" },
+    { name = "typing-extensions" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2f/3a/46ca34abf0725a754bc44ef474ad34aedcc3ea23b052d97b18b76715a6a9/EWMHlib-0.2-py3-none-any.whl", hash = "sha256:f5b07d8cfd4c7734462ee744c32d490f2f3233fa7ab354240069344208d2f6f5", size = 46657 },
+]
+
+[[package]]
 name = "exceptiongroup"
 version = "1.2.2"
 source = { registry = "https://pypi.org/simple" }
@@ -476,15 +488,17 @@ speed = [
 
 [[package]]
 name = "pymhf"
-version = "0.1.7.dev8+g556436c.d20240930"
+version = "0.1.7.dev15"
 source = { editable = "." }
 dependencies = [
     { name = "cyminhook" },
     { name = "dearpygui" },
     { name = "keyboard" },
+    { name = "packaging" },
     { name = "psutil" },
     { name = "pymem", extra = ["speed"] },
     { name = "pywin32" },
+    { name = "pywinctl" },
     { name = "questionary" },
 ]
 
@@ -501,9 +515,11 @@ requires-dist = [
     { name = "cyminhook", specifier = ">=0.1.4" },
     { name = "dearpygui", specifier = "~=1.11.0" },
     { name = "keyboard" },
+    { name = "packaging" },
     { name = "psutil", specifier = "~=5.9.5" },
     { name = "pymem", extras = ["speed"], specifier = "~=1.12.0" },
     { name = "pywin32" },
+    { name = "pywinctl" },
     { name = "questionary" },
 ]
 
@@ -513,6 +529,21 @@ dev = [
     { name = "ruff" },
     { name = "setuptools-scm" },
     { name = "twine" },
+]
+
+[[package]]
+name = "pymonctl"
+version = "0.92"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ewmhlib", marker = "sys_platform == 'linux'" },
+    { name = "pyobjc", marker = "sys_platform == 'darwin'" },
+    { name = "python-xlib", marker = "sys_platform == 'linux'" },
+    { name = "pywin32", marker = "sys_platform == 'win32'" },
+    { name = "typing-extensions" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2d/13/076a20da28b82be281f7e43e16d9da0f545090f5d14b2125699232b9feba/PyMonCtl-0.92-py3-none-any.whl", hash = "sha256:2495d8dab78f9a7dbce37e74543e60b8bd404a35c3108935697dda7768611b5a", size = 45945 },
 ]
 
 [[package]]
@@ -3020,6 +3051,18 @@ wheels = [
 ]
 
 [[package]]
+name = "python-xlib"
+version = "0.33"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/86/f5/8c0653e5bb54e0cbdfe27bf32d41f27bc4e12faa8742778c17f2a71be2c0/python-xlib-0.33.tar.gz", hash = "sha256:55af7906a2c75ce6cb280a584776080602444f75815a7aff4d287bb2d7018b32", size = 269068 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fc/b8/ff33610932e0ee81ae7f1269c890f697d56ff74b9f5b2ee5d9b7fa2c5355/python_xlib-0.33-py2.py3-none-any.whl", hash = "sha256:c3534038d42e0df2f1392a1b30a15a4ff5fdc2b86cfa94f072bf11b10a164398", size = 182185 },
+]
+
+[[package]]
 name = "pywin32"
 version = "306"
 source = { registry = "https://pypi.org/simple" }
@@ -3043,6 +3086,38 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/85/9f/01a1a99704853cb63f253eea009390c88e7131c67e66a0a02099a8c917cb/pywin32-ctypes-0.2.3.tar.gz", hash = "sha256:d162dc04946d704503b2edc4d55f3dba5c1d539ead017afa00142c38b9885755", size = 29471 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/de/3d/8161f7711c017e01ac9f008dfddd9410dff3674334c233bde66e7ba65bbf/pywin32_ctypes-0.2.3-py3-none-any.whl", hash = "sha256:8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8", size = 30756 },
+]
+
+[[package]]
+name = "pywinbox"
+version = "0.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ewmhlib", marker = "sys_platform == 'linux'" },
+    { name = "pyobjc", marker = "sys_platform == 'darwin'" },
+    { name = "python-xlib", marker = "sys_platform == 'linux'" },
+    { name = "pywin32", marker = "sys_platform == 'win32'" },
+    { name = "typing-extensions" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b1/37/d59397221e15d2a7f38afaa4e8e6b8c244d818044f7daa0bdc5988df0a69/PyWinBox-0.7-py3-none-any.whl", hash = "sha256:8b2506a8dd7afa0a910b368762adfac885274132ef9151b0c81b0d2c6ffd6f83", size = 12274 },
+]
+
+[[package]]
+name = "pywinctl"
+version = "0.4.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ewmhlib", marker = "sys_platform == 'linux'" },
+    { name = "pymonctl" },
+    { name = "pyobjc", marker = "sys_platform == 'darwin'" },
+    { name = "python-xlib", marker = "sys_platform == 'linux'" },
+    { name = "pywin32", marker = "sys_platform == 'win32'" },
+    { name = "pywinbox" },
+    { name = "typing-extensions" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/be/33/8e4f632210b28fc9e998a9ab990e7ed97ecd2800cc50038e3800e1d85dbe/PyWinCtl-0.4.1-py3-none-any.whl", hash = "sha256:4d875e22969e1c6239d8c73156193630aaab876366167b8d97716f956384b089", size = 63158 },
 ]
 
 [[package]]
@@ -3265,6 +3340,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/4f/a4/00a9ac1b555294710d4a68d2ce8dfdf39d72aa4d769a7395d05218d88a42/setuptools_scm-8.1.0.tar.gz", hash = "sha256:42dea1b65771cba93b7a515d65a65d8246e560768a66b9106a592c8e7f26c8a7", size = 76465 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a0/b9/1906bfeb30f2fc13bb39bf7ddb8749784c05faadbd18a21cf141ba37bff2/setuptools_scm-8.1.0-py3-none-any.whl", hash = "sha256:897a3226a6fd4a6eb2f068745e49733261a21f70b1bb28fce0339feb978d9af3", size = 43666 },
+]
+
+[[package]]
+name = "six"
+version = "1.16.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/71/39/171f1c67cd00715f190ba0b100d606d440a28c93c7714febeca8b79af85e/six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926", size = 34041 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d9/5a/e7c31adbe875f2abbb91bd84cf2dc52d792b5a01506781dbcf25c91daf11/six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254", size = 11053 },
 ]
 
 [[package]]

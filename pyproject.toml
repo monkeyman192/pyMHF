@@ -30,6 +30,7 @@ dependencies = [
   "dearpygui~=1.11.0",
   "questionary",
   "pywinctl",
+  "packaging",
 ]
 dynamic = ["version"]
 
@@ -37,6 +38,7 @@ dynamic = ["version"]
 pymhf = "pymhf"
 
 [tool.setuptools_scm]
+local_scheme = "no-local-version"
 
 [tool.uv]
 dev-dependencies = [

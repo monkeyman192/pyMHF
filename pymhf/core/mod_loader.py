@@ -10,7 +10,6 @@ import json
 import logging
 import os
 import os.path as op
-import re
 import sys
 import traceback
 from abc import ABC
@@ -20,6 +19,8 @@ from types import ModuleType
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 import keyboard
+from packaging.version import InvalidVersion
+from packaging.version import parse as parse_version
 
 import pymhf.core._internal as _internal
 import pymhf.core.common as common
@@ -32,10 +33,6 @@ from pymhf.gui.protocols import ButtonProtocol, VariableProtocol
 
 if TYPE_CHECKING:
     from pymhf.gui.gui import GUI
-
-
-VERSION_PATT = r"(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?<rest>\..+)*"
-VERSION_RE = re.compile(VERSION_PATT)
 
 
 mod_logger = logging.getLogger("ModManager")
@@ -219,28 +216,28 @@ class ModManager:
         mod_name = list(d.keys())[0]
         mod = d[mod_name]
         if mod.__pymhf_required_version__ is not None:
-            # TODO: Reimplement
-            pass
-            # from pymhf import __version__ as _pymhf_version
-            # if (pymhf_version := VERSION_RE.match(_pymhf_version)) is not None:
-            #     pass
-            # try:
-            #     if (mod_version := VERSION_RE.match(mod.__pymhf_required_version__)) is not None:
-            #         pass
-            # except ValueError:
-            #     mod_logger.warning(
-            #         "__pymhf_required_version__ defined on mod "
-            #         f"{mod.__name__} is not a valid version string"
-            #     )
-            #     mod_version = None
-            # if mod_version is None or mod_version <= pymhf_version:
-            #     self._preloaded_mods[mod_name] = mod
-            # else:
-            #     mod_logger.error(
-            #         f"Mod {mod.__name__} requires a newer verison of "
-            #         f"pyMHF ({mod_version} ≥ {pymhf_version})! "
-            #         "Please update"
-            #     )
+            from pymhf import __version__ as _pymhf_version
+
+            try:
+                pymhf_version = parse_version(_pymhf_version)
+            except InvalidVersion:
+                pymhf_version = None
+            try:
+                mod_version = parse_version(mod.__pymhf_required_version__)
+            except InvalidVersion:
+                mod_logger.warning(
+                    "__pymhf_required_version__ defined on mod "
+                    f"{mod.__name__} is not a valid version string"
+                )
+                mod_version = None
+            if mod_version is None or mod_version <= pymhf_version:
+                self._preloaded_mods[mod_name] = mod
+            else:
+                mod_logger.error(
+                    f"Mod {mod.__name__} requires a newer verison of "
+                    f"pyMHF ({mod_version} ≥ {pymhf_version})! "
+                    "Please update"
+                )
         else:
             self._preloaded_mods[mod_name] = mod
         # Only get mod states if the mod name doesn't already have a cached
