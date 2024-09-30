@@ -25,21 +25,23 @@ dependencies = [
   "psutil~=5.9.5",
   "pymem[speed]~=1.12.0",
   "keyboard",
-  "semver",
   "pywin32",
   "dearpygui~=1.11.0",
   "questionary",
   "pywinctl",
 ]
-version = "0.1.7+dev2"
+dynamic = ["version"]
 
 [tool.setuptools.package-dir]
 pymhf = "pymhf"
+
+[tool.setuptools_scm]
 
 [tool.uv]
 dev-dependencies = [
   "pytest",
   "ruff",
+  "setuptools_scm",
 ]
 
 [tool.ruff]
@@ -60,5 +62,5 @@ Repository = "https://github.com/monkeyman192/pyMHF.git"
 pymhf = "pymhf:run"
 
 [build-system]
-requires = ["setuptools>=43.0.0", "wheel"]
+requires = ["setuptools>=64", "wheel", "setuptools-scm>=8", "setuptools_scm_git_semver"]
 build-backend = "setuptools.build_meta"
