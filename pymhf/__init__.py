@@ -10,7 +10,7 @@ import questionary
 from .core._types import FUNCDEF  # noqa
 from .core.hooking import FuncHook  # noqa
 from .core.mod_loader import Mod, ModState  # noqa
-from .main import load_module  # noqa
+from .main import load_mod_file, load_module  # noqa
 
 try:
     __version__ = version("pymhf")
@@ -54,8 +54,8 @@ CONFIG_SELECT_Q = questionary.select(
 # --config -> will configure the library
 def run():
     """Main entrypoint which can be used to run programs with pymhf.
-    This will take the first argument as the name of a module which has been installed."""
-
+    This will take the first argument as the name of a module which has been installed.
+    """
     parser = argparse.ArgumentParser(
         prog="pyMHF program runner",
         description="Run the registered plugin",
@@ -72,6 +72,15 @@ def run():
 
     plugin_name: str = args.plugin_name
     is_config_mode: bool = args.config
+    standalone = False
+
+    if op.isfile(plugin_name) and op.exists(plugin_name):
+        # In this case we are running in stand-alone mode
+        standalone = True
+
+    if standalone:
+        load_mod_file(plugin_name)
+        return
 
     # Get the location of app data, then construct the expected folder name.
     appdata_data = os.environ.get("APPDATA", op.expanduser("~"))

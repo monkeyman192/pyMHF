@@ -8,7 +8,7 @@ import time
 import webbrowser
 from functools import partial
 from signal import SIGTERM
-from typing import Optional
+from typing import Any, Optional
 
 import psutil
 import pymem
@@ -19,6 +19,7 @@ from pymhf.core.caching import hash_bytes
 from pymhf.core.logging import open_log_console
 from pymhf.core.process import start_process
 from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol
+from pymhf.utils.parse_toml import get_pymhf_settings, read_toml
 
 CWD = op.dirname(__file__)
 
@@ -111,7 +112,34 @@ def get_process_when_ready(
         return None, None
 
 
+def load_mod_file(filepath):
+    with open(filepath, "r") as f:
+        pymhf_settings = get_pymhf_settings(f.read())
+    _run_module(filepath, pymhf_settings)
+
+
+def new_load_module(plugin_name: str, module_path: str, is_local: bool = False):
+    if not is_local:
+        appdata_data = os.environ.get("APPDATA", op.expanduser("~"))
+        cfg_folder = op.join(appdata_data, "pymhf", plugin_name)
+        cfg_file = op.join(cfg_folder, "pymhf.toml")
+    else:
+        cfg_folder = module_path
+        cfg_file = op.join(module_path, "pymhf.toml")
+    _ = read_toml(cfg_file)
+
+
+# TODO: Move most of the following code into a separate private function which can be called from
+# `load_mod_file` and what `load_module` will become.
+# This function needs an extra arg which relates to the fact that it's loading a single file potentailly?
+# Or have it pass in some other info?
+# Potentially we can disambiguate by checking to see if we are provided a module or a single file when called.
+# That might just be pre-processing, and then once we have determined whether it's a module or single file
+# then we can pass some piece of into into the subsequent function call.
+
+
 def load_module(plugin_name: str, module_path: str, is_local: bool = False):
+    """Load the module."""
     # Parse the config file first so we can load anything we need to know.
     config = configparser.ConfigParser()
     # If we are not running local, then we try find the config file in the user APPDATA directory.
@@ -127,21 +155,64 @@ def load_module(plugin_name: str, module_path: str, is_local: bool = False):
         print(f"No pymhf.cfg file found in specified directory: {module_path}")
         print("Cannot proceed with loading")
         return
+    pymhf_config = {s: dict(config.items(s)) for s in config.sections()}
+    _run_module(pymhf_config)
+
+
+def _required_config_val(config: dict[str, str], key: str) -> Any:
+    if (val := config.get(key)) is not None:
+        return val
+    raise ValueError(f"[tool.pymhf] missing config value: {key}")
+
+
+def _run_module(module_path: str, config: dict[str, str]):
+    """Run the module provided.
+
+    Parameters
+    ----------
+    module_path
+        The path to the module or single-file mod to be run.
+    config
+        A mapping of the associated pymhf config.
+    """
+    single_file_mod = False
+    if op.isfile(module_path):
+        single_file_mod = True
+
     binary_path = None
-    binary_exe = config.get("binary", "exe")
+    binary_exe = _required_config_val(config, "exe")
     required_assemblies = []
-    if _required_assemblies := config.get("binary", "required_assemblies", fallback=""):
-        required_assemblies = [x.strip() for x in _required_assemblies.split(",")]
-    steam_gameid = config.getint("binary", "steam_gameid", fallback=0)
-    start_paused = config.getboolean("binary", "start_paused", fallback=False)
-    log_window_name_override = config.get("pymhf", "log_window_name_override", fallback="pymhf console")
+    required_assemblies = config.get("required_assemblies", [])
+    try:
+        steam_gameid = int(config.get("steam_gameid", 0))
+    except (ValueError, TypeError):
+        steam_gameid = 0
+    start_paused = config.get("start_paused", False)
+
+    mod_save_dir = config.get("mod_save_dir", op.join(module_path, "MOD_SAVES"))
+    if mod_save_dir == ".":
+        mod_save_dir = op.join(module_path, "MOD_SAVES")
+
+    logging_config = config.get("logging", {})
+    log_window_name_override = logging_config.get("window_name_override", "pymhf console")
+    log_dir = logging_config.get("log_dir", op.join(module_path, "LOGS"))
+    if log_dir == ".":
+        if op.isdir(module_path):
+            log_dir = op.join(module_path, "LOGS")
+        elif op.isfile(module_path):
+            log_dir = op.join(op.dirname(module_path), "LOGS")
+
     is_steam = False
     if steam_gameid:
         cmd = f"steam://rungameid/{steam_gameid}"
         is_steam = True
     else:
-        binary_path = config["binary"]["path"]
-        cmd = binary_path
+        if op.isdir(binary_exe):
+            cmd = binary_path = binary_exe
+            # We only need the binary_exe to be the name from here on.
+            binary_exe = op.basename(binary_exe)
+        else:
+            raise ValueError("[tool.pymhf].exe must be a full path if no steam_gameid is provided.")
 
     pm_binary, proc = get_process_when_ready(cmd, binary_exe, required_assemblies, is_steam, start_paused)
 
@@ -174,7 +245,7 @@ def load_module(plugin_name: str, module_path: str, is_local: bool = False):
         loop.run_until_complete(client_completed)
 
     try:
-        log_pid = open_log_console(op.join(CWD, "log_terminal.py"), module_path, log_window_name_override)
+        log_pid = open_log_console(op.join(CWD, "log_terminal.py"), log_dir, log_window_name_override)
         # Have a small nap just to give it some time.
         time.sleep(0.5)
         print(f"Opened the console log with PID: {log_pid}")
@@ -241,8 +312,11 @@ pymhf.core._internal.CWD = {cwd!r}
 pymhf.core._internal.PID = {pm_binary.process_id!r}
 pymhf.core._internal.HANDLE = {pm_binary.process_handle!r}
 pymhf.core._internal.BINARY_HASH = {binary_hash!r}
-pymhf.core._internal.CFG_DIR = {cfg_folder!r}
+pymhf.core._internal.CONFIG = {config!r}
 pymhf.core._internal.EXE_NAME = {binary_exe!r}
+pymhf.core._internal.BINARY_PATH = {binary_path!r}
+pymhf.core._internal.SINGLE_FILE_MOD = {single_file_mod!r}
+pymhf.core._internal.MOD_SAVE_DIR = {mod_save_dir!r}
                 """
             )
         except Exception as e:

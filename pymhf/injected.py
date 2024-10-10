@@ -31,24 +31,14 @@ try:
 
     import pymhf.core._internal as _internal
     from pymhf.core.importing import import_file
-    from pymhf.core.utils import AutosavingConfig
 
-    # # Before any pymhf imports occur, set the os.environ value for the
-    # # binary hash:
-    # if _internal.BINARY_HASH:
-    #     os.environ["PYMHF_BINARY_HASH"] = _internal.BINARY_HASH
-    # else:
-    #     # If there is no binary hash, something has gone wrong. Exit now since
-    #     # we can't continue.
-    #     sys.exit(-1)
+    log_level = _internal.CONFIG.get("logging", {}).get("log_level", "info")
+    log_level = "info"
 
-    config = AutosavingConfig()
-    cfg_file = op.join(_internal.CFG_DIR, "pymhf.cfg")
-    read = config.read(cfg_file)
-    log_level = config.get("pymhf", "log_level", fallback="info")
-
-    internal_mod_folder = config.get("binary", "internal_mod_dir", fallback=None)
-    mod_folder = config.get("binary", "mod_dir", fallback=None)
+    internal_mod_folder = _internal.CONFIG.get("internal_mod_dir")
+    internal_mod_folder = None
+    mod_folder = _internal.CONFIG.get("mod_dir", None)
+    mod_folder = None
 
     debug_mode = log_level.lower() == "debug"
     if debug_mode:
@@ -58,9 +48,18 @@ try:
 
     from pymhf.core.module_data import module_data
 
-    module_data.FUNC_OFFSETS = getattr(module.__pymhf_functions__, "FUNC_OFFSETS", {})
-    module_data.FUNC_PATTERNS = getattr(module.__pymhf_functions__, "FUNC_PATTERNS", {})
-    module_data.FUNC_CALL_SIGS = getattr(module.__pymhf_functions__, "FUNC_CALL_SIGS", {})
+    _pymhf_functions_ = getattr(module, "__pymhf_functions__", None)
+    if _pymhf_functions_ is not None:
+        module_data.FUNC_OFFSETS = getattr(module.__pymhf_functions__, "FUNC_OFFSETS", {})
+        module_data.FUNC_PATTERNS = getattr(module.__pymhf_functions__, "FUNC_PATTERNS", {})
+        module_data.FUNC_CALL_SIGS = getattr(module.__pymhf_functions__, "FUNC_CALL_SIGS", {})
+    else:
+        # Can also try and see if there are any other "magic" attributes assigned, otherwise fallback to
+        # empty dicts
+        module_data.FUNC_BINARY = getattr(module, "__pymhf_func_binary__", None)
+        module_data.FUNC_OFFSETS = getattr(module, "__pymhf_func_offsets__", {})
+        module_data.FUNC_PATTERNS = getattr(module, "__pymhf_func_patterns__", {})
+        module_data.FUNC_CALL_SIGS = getattr(module, "__pymhf_func_call_sigs__", {})
 
     import pymhf.core.caching as cache
     from pymhf.core.hooking import hook_manager
@@ -74,6 +73,7 @@ try:
         custom_exception_handler,
     )
     from pymhf.gui.gui import GUI
+    from pymhf.utils.get_imports import get_imports
 
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -99,7 +99,8 @@ try:
     class ExecutingProtocol(asyncio.Protocol):
         """A protocol factory to be passed to a asyncio loop.create_server call
         which will accept requests, execute them and persist any variables to
-        globals()."""
+        globals().
+        """
 
         def connection_made(self, transport: asyncio.transports.WriteTransport):
             self.transport: asyncio.transports.WriteTransport = transport
@@ -110,8 +111,11 @@ try:
             globals()["print"] = partial(builtins.print, file=self)
 
         def write(self, value: str):
-            """Method to allow this protocol to be used as a file to write to.
-            This allows us to have `print` write to this protocol."""
+            """
+            Method to allow this protocol to be used as a file to write to.
+
+            This allows us to have `print` write to this protocol.
+            """
             self.transport.write(value.encode())
 
         def data_received(self, __data: bytes):
@@ -133,8 +137,7 @@ try:
                 self.persist_to_globals(locals())
 
         def persist_to_globals(self, data: dict):
-            """Take the dictionary which was determined by calling `locals()`, and
-            update `gloabsl()` with it."""
+            """Take the dict which was determined by calling `locals()`, and update `gloabsl()` with it."""
             data.pop("self")
             data.pop(f"_{type(self).__name__}__data")
             globals().update(data)
@@ -173,6 +176,10 @@ try:
     binary = pymem.Pymem(_internal.EXE_NAME)
     cache.module_map = {x.name: x for x in pymem.process.enum_process_module(binary.process_handle)}
 
+    # Read the imports
+    if _internal.BINARY_PATH:
+        _internal.imports = get_imports(_internal.BINARY_PATH)
+
     mod_manager = ModManager(hook_manager)
     # First, load our internal mod before anything else.
     if internal_mod_folder is not None:
@@ -198,13 +205,17 @@ try:
     _loaded_mods = 0
     _loaded_hooks = 0
     try:
-        if mod_folder is not None:
-            _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(mod_folder)
+        if _internal.SINGLE_FILE_MOD:
+            # For a single file mod, we just load that file.
+            _loaded_mods, _loaded_hooks = mod_manager.load_single_mod(_internal.MODULE_PATH)
         else:
-            logging.warning(
-                """You have not configured the `binary.mod_dir` variable in the pymhf.cfg file.
-                Please do so so that you can load mods."""
-            )
+            if mod_folder is not None:
+                _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(mod_folder)
+            else:
+                logging.warning(
+                    """You have not configured the `binary.mod_dir` variable in the pymhf.cfg file.
+                    Please do so so that you can load mods."""
+                )
     except Exception:
         logging.error(traceback.format_exc())
     logging.info(f"Loaded {_loaded_mods} mods and {_loaded_hooks} hooks in {time.time() - start_time:.3f}s")
@@ -223,8 +234,8 @@ try:
     # logging.info("Executing protocol is ready to go!")
 
     futures = []
-    if config.getboolean("gui", "shown", fallback=True):
-        gui = GUI(mod_manager, config)
+    if _internal.CONFIG.get("gui", {}).get("shown", True):
+        gui = GUI(mod_manager, _internal.CONFIG)
         # For each mod, add the corresponding tab to the gui.
         for mod in mod_manager.mods.values():
             gui.add_tab(mod)

@@ -19,6 +19,7 @@ class KeyPressProtocol(Protocol):
 class HookProtocol(Protocol):
     _is_funchook: bool
     _is_manual_hook: bool
+    _is_imported_func_hook: bool
     _has__result_: bool
     _hook_func_name: str
     _hook_time: DetourTime
@@ -32,4 +33,9 @@ class ManualHookProtocol(HookProtocol):
     _hook_offset: Optional[int]
     _hook_pattern: Optional[str]
     _hook_binary: Optional[str]
+    _hook_func_def: FUNCDEF
+
+
+class ImportedHookProtocol(HookProtocol):
+    _dll_name: str
     _hook_func_def: FUNCDEF

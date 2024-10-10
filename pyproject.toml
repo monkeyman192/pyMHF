@@ -31,6 +31,8 @@ dependencies = [
   "questionary",
   "pywinctl",
   "packaging",
+  "tomlkit",
+  "pefile",
 ]
 dynamic = ["version"]
 
@@ -54,6 +56,12 @@ line-length = 110
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 preview = true
+ignore = [
+  "D100",  # Missing docstring in public module
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
 
 [tool.ruff.lint.extend-per-file-ignores]
 "cpptypes.py" = ["E501"]

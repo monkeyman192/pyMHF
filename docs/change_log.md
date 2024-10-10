@@ -1,6 +1,15 @@
 # Change Log
 
-## Current
+## Current (0.1.8)
+
+- Add ability for single-file mods to be run by pymhf. ([gh-19](https://github.com/monkeyman192/pyMHF/issues/19))
+- Changed the config system to use toml files.
+
+### 0.1.7 (10/10/2024)
+
+- Implement ability to call overloaded functions which have patterns.
+- Improve safety of hooking functions and keyboard bindings as well as GUI reload fix.
+- Added functions to set the main window active ([gh-6](https://github.com/monkeyman192/pyMHF/issues/6)) - Contributed by `Foundit3923`
 
 ### 0.1.6 (08/09/2024)
 

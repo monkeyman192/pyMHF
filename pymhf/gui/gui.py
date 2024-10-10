@@ -7,7 +7,6 @@ from typing import Optional, TypedDict, Union
 import dearpygui.dearpygui as dpg
 
 from pymhf.core.mod_loader import Mod, ModManager
-from pymhf.core.utils import AutosavingConfig
 from pymhf.gui.protocols import ButtonProtocol, VariableProtocol, VariableType
 
 SETTINGS_NAME = "_pymhf_gui_settings"
@@ -32,9 +31,9 @@ class Widgets(TypedDict):
 
 
 class GUI:
-    def __init__(self, mod_manager: ModManager, config: AutosavingConfig):
+    def __init__(self, mod_manager: ModManager, config: dict):
         self.config = config
-        self.scale = config.getint("gui", "scale", fallback=1)
+        self.scale = config.get("gui", {}).get("scale", 1)
         dpg.create_context()
         dpg.create_viewport(
             title="pyMHF",

@@ -2,6 +2,7 @@ import logging
 from collections.abc import Callable
 from configparser import ConfigParser
 from ctypes import byref, c_ulong, create_unicode_buffer, windll
+from functools import wraps
 from typing import Optional
 
 import pywinctl as pwc
@@ -86,7 +87,8 @@ def get_main_window():
 
 def safe_assign_enum(enum, index: int):
     """Safely try and get the enum with the associated integer value.
-    If the index isn't one in the enum return the original index."""
+    If the index isn't one in the enum return the original index.
+    """
     try:
         return enum(index)
     except ValueError:
@@ -143,10 +145,27 @@ class AutosavingConfig(ConfigParser):
 
 def saferun(func, *args, **kwargs):
     """Safely run the specified function with args and kwargs.
-    Any exception raised will be shown and ignored"""
+
+    Any exception raised will be shown and ignored
+    """
     ret = None
     try:
         ret = func(*args, **kwargs)
     except Exception:
         logger.exception(f"There was an exception while calling {func}:")
     return ret
+
+
+def saferun_decorator(func):
+    """Safely run the decorated function so that any errors are caught and logged."""
+
+    @wraps(func)
+    def inner(*args, **kwargs):
+        ret = None
+        try:
+            ret = func(*args, **kwargs)
+        except Exception:
+            logger.exception(f"There was an exception while calling {func}:")
+        return ret
+
+    return inner
