@@ -1,6 +1,6 @@
-from concurrent.futures import ThreadPoolExecutor
 import os
 import os.path as op
+from concurrent.futures import ThreadPoolExecutor
 
 import pymhf.core._internal as _internal
 

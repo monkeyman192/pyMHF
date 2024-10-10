@@ -1,16 +1,15 @@
 import argparse
-import pickle
 import logging
 import logging.handlers
 import os
 import os.path as op
+import pickle
 import select
 import socketserver
 import struct
 import time
 
 import pymhf
-
 
 # Logo generated using https://patorjk.com/software/taag/
 # Options:
@@ -30,6 +29,7 @@ LOGO = """
 
 # NB: This code is mostly taken from the python stdlib docs.
 
+
 class LogRecordStreamHandler(socketserver.StreamRequestHandler):
     """Handler for a streaming logging request.
 
@@ -48,7 +48,7 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
                 chunk = self.connection.recv(4)
                 if len(chunk) < 4:
                     break
-                slen = struct.unpack('>L', chunk)[0]
+                slen = struct.unpack(">L", chunk)[0]
                 chunk = self.connection.recv(slen)
                 while len(chunk) < slen:
                     chunk = chunk + self.connection.recv(slen - len(chunk))
@@ -83,9 +83,12 @@ class LogRecordSocketReceiver(socketserver.ThreadingTCPServer):
 
     allow_reuse_address = True
 
-    def __init__(self, host='localhost',
-                 port=logging.handlers.DEFAULT_TCP_LOGGING_PORT,
-                 handler=LogRecordStreamHandler):
+    def __init__(
+        self,
+        host="localhost",
+        port=logging.handlers.DEFAULT_TCP_LOGGING_PORT,
+        handler=LogRecordStreamHandler,
+    ):
         socketserver.ThreadingTCPServer.__init__(self, (host, port), handler)
         self.abort = 0
         self.timeout = 1
@@ -95,21 +98,22 @@ class LogRecordSocketReceiver(socketserver.ThreadingTCPServer):
         abort = 0
         try:
             while not abort:
-                rd, wr, ex = select.select([self.socket.fileno()],
-                                        [], [],
-                                        self.timeout)
+                rd, _, _ = select.select([self.socket.fileno()], [], [], self.timeout)
                 if rd:
                     self.handle_request()
                 abort = self.abort
         except KeyboardInterrupt:
             print("Ending logging server...")
 
+
 def main(path: str):
     formatter = logging.Formatter("%(asctime)s %(name)-15s %(levelname)-6s %(message)s")
     logdir = op.join(path, "..", "logs")
     os.makedirs(logdir, exist_ok=True)
     # TODO: Need to make this strip the ANSI escape chars from the written log
-    file_handler = logging.FileHandler(op.join(logdir, f"pymhf-{time.strftime('%Y%m%dT%H%M%S')}.log"), encoding="utf-8")
+    file_handler = logging.FileHandler(
+        op.join(logdir, f"pymhf-{time.strftime('%Y%m%dT%H%M%S')}.log"), encoding="utf-8"
+    )
     file_handler.setFormatter(formatter)
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
@@ -119,11 +123,11 @@ def main(path: str):
     tcpserver = LogRecordSocketReceiver()
     print(LOGO)
     print(f"Version: {pymhf.__version__}")
-    print('Logger waiting for backend process... Please wait...')
+    print("Logger waiting for backend process... Please wait...")
     tcpserver.serve_until_stopped()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("path", help="Path to place the log files")
     args = parser.parse_args()

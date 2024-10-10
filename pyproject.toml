@@ -1,6 +1,7 @@
 [project]
 name = "pyMHF"
 description = "python Modding and Hooking Framework"
+readme = "README.md"
 requires-python = ">=3.9"
 license = {file = "LICENSE.md"}
 keywords = ["hooking", "games", "hacking", "modding"]
@@ -25,24 +26,45 @@ dependencies = [
   "psutil~=5.9.5",
   "pymem[speed]~=1.12.0",
   "keyboard",
-  "semver",
   "pywin32",
   "dearpygui~=1.11.0",
   "questionary",
   "pywinctl",
+  "packaging",
 ]
-version = "0.1.7+dev2"
+dynamic = ["version"]
 
 [tool.setuptools.package-dir]
 pymhf = "pymhf"
 
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
+
+[tool.uv]
+dev-dependencies = [
+  "pytest",
+  "ruff",
+  "setuptools_scm",
+  "twine",
+]
+
+[tool.ruff]
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+preview = true
+
+[tool.ruff.lint.extend-per-file-ignores]
+"cpptypes.py" = ["E501"]
+
 [project.urls]
 Homepage = "https://github.com/monkeyman192/pyMHF"
-Repository = "https://github.com/monkeyman192/pyMHF"
+Repository = "https://github.com/monkeyman192/pyMHF.git"
 
 [project.scripts]
 pymhf = "pymhf:run"
 
 [build-system]
-requires = ["setuptools>=43.0.0", "wheel"]
+requires = ["setuptools>=64", "wheel", "setuptools-scm>=8", "setuptools_scm_git_semver"]
 build-backend = "setuptools.build_meta"

@@ -1,7 +1,6 @@
 import ctypes
 import types
-from typing import Any, TYPE_CHECKING, TypeVar, Generic, Union, Type, Generator
-
+from typing import TYPE_CHECKING, Any, Generator, Generic, Type, TypeVar, Union
 
 if TYPE_CHECKING:
     from ctypes import _Pointer
@@ -17,14 +16,12 @@ T2 = TypeVar("T2", bound=CTYPES)
 # # https://devblogs.microsoft.com/search?query=inside+stl&blog=%2Foldnewthing%2F
 
 
-
 class _array(ctypes.Structure, Generic[T, N]):
     _elements: list[T]
+
     def __class_getitem__(cls: Type["_array"], key: tuple[Type[T], int]):
         _type, _size = key
-        _cls: Type[_array[T, N]] = types.new_class(
-            f"std::aray<{_type}, {_size}>", (cls,)
-        )
+        _cls: Type[_array[T, N]] = types.new_class(f"std::aray<{_type}, {_size}>", (cls,))
         _cls._fields_ = [  # type: ignore
             ("_elements", _type * _size),
         ]
@@ -43,6 +40,7 @@ class _array(ctypes.Structure, Generic[T, N]):
         for i in range(len(self)):
             yield self[i]
 
+
 class _vb_val(ctypes.Structure, Generic[T]):
     #   std::vector<unsigned int,StackAllocator<unsigned int,1,-1> > _Myvec;
     # unsigned __int64 _Mysize;
@@ -57,9 +55,7 @@ class _vector(ctypes.Structure, Generic[T]):
         _end: _Pointer[Any]
 
     def __class_getitem__(cls: Type["_vector"], type_: Type[T]):
-        _cls: Type[_vector[T]] = types.new_class(
-            f"std::vector<{type_}>", (cls,)
-        )
+        _cls: Type[_vector[T]] = types.new_class(f"std::vector<{type_}>", (cls,))
         _cls._template_type = type_
         _cls._fields_ = [  # type: ignore
             ("_first", ctypes.POINTER(type_)),
@@ -70,8 +66,7 @@ class _vector(ctypes.Structure, Generic[T]):
 
     def __len__(self) -> int:
         return (
-            ctypes.addressof(self._last.contents) -
-            ctypes.addressof(self._first.contents)
+            ctypes.addressof(self._last.contents) - ctypes.addressof(self._first.contents)
         ) // 0x8  # Assuming 64 bit architecture
 
     def __getitem__(self, i: int) -> T:
@@ -98,18 +93,16 @@ class _pair(ctypes.Structure, Generic[T1, T2]):
 
     def __class_getitem__(cls: Type["_pair"], key: tuple[Type[T1], Type[T2]]):
         first, second = key
-        _cls: Type[_pair[T1, T2]] = types.new_class(
-            f"std::pair<{first}, {second}>", (cls,)
-        )
+        _cls: Type[_pair[T1, T2]] = types.new_class(f"std::pair<{first}, {second}>", (cls,))
         _cls._fields_ = [  # type: ignore
             ("first", first),
             ("second", second),
         ]
         return _cls
 
+
 # 0x40 long
 class _unordered_map(ctypes.Structure, Generic[T1, T2]):
-
     """
     std::_Hash<
         std::_Umap_traits<
@@ -155,23 +148,26 @@ class _list_node(ctypes.Structure, Generic[T]):
     +0x08 std::_List_node<std::pair<TkID<128> const ,TkID<256> >,void *> *_Prev;
     +0x10 std::pair<TkID<128> const ,TkID<128> > _Myval;
     """
+
     if TYPE_CHECKING:
         _next: _Pointer["_list_node"]
         _myval: _pair
 
+
 _list_node._fields_ = [
-        ("_next", ctypes.POINTER(_list_node)),  # TEMP
-        ("_prev", ctypes.POINTER(_list_node)),  # TEMP
-        ("_myval", _pair)
-    ]
+    ("_next", ctypes.POINTER(_list_node)),  # TEMP
+    ("_prev", ctypes.POINTER(_list_node)),  # TEMP
+    ("_myval", _pair),
+]
 
 
 # 0x10 long
 class _list(ctypes.Structure, Generic[T]):
     """
-        +0x00 std::_List_node<std::pair<TkID<128> const ,TkID<256> >,void *> *_Myhead;
-        +0x08 unsigned __int64 _Mysize;
+    +0x00 std::_List_node<std::pair<TkID<128> const ,TkID<256> >,void *> *_Myhead;
+    +0x08 unsigned __int64 _Mysize;
     """
+
     pass
 
 
@@ -180,6 +176,7 @@ class std:
     vector = _vector
     pair = _pair
     list = _list
+
 
 # class STD:
 #     class ARRAY():
@@ -193,7 +190,6 @@ class std:
 #             return _cls
 
 
-
 if __name__ == "__main__":
     data = bytearray(b"\x01\x02\x00\x00\x07\x00\x00\x00")
     pear = std.pair[ctypes.c_uint32, ctypes.c_int32]
@@ -204,7 +200,7 @@ if __name__ == "__main__":
     d = harry.from_buffer(data)
     for i in d:
         print(i)
-    print('setting')
+    print("setting")
     d[3] = 9
     for i in d:
         print(i)

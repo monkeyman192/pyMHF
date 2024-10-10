@@ -3,32 +3,33 @@
 # Mods will consist of a single file which will generally contain a number of
 # hooks.
 
+import importlib
+import importlib.util
+import inspect
+import json
+import logging
+import os
+import os.path as op
+import sys
+import traceback
 from abc import ABC
 from dataclasses import fields
 from functools import partial
-import inspect
-import importlib
-import importlib.util
-import json
-import logging
-import os.path as op
-import os
-import traceback
 from types import ModuleType
-from typing import Any, Optional, Union, TYPE_CHECKING
-import sys
-
-from pymhf.core.importing import import_file
-from pymhf.core.errors import NoSaveError
-import pymhf.core._internal as _internal
-from pymhf.core.hooking import HookManager
-import pymhf.core.common as common
-from pymhf.core.utils import does_pid_have_focus, saferun
-from pymhf.core._types import HookProtocol
-from pymhf.gui.protocols import ButtonProtocol, VariableProtocol
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import keyboard
-import semver
+from packaging.version import InvalidVersion
+from packaging.version import parse as parse_version
+
+import pymhf.core._internal as _internal
+import pymhf.core.common as common
+from pymhf.core._types import HookProtocol
+from pymhf.core.errors import NoSaveError
+from pymhf.core.hooking import HookManager
+from pymhf.core.importing import import_file
+from pymhf.core.utils import does_pid_have_focus, saferun
+from pymhf.gui.protocols import ButtonProtocol, VariableProtocol
 
 if TYPE_CHECKING:
     from pymhf.gui.gui import GUI
@@ -56,7 +57,7 @@ def _callback_predicate(value: Any) -> bool:
 
 
 def _has_hotkey_predicate(value: Any) -> bool:
-    """ Determine if the object has the _is_main_loop_func property.
+    """Determine if the object has the _is_main_loop_func property.
     This will only be methods on Mod classes which are decorated with either
     @main_loop.before or @main_loop.after
     """
@@ -84,7 +85,7 @@ class StructEncoder(json.JSONEncoder):
             return {
                 "struct": obj.__class__.__qualname__,
                 "module": obj.__class__.__module__,
-                "fields": obj.__json__()
+                "fields": obj.__json__(),
             }
         return json.JSONEncoder.default(self, obj)
 
@@ -105,9 +106,7 @@ class StructDecoder(json.JSONDecoder):
                     mod_logger.error(f"Cannot import {module}")
                     return
                 except AttributeError:
-                    mod_logger.error(
-                        f"Cannot find {obj['struct']} in {module}"
-                    )
+                    mod_logger.error(f"Cannot find {obj['struct']} in {module}")
                     return
         return obj
 
@@ -118,6 +117,7 @@ class ModState(ABC):
     Mod State classes will persist across mod reloads so any variables set in it
     will have the same value after the mod has been reloaded.
     """
+
     _save_fields_: tuple[str]
 
     def save(self, name: str):
@@ -182,7 +182,7 @@ class Mod(ABC):
         return {x[1] for x in inspect.getmembers(self, predicate)}
 
 
-class ModManager():
+class ModManager:
     def __init__(self, hook_manager: HookManager):
         # Internal mapping of mods.
         # TODO: Probably change datatype
@@ -197,16 +197,13 @@ class ModManager():
         self.hotkey_callbacks: dict[tuple[str, str], Any] = {}
 
     def _load_module(self, module: ModuleType) -> bool:
-        """ Load a mod from the provided module.
+        """Load a mod from the provided module.
         This will be called when initially loading the mods, and also when we
         wish to reload a mod.
         """
 
         d: dict[str, type[Mod]] = dict(
-            inspect.getmembers(
-                module,
-                partial(_is_mod_predicate, ref_module=module)
-            )
+            inspect.getmembers(module, partial(_is_mod_predicate, ref_module=module))
         )
         if not len(d) >= 1:
             mod_logger.error(
@@ -220,10 +217,14 @@ class ModManager():
         mod = d[mod_name]
         if mod.__pymhf_required_version__ is not None:
             from pymhf import __version__ as _pymhf_version
-            pymhf_version = semver.Version.parse(_pymhf_version)
+
             try:
-                mod_version = semver.Version.parse(mod.__pymhf_required_version__)
-            except ValueError:
+                pymhf_version = parse_version(_pymhf_version)
+            except InvalidVersion:
+                pymhf_version = None
+            try:
+                mod_version = parse_version(mod.__pymhf_required_version__)
+            except InvalidVersion:
                 mod_logger.warning(
                     "__pymhf_required_version__ defined on mod "
                     f"{mod.__name__} is not a valid version string"
@@ -242,27 +243,22 @@ class ModManager():
         # Only get mod states if the mod name doesn't already have a cached
         # state, otherwise it will override it.
         if mod_name not in self.mod_states:
-            mod_states = list(
-                inspect.getmembers(
-                    mod,
-                    _is_mod_state_predicate
-                )
-            )
+            mod_states = list(inspect.getmembers(mod, _is_mod_state_predicate))
             self.mod_states[mod_name] = mod_states
         if not mod_name.startswith("_INTERNAL_"):
             self._mod_paths[mod_name] = module
         return True
 
     def load_mod(self, fpath) -> bool:
-        """ Load a mod from the given filepath. """
+        """Load a mod from the given filepath."""
         module = import_file(fpath)
         if module is None:
             return False
         return self._load_module(module)
 
     def load_mod_folder(self, folder: str, bind: bool = True) -> tuple[int, int]:
-        """ Load the mod folder.
-        
+        """Load the mod folder.
+
         Params
         ------
         folder
@@ -284,7 +280,6 @@ class ModManager():
         for _mod in self._preloaded_mods.values():
             self.instantiate_mod(_mod)
 
-
         self._preloaded_mods.clear()
 
         bound_hooks = 0
@@ -294,7 +289,7 @@ class ModManager():
         return loaded_mods, bound_hooks
 
     def instantiate_mod(self, mod: type[Mod], quiet: bool = False) -> Mod:
-        """ Register all the functions within the mod as hooks. """
+        """Register all the functions within the mod as hooks."""
         _mod = mod()
         # First register each of the methods which are detours.
         for hook in _mod.hooks:
@@ -313,15 +308,13 @@ class ModManager():
 
             cb = keyboard.hook(
                 lambda e, func=hotkey_func, name=hotkey_func._hotkey, event_type=hotkey_func._hotkey_press: (
-                    e.name == name and
-                    e.event_type == event_type and
-                    does_pid_have_focus(_internal.PID) and
-                    saferun(func)
+                    e.name == name
+                    and e.event_type == event_type
+                    and does_pid_have_focus(_internal.PID)
+                    and saferun(func)
                 )
             )
-            self.hotkey_callbacks[
-                (hotkey_func._hotkey, hotkey_func._hotkey_press)
-            ] = cb
+            self.hotkey_callbacks[(hotkey_func._hotkey, hotkey_func._hotkey_press)] = cb
         self.mods[_mod._mod_name] = _mod
         return _mod
 
@@ -330,7 +323,7 @@ class ModManager():
         self.reload(*user_data)
 
     def reload(self, name: str, gui: "GUI"):
-        """ Reload a mod with the given name. """
+        """Reload a mod with the given name."""
         try:
             if (mod := self.mods.get(name)) is not None:
                 # First, remove everything.
@@ -384,5 +377,5 @@ class ModManager():
                 mod_logger.info(f"Finished reloading {name}")
             else:
                 mod_logger.error(f"Cannot find mod {name}")
-        except:
+        except Exception:
             mod_logger.error(traceback.format_exc())

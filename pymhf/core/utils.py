@@ -1,7 +1,7 @@
+import logging
 from collections.abc import Callable
 from configparser import ConfigParser
-from ctypes import windll, create_unicode_buffer, byref, c_ulong
-import logging
+from ctypes import byref, c_ulong, create_unicode_buffer, windll
 from typing import Optional
 
 import pywinctl as pwc
@@ -10,12 +10,11 @@ import win32process
 
 import pymhf.core._internal as _internal
 
-
 logger = logging.getLogger(__name__)
 
 
 def get_main_window_handle() -> Optional[int]:
-    """ Return the handle of the main running application window if possible.
+    """Return the handle of the main running application window if possible.
     This will correspond to the HWND for the window belonging to the PID of the main running process.
     """
     windows = {x.getHandle(): x for x in pwc.getAllWindows()}
@@ -25,21 +24,25 @@ def get_main_window_handle() -> Optional[int]:
         logger.error(f"Cannot find window handle for PID {_internal.PID}")
         return None
     elif len(wins) > 1:
-        logger.error(f"Found multiple windows for PID {_internal.PID}: {main_pid_hwnds}.\n"
-                     "Picking the first arbitrarily but this may not be correct.")
+        logger.error(
+            f"Found multiple windows for PID {_internal.PID}: {main_pid_hwnds}.\n"
+            "Picking the first arbitrarily but this may not be correct."
+        )
         return wins[0]
     else:
         return wins[0]
 
 
 def get_hwnds_for_pid(pid: int) -> list[int]:
-    """ Return all HWND's for the provided PID. """
+    """Return all HWND's for the provided PID."""
+
     def callback(hwnd: int, hwnds: list[int]):
         _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
 
         if found_pid == pid:
             hwnds.append(hwnd)
         return True
+
     hwnds = []
     win32gui.EnumWindows(callback, hwnds)
     return hwnds
@@ -51,7 +54,7 @@ def get_window_by_handle(handle: int) -> Optional[pwc.Window]:
 
 
 def set_main_window_active(callback: Optional[Callable[[], None]] = None):
-    """ Set the main window as active.
+    """Set the main window as active.
     If a callback is provided, it will be called after activating the window.
     This callback must not take any arguments and any return value will be ignored.
     """
@@ -59,9 +62,9 @@ def set_main_window_active(callback: Optional[Callable[[], None]] = None):
     if not _internal.MAIN_HWND:
         _internal.MAIN_HWND = get_main_window_handle()
         if not _internal.MAIN_HWND:
-            logger.error(f"Cannot set main window active as we can't find it...")
+            logger.error("Cannot set main window active as we can't find it...")
     if not is_main_window_foreground():
-        if (main_window := get_window_by_handle(_internal.MAIN_HWND)):
+        if main_window := get_window_by_handle(_internal.MAIN_HWND):
             main_window.activate()
             if callback is not None:
                 callback()
@@ -82,7 +85,7 @@ def get_main_window():
 
 
 def safe_assign_enum(enum, index: int):
-    """ Safely try and get the enum with the associated integer value.
+    """Safely try and get the enum with the associated integer value.
     If the index isn't one in the enum return the original index."""
     try:
         return enum(index)
@@ -95,7 +98,7 @@ def get_foreground_window_title() -> Optional[str]:
     length = windll.user32.GetWindowTextLengthW(hWnd)
     buf = create_unicode_buffer(length + 1)
     windll.user32.GetWindowTextW(hWnd, buf, length + 1)
-    
+
     # 1-liner alternative: return buf.value if buf.value else None
     if buf.value:
         return buf.value
@@ -134,15 +137,16 @@ class AutosavingConfig(ConfigParser):
             super().set(section, option, val)
             with open(self._filename, "w", encoding=self._encoding) as f:
                 self.write(f, space_around_delimiters=True)
-        except Exception as e:
+        except Exception:
             logger.exception("Error saving file")
 
 
 def saferun(func, *args, **kwargs):
-    """ Safely run the specified function with args and kwargs. Any exception raised will be shown and """
+    """Safely run the specified function with args and kwargs.
+    Any exception raised will be shown and ignored"""
     ret = None
     try:
         ret = func(*args, **kwargs)
-    except:
+    except Exception:
         logger.exception(f"There was an exception while calling {func}:")
     return ret

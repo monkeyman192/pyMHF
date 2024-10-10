@@ -1,9 +1,9 @@
-from enum import Enum
 import logging
-from typing import TypedDict, Union, Optional
+from enum import Enum
+from typing import Optional, TypedDict, Union
+
 # import win32gui
 # import win32con
-
 import dearpygui.dearpygui as dpg
 
 from pymhf.core.mod_loader import Mod, ModManager
@@ -37,7 +37,7 @@ class GUI:
         self.scale = config.getint("gui", "scale", fallback=1)
         dpg.create_context()
         dpg.create_viewport(
-            title='pyMHF',
+            title="pyMHF",
             width=int(400 * self.scale),
             height=int(400 * self.scale),
             decorated=True,
@@ -70,7 +70,7 @@ class GUI:
             dpg.set_viewport_height(self._window_dimensions[1])
             dpg.set_viewport_pos(self._window_position)
         # if not self._shown and self._handle:
-        #     win32gui.ShowWindow(self._handle, win32con.SW_SHOW) 
+        #     win32gui.ShowWindow(self._handle, win32con.SW_SHOW)
         #     win32gui.SetWindowLong(self._handle, win32con.GWL_EXSTYLE, 0)
         #     self._shown = True
 
@@ -79,7 +79,7 @@ class GUI:
         self._window_position = dpg.get_viewport_pos()
         dpg.minimize_viewport()
         # if self._shown and self._handle:
-        #     win32gui.ShowWindow(self._handle, win32con.SW_HIDE) 
+        #     win32gui.ShowWindow(self._handle, win32con.SW_HIDE)
         #     self._shown = False
 
     def toggle_debug_mode(self, _sender, is_debug):
@@ -89,7 +89,7 @@ class GUI:
         self.config.set("gui", "shown", show_gui)
 
     def add_settings_tab(self):
-        """ Add a settings tab to configure the gui and other things."""
+        """Add a settings tab to configure the gui and other things."""
         with dpg.value_registry():
             dpg.add_bool_value(tag="is_debug", default_value=False)
             dpg.add_bool_value(tag="show_gui", default_value=True)
@@ -101,9 +101,9 @@ class GUI:
         with dpg.group(horizontal=True, parent=SETTINGS_NAME):
             dpg.add_text("Enable debug mode")
             dpg.add_checkbox(
-                    source="is_debug",
-                    callback=self.toggle_debug_mode,
-                )
+                source="is_debug",
+                callback=self.toggle_debug_mode,
+            )
         # Toggle for whether to show the gui at all.
         with dpg.group(horizontal=True, parent=SETTINGS_NAME):
             dpg.add_text("Show GUI")
@@ -113,7 +113,7 @@ class GUI:
             )
 
     def reload_tab(self, cls: Mod):
-        """ Reload the tab for the specific mod. """
+        """Reload the tab for the specific mod."""
         name = cls.__class__.__name__
         cls._gui = self
         widgets = self.widgets.get(name, {})
@@ -122,7 +122,7 @@ class GUI:
         self.reload_variables(cls, widgets)
 
     def reload_buttons(self, cls: Mod, widgets: Widgets):
-        """ Reload all the buttons. Any new buttons will be added, any old ones will be removed, and any that
+        """Reload all the buttons. Any new buttons will be added, any old ones will be removed, and any that
         remain will be reconfigured to point to the new bound method with any modified parameters (such as
         button label.)
         """
@@ -138,7 +138,11 @@ class GUI:
         remaining_buttons = existing_button_names & mod_button_names
         for button_name in remaining_buttons:
             _button = cls._gui_buttons[button_name]
-            dpg.configure_item(button_widgets[button_name], label=_button._button_text, callback=_button)
+            dpg.configure_item(
+                button_widgets[button_name],
+                label=_button._button_text,
+                callback=_button,
+            )
 
         removed_buttons = existing_button_names - mod_button_names
         for button_name in removed_buttons:
@@ -146,7 +150,7 @@ class GUI:
             button_widgets.pop(button_name)
 
     def reload_variables(self, cls: Mod, widgets: Widgets):
-        """ Reload all variables associated with a mod.
+        """Reload all variables associated with a mod.
         Note that this will not work for changing an existing variables' type.
         To do this, remove (comment out) the property, reload the mod, and then uncomment, change the type and
         reload again to have it add it back.
@@ -180,12 +184,11 @@ class GUI:
                 dpg.delete_item(var_id)
             variable_widgets.pop(variable_name)
 
-
     def add_tab(self, cls: Mod):
-        """ Add the mod as a new tab in the GUI. """
+        """Add the mod as a new tab in the GUI."""
         # Check to see if the `no_gui` decorator has been applied to the class.
         # If so, don't add it now.
-        if getattr(cls, "_no_gui", False) == True:
+        if getattr(cls, "_no_gui", False) is True:
             return
 
         name = cls.__class__.__name__
@@ -222,7 +225,7 @@ class GUI:
             width=int(200 * self.scale),
             height=int(200 * self.scale),
             tag="pyMHF",
-            on_close=self.exit
+            on_close=self.exit,
         ):
             dpg.add_tab_bar(tag="tabbar", callback=self.change_tab)
 
@@ -311,12 +314,12 @@ class GUI:
                 tag,
                 cls,
                 variable,
-                getter._variable_type == VariableType.STRING or not getter._has_setter
+                getter._variable_type == VariableType.STRING or not getter._has_setter,
             )
         )
 
     def remove_tab(self, cls: Mod):
-        """ Remove the tab associated with the provided class. """
+        """Remove the tab associated with the provided class."""
         name = cls.__class__.__name__
         self.tabs.pop(dpg.get_alias_id(name))
         dpg.delete_item(name)
@@ -335,7 +338,7 @@ class GUI:
                         dpg.set_value(tag, getattr(cls, var))
                 dpg.render_dearpygui_frame()
             dpg.destroy_context()
-        except:
+        except Exception:
             logger.exception("Unable to create GUI window!")
 
     def exit(self):

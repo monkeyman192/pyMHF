@@ -1,26 +1,21 @@
+import _winapi
 import ctypes
 import ctypes.wintypes
-import _winapi
 
-
-kernel32 = ctypes.WinDLL('kernel32.dll')
+kernel32 = ctypes.WinDLL("kernel32.dll")
 
 # Map two useful debugging functions in kernel32:
 
 # Start debugger (will stop the current process)
 # https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-debugactiveprocess
 DebugActiveProcess = kernel32.DebugActiveProcess
-DebugActiveProcess.argtypes = (
-    ctypes.c_long,
-)
+DebugActiveProcess.argtypes = (ctypes.c_long,)
 DebugActiveProcess.restype = ctypes.c_byte
 
 # Stop the debugger (will result the current process)
 # https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-debugactiveprocessstop
 DebugActiveProcessStop = kernel32.DebugActiveProcessStop
-DebugActiveProcessStop.argtypes = (
-    ctypes.c_long,
-)
+DebugActiveProcessStop.argtypes = (ctypes.c_long,)
 DebugActiveProcessStop.restype = ctypes.c_byte
 
 

@@ -1,12 +1,11 @@
 from ctypes import CFUNCTYPE
 from logging import getLogger
-from typing import Optional, Any
+from typing import Any, Optional
 
 import pymhf.core._internal as _internal
-from pymhf.core.module_data import module_data
 from pymhf.core._types import FUNCDEF
 from pymhf.core.memutils import find_pattern_in_binary
-
+from pymhf.core.module_data import module_data
 
 calling_logger = getLogger("CallingManager")
 
@@ -18,7 +17,7 @@ def call_function(
     pattern: Optional[str] = None,
     func_def: Optional[FUNCDEF] = None,
 ) -> Any:
-    """ Call a named function.
+    """Call a named function.
 
     Parameters
     ----------
@@ -48,11 +47,8 @@ def call_function(
                     offset = find_pattern_in_binary(opattern, False)
                 else:
                     first = list(_pattern.items())[0]
-                    calling_logger.warning(
-                        f"No pattern overload was provided for {name}. "
-                    )
-                    calling_logger.warning(
-                        f"Falling back to the first overload ({first[0]})")
+                    calling_logger.warning(f"No pattern overload was provided for {name}. ")
+                    calling_logger.warning(f"Falling back to the first overload ({first[0]})")
                     offset = find_pattern_in_binary(first[1], False)
         else:
             offset = module_data.FUNC_OFFSETS.get(name)
@@ -69,11 +65,8 @@ def call_function(
             # overload was defined and that it will fallback to the
             # first entry in the dict.
             first = list(_sig.items())[0]
-            calling_logger.warning(
-                f"No function arguments overload was provided for {name}. "
-            )
-            calling_logger.warning(
-                f"Falling back to the first overload ({first[0]})")
+            calling_logger.warning(f"No function arguments overload was provided for {name}. ")
+            calling_logger.warning(f"Falling back to the first overload ({first[0]})")
             sig = CFUNCTYPE(first[1].restype, *first[1].argtypes)
     if isinstance(offset, dict):
         # Handle overloads
@@ -81,11 +74,8 @@ def call_function(
             offset = _offset
         else:
             _offset = list(offset.items())[0]
-            calling_logger.warning(
-                f"No function arguments overload was provided for {name}. "
-            )
-            calling_logger.warning(
-                f"Falling back to the first overload ({_offset[0]})")
+            calling_logger.warning(f"No function arguments overload was provided for {name}. ")
+            calling_logger.warning(f"Falling back to the first overload ({_offset[0]})")
             offset = _offset[1]
 
     cfunc = sig(_internal.BASE_ADDRESS + offset)

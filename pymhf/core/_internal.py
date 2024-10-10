@@ -21,7 +21,7 @@ class _GameState:
     @property
     def game_loaded(self):
         return self._game_loaded
-    
+
     @game_loaded.setter
     def game_loaded(self, val: bool):
         # The game can become loaded, but it can't become unloaded...

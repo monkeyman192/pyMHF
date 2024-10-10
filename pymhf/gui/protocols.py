@@ -13,8 +13,7 @@ class ButtonProtocol(Protocol):
     _is_button: bool
     _button_text: str
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        ...
+    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
 
 
 class VariableProtocol(Protocol):
@@ -24,5 +23,4 @@ class VariableProtocol(Protocol):
     _has_setter: bool
     _extra_args: dict
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        ...
+    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
