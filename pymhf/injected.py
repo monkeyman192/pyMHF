@@ -10,6 +10,7 @@ import logging.handlers
 import os.path as op
 import time
 import traceback
+import pymhf.core.utils as utils
 from typing import Optional
 
 import pymem
@@ -210,6 +211,7 @@ try:
     logging.info(f"Loaded {_loaded_mods} mods and {_loaded_hooks} hooks in {time.time() - start_time:.3f}s")
 
     # hook_manager._debug_show_states()
+    _internal.MAIN_HWND = utils.get_main_window_handle()
 
     for func_name, hook_class in hook_manager.failed_hooks.items():
         offset = hook_class.target

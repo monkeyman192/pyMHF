@@ -7,3 +7,4 @@ dist/*
 logs
 mods
 .venv/
+/run_*.py
