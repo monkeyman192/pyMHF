@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_main_window_handle() -> Optional[int]:
-    """ Return the handle of the main running application window if possible.
+    """Return the handle of the main running application window if possible.
     This will correspond to the HWND for the window belonging to the PID of the main running process.
     """
     windows = {x.getHandle(): x for x in pwc.getAllWindows()}
@@ -24,21 +24,25 @@ def get_main_window_handle() -> Optional[int]:
         logger.error(f"Cannot find window handle for PID {_internal.PID}")
         return None
     elif len(wins) > 1:
-        logger.error(f"Found multiple windows for PID {_internal.PID}: {main_pid_hwnds}.\n"
-                     "Picking the first arbitrarily but this may not be correct.")
+        logger.error(
+            f"Found multiple windows for PID {_internal.PID}: {main_pid_hwnds}.\n"
+            "Picking the first arbitrarily but this may not be correct."
+        )
         return wins[0]
     else:
         return wins[0]
 
 
 def get_hwnds_for_pid(pid: int) -> list[int]:
-    """ Return all HWND's for the provided PID. """
+    """Return all HWND's for the provided PID."""
+
     def callback(hwnd: int, hwnds: list[int]):
         _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
 
         if found_pid == pid:
             hwnds.append(hwnd)
         return True
+
     hwnds = []
     win32gui.EnumWindows(callback, hwnds)
     return hwnds
@@ -50,7 +54,7 @@ def get_window_by_handle(handle: int) -> Optional[pwc.Window]:
 
 
 def set_main_window_active(callback: Optional[Callable[[], None]] = None):
-    """ Set the main window as active.
+    """Set the main window as active.
     If a callback is provided, it will be called after activating the window.
     This callback must not take any arguments and any return value will be ignored.
     """
@@ -58,9 +62,9 @@ def set_main_window_active(callback: Optional[Callable[[], None]] = None):
     if not _internal.MAIN_HWND:
         _internal.MAIN_HWND = get_main_window_handle()
         if not _internal.MAIN_HWND:
-            logger.error(f"Cannot set main window active as we can't find it...")
+            logger.error("Cannot set main window active as we can't find it...")
     if not is_main_window_foreground():
-        if (main_window := get_window_by_handle(_internal.MAIN_HWND)):
+        if main_window := get_window_by_handle(_internal.MAIN_HWND):
             main_window.activate()
             if callback is not None:
                 callback()
