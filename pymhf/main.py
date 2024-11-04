@@ -1,6 +1,5 @@
 import asyncio
 import concurrent.futures
-import configparser
 import os
 import os.path as op
 import subprocess
@@ -19,9 +18,11 @@ from pymhf.core.caching import hash_bytes
 from pymhf.core.logging import open_log_console
 from pymhf.core.process import start_process
 from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol
-from pymhf.utils.parse_toml import get_pymhf_settings, read_toml
+from pymhf.utils.config import canonicalize_setting
+from pymhf.utils.parse_toml import read_pymhf_settings
 
 CWD = op.dirname(__file__)
+APPDATA_DIR = os.environ.get("APPDATA", op.expanduser("~"))
 
 
 class WrappedProcess:
@@ -113,50 +114,19 @@ def get_process_when_ready(
 
 
 def load_mod_file(filepath):
-    with open(filepath, "r") as f:
-        pymhf_settings = get_pymhf_settings(f.read())
-    _run_module(filepath, pymhf_settings)
-
-
-def new_load_module(plugin_name: str, module_path: str, is_local: bool = False):
-    if not is_local:
-        appdata_data = os.environ.get("APPDATA", op.expanduser("~"))
-        cfg_folder = op.join(appdata_data, "pymhf", plugin_name)
-        cfg_file = op.join(cfg_folder, "pymhf.toml")
-    else:
-        cfg_folder = module_path
-        cfg_file = op.join(module_path, "pymhf.toml")
-    _ = read_toml(cfg_file)
-
-
-# TODO: Move most of the following code into a separate private function which can be called from
-# `load_mod_file` and what `load_module` will become.
-# This function needs an extra arg which relates to the fact that it's loading a single file potentailly?
-# Or have it pass in some other info?
-# Potentially we can disambiguate by checking to see if we are provided a module or a single file when called.
-# That might just be pre-processing, and then once we have determined whether it's a module or single file
-# then we can pass some piece of into into the subsequent function call.
+    """Load an individual file as a mod."""
+    pymhf_settings = read_pymhf_settings(filepath, True)
+    _run_module(filepath, pymhf_settings, None)
 
 
 def load_module(plugin_name: str, module_path: str, is_local: bool = False):
     """Load the module."""
-    # Parse the config file first so we can load anything we need to know.
-    config = configparser.ConfigParser()
-    # If we are not running local, then we try find the config file in the user APPDATA directory.
-    if not is_local:
-        appdata_data = os.environ.get("APPDATA", op.expanduser("~"))
-        cfg_folder = op.join(appdata_data, "pymhf", plugin_name)
-        cfg_file = op.join(cfg_folder, "pymhf.cfg")
+    if is_local:
+        cfg_file = op.join(module_path, "pymhf.toml")
     else:
-        cfg_folder = module_path
-        cfg_file = op.join(module_path, "pymhf.cfg")
-    read = config.read(cfg_file)
-    if not read:
-        print(f"No pymhf.cfg file found in specified directory: {module_path}")
-        print("Cannot proceed with loading")
-        return
-    pymhf_config = {s: dict(config.items(s)) for s in config.sections()}
-    _run_module(pymhf_config)
+        cfg_file = op.join(APPDATA_DIR, "pymhf", plugin_name, "pymhf.toml")
+    pymhf_config = read_pymhf_settings(cfg_file, not is_local)
+    _run_module(module_path, pymhf_config, plugin_name, is_local)
 
 
 def _required_config_val(config: dict[str, str], key: str) -> Any:
@@ -165,7 +135,7 @@ def _required_config_val(config: dict[str, str], key: str) -> Any:
     raise ValueError(f"[tool.pymhf] missing config value: {key}")
 
 
-def _run_module(module_path: str, config: dict[str, str]):
+def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[str], is_local: bool = False):
     """Run the module provided.
 
     Parameters
@@ -189,18 +159,10 @@ def _run_module(module_path: str, config: dict[str, str]):
         steam_gameid = 0
     start_paused = config.get("start_paused", False)
 
-    mod_save_dir = config.get("mod_save_dir", op.join(module_path, "MOD_SAVES"))
-    if mod_save_dir == ".":
-        mod_save_dir = op.join(module_path, "MOD_SAVES")
-
-    logging_config = config.get("logging", {})
-    log_window_name_override = logging_config.get("window_name_override", "pymhf console")
-    log_dir = logging_config.get("log_dir", op.join(module_path, "LOGS"))
-    if log_dir == ".":
-        if op.isdir(module_path):
-            log_dir = op.join(module_path, "LOGS")
-        elif op.isfile(module_path):
-            log_dir = op.join(op.dirname(module_path), "LOGS")
+    # Check if the module_path is a file or a folder.
+    _module_path = module_path
+    if op.isfile(module_path):
+        _module_path = op.dirname(module_path)
 
     is_steam = False
     if steam_gameid:
@@ -226,7 +188,19 @@ def _run_module(module_path: str, config: dict[str, str]):
     if binary_path is None:
         binary_path = proc.proc.exe()
 
+    binary_dir = None
+    if binary_path is not None:
+        binary_dir = op.dirname(binary_path)
+
     print(f"Found PID: {pm_binary.process_id}")
+
+    logging_config = config.get("logging", {})
+    log_window_name_override = logging_config.get("window_name_override", "pymhf console")
+    log_dir = logging_config.get("log_dir", "{CURR_DIR}")
+    log_dir = canonicalize_setting(log_dir, plugin_name, _module_path, binary_dir, "LOGS")
+
+    mod_save_dir = config.get("mod_save_dir", "{CURR_DIR}")
+    mod_save_dir = canonicalize_setting(mod_save_dir, plugin_name, _module_path, binary_dir, "MOD_SAVES")
 
     executor = None
     futures = []
@@ -281,9 +255,6 @@ def _run_module(module_path: str, config: dict[str, str]):
             assem_name = list(offset_map.keys())[0]
             binary_base = offset_map[assem_name][0]
             binary_size = offset_map[assem_name][1]
-
-        # Inject some other dlls:
-        # pymem.process.inject_dll(nms.process_handle, b"path")
 
         try:
             cwd = CWD.replace("\\", "\\\\")

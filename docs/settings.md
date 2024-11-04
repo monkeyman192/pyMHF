@@ -1,4 +1,6 @@
-# pyMHF settings file
+# pyMHF settings file [OBSOLETE]
+
+**TODO: Update these settings**
 
 *pyMHF* contains a file called `pymhf.cfg` which (currently) must be situated within the root directory of the modding library (cf. [here](../writing_libraries.md))
 This file has a number of properties in different sections. Some are required and others are not:

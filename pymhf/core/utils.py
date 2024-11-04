@@ -1,6 +1,5 @@
 import logging
 from collections.abc import Callable
-from configparser import ConfigParser
 from ctypes import byref, c_ulong, create_unicode_buffer, windll
 from functools import wraps
 from typing import Optional
@@ -119,28 +118,29 @@ def does_pid_have_focus(pid: int) -> bool:
     return pid == get_foreground_pid()
 
 
-class AutosavingConfig(ConfigParser):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._filename: str
-        self._encoding: Optional[str]
+# TODO: Do something about this...
+# class AutosavingConfig(ConfigParser):
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self._filename: str
+#         self._encoding: Optional[str]
 
-    def read(self, filenames, encoding=None):
-        super().read(filenames, encoding)
-        self._filename = filenames
-        self._encoding = encoding
+#     def read(self, filenames, encoding=None):
+#         super().read(filenames, encoding)
+#         self._filename = filenames
+#         self._encoding = encoding
 
-    def set(self, section: str, option: str, value=None):
-        if value is not None:
-            val = str(value)
-        else:
-            val = value
-        try:
-            super().set(section, option, val)
-            with open(self._filename, "w", encoding=self._encoding) as f:
-                self.write(f, space_around_delimiters=True)
-        except Exception:
-            logger.exception("Error saving file")
+#     def set(self, section: str, option: str, value=None):
+#         if value is not None:
+#             val = str(value)
+#         else:
+#             val = value
+#         try:
+#             super().set(section, option, val)
+#             with open(self._filename, "w", encoding=self._encoding) as f:
+#                 self.write(f, space_around_delimiters=True)
+#         except Exception:
+#             logger.exception("Error saving file")
 
 
 def saferun(func, *args, **kwargs):

@@ -1,4 +1,3 @@
-import configparser
 import ctypes
 import logging
 import sys
@@ -44,8 +43,6 @@ Struct = TypeVar("Struct", bound=CTYPES)
 hm_cache: dict[str, tuple[int, MODULEINFO]] = {}
 # Temporary solution to create a mapping of pattern/binary pairs to the offset within the binary.
 offset_cache = {}
-
-config = configparser.ConfigParser()
 
 
 def getsize(obj):

@@ -11,3 +11,57 @@ This file **MAY** have the following attributes defined in it to simplify the de
 `__pymhf_func_patterns__` (`dict[str, Union[str, dict[str, str]]]`): A lookup containing the function names and byte patterns to find the functions at. The keys will be the function names that you want to call the function by, and the values will be either a string containing the pattern, or a dictionary similar to the `__pymhf_func_offsets__` mapping.
 
 Note that none of these are mandatory, however they do simplify the code in the file a decent amount and keep the file more easy to maintain.
+
+Below is an example single-file mod for the game No Man's Sky:
+
+```py
+# /// script
+# dependencies = ["pymhf"]
+# 
+# [tool.pymhf]
+# exe = "NMS.exe"
+# steam_gameid = 275850
+# start_paused = false
+# 
+# [tool.pymhf.logging]
+# log_dir = "."
+# log_level = "info"
+# window_name_override = "NMS test mod"
+# ///
+
+from logging import getLogger
+
+from pymhf import Mod, load_mod_file
+from pymhf.core.hooking import on_key_pressed
+
+logger = getLogger("testmod")
+
+
+class MyMod(Mod):
+    @on_key_pressed("p")
+    def press_p(self):
+        logger.info("Pressed P now!")
+
+
+if __name__ == "__main__":
+    load_mod_file(__file__)
+```
+
+This mod clearly has very little functionality, but the above highlights the minimum requirements to make a single-file mod using `pymhf`.
+
+To run this mod it is **strongly** recommended to use [uv](https://github.com/astral-sh/uv) as it has full support for inline script metadata.
+
+The steps to run the above script from scratch (ie. with no `uv` installed) are as follows:
+
+```
+python -m pip install uv
+uv run script.py
+```
+
+In the above ensure that the `python` command runs a python version between 3.9 and 3.11 INCLUSIVE.
+Replace `script.py` with the name of the script as it was saved.
+
+To modify the above script, the only values that really need to be changed are the `steam_gameid` and `exe` values.
+
+If the game is being ran via steam, replace `steam_gameid` with the value found in steam, and set `exe` to be the name of the game binary.
+If the game or program is not run through steam, remove the `steam_gameid` value and instead set `exe` and the absolute path to the binary.

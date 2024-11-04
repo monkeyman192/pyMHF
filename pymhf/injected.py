@@ -31,14 +31,21 @@ try:
 
     import pymhf.core._internal as _internal
     from pymhf.core.importing import import_file
+    from pymhf.utils.config import canonicalize_setting
 
     log_level = _internal.CONFIG.get("logging", {}).get("log_level", "info")
     log_level = "info"
 
+    _module_path = _internal.MODULE_PATH
+    if op.isfile(_module_path):
+        _module_path = op.dirname(_module_path)
+    _binary_dir = op.dirname(_internal.BINARY_PATH)
+
     internal_mod_folder = _internal.CONFIG.get("internal_mod_dir")
-    internal_mod_folder = None
-    mod_folder = _internal.CONFIG.get("mod_dir", None)
-    mod_folder = None
+    internal_mod_folder = canonicalize_setting(internal_mod_folder, "pymhf", _module_path, _binary_dir)
+    mod_folder = _internal.CONFIG.get("mod_dir")
+
+    mod_folder = canonicalize_setting(mod_folder, "pymhf", _module_path, _binary_dir)
 
     debug_mode = log_level.lower() == "debug"
     if debug_mode:
@@ -60,6 +67,11 @@ try:
         module_data.FUNC_OFFSETS = getattr(module, "__pymhf_func_offsets__", {})
         module_data.FUNC_PATTERNS = getattr(module, "__pymhf_func_patterns__", {})
         module_data.FUNC_CALL_SIGS = getattr(module, "__pymhf_func_call_sigs__", {})
+
+    import keyboard._winkeyboard as kwk
+
+    # Prefill the key name tables to avoid taking a hit when hooking.
+    kwk._setup_name_tables()
 
     import pymhf.core.caching as cache
     from pymhf.core.hooking import hook_manager
