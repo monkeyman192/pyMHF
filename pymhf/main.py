@@ -273,6 +273,7 @@ sys.path = {saved_path}
                 _preinject_shellcode = f.read()
             pm_binary.inject_python_shellcode(_preinject_shellcode)
             # Inject the common NMS variables which are required for general use.
+            module_path = op.realpath(module_path)
             module_path = module_path.replace("\\", "\\\\")
             pm_binary.inject_python_shellcode(
                 f"""

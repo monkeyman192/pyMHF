@@ -58,14 +58,13 @@ def canonicalize_setting(
             print("Critical Error: Cannot find user directory. Ensure APPDATA environment variable is set")
             exit()
         if plugin_name is not None:
-            return op.join(appdata_data, "pymhf", plugin_name, *_suffix)
+            return op.realpath(op.join(appdata_data, "pymhf", plugin_name, *_suffix))
         else:
             raise ValueError("{USER_DIR} cannot be used for single-file mods.")
     elif tag == "EXE_DIR":
         if exe_dir:
-            return op.join(exe_dir, *_suffix)
+            return op.realpath(op.join(exe_dir, *_suffix))
         else:
             raise ValueError("Exe directory cannot be determined")
     elif tag == "CURR_DIR":
-        print(module_dir, _suffix)
-        return op.join(module_dir, *_suffix)
+        return op.realpath(op.join(module_dir, *_suffix))
