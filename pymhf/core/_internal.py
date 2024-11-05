@@ -1,3 +1,4 @@
+import ctypes
 from concurrent.futures import ThreadPoolExecutor
 
 CWD: str = ""
@@ -8,8 +9,11 @@ PID: int = -1
 BINARY_HASH: str = ""
 BASE_ADDRESS: int = -1
 SIZE_OF_IMAGE: int = -1
-CFG_DIR: str = ""
+CONFIG: dict = {}
 EXE_NAME: str = ""
+BINARY_PATH: str = ""
+SINGLE_FILE_MOD: bool = False
+MOD_SAVE_DIR: str = ""
 
 _executor: ThreadPoolExecutor = None  # type: ignore
 
@@ -30,3 +34,5 @@ class _GameState:
 
 
 GameState: _GameState = _GameState()
+
+imports: dict[str, dict[str, ctypes._CFuncPtr]] = {}

@@ -1,4 +1,3 @@
-import configparser
 import ctypes
 import logging
 import sys
@@ -45,11 +44,9 @@ hm_cache: dict[str, tuple[int, MODULEINFO]] = {}
 # Temporary solution to create a mapping of pattern/binary pairs to the offset within the binary.
 offset_cache = {}
 
-config = configparser.ConfigParser()
-
 
 def getsize(obj):
-    """sum size of object & members."""
+    """Sum size of object & members."""
     if isinstance(obj, BLACKLIST):
         raise TypeError("getsize() does not take argument of type: " + str(type(obj)))
     seen_ids = set()
@@ -153,6 +150,7 @@ def get_field_info(obj, logger=None, indent: int = 0, as_hex: bool = True, max_d
 
 
 def get_addressof(obj) -> int:
+    """Get the address in memory of some object."""
     try:
         # If it's a pointer, this is the branch that is used.
         return ctypes.cast(obj, ctypes.c_void_p).value
@@ -232,6 +230,21 @@ def pattern_to_bytes(patt: str) -> bytes:
     return b"".join([f"\\x{x}".encode() if x != "??" else b"." for x in split])
 
 
+def _get_binary_info(binary: str) -> Optional[tuple[int, MODULEINFO]]:
+    if binary not in hm_cache:
+        try:
+            pm_process = pymem.Pymem(_internal.EXE_NAME)
+            handle = pm_process.process_handle
+            if (module := cache.module_map.get(binary)) is None:
+                return None
+            hm_cache[binary] = (handle, module)
+            return (handle, module)
+        except TypeError:
+            return None
+    else:
+        return hm_cache[binary]
+
+
 def find_pattern_in_binary(
     pattern: str,
     return_multiple: bool = False,
@@ -244,20 +257,14 @@ def find_pattern_in_binary(
     """
     if binary is None:
         binary = _internal.EXE_NAME
-    if binary not in hm_cache:
-        try:
-            pm_process = pymem.Pymem(_internal.EXE_NAME)
-            handle = pm_process.process_handle
-            if (module := cache.module_map.get(binary)) is None:
-                return None
-            hm_cache[binary] = (handle, module)
-        except TypeError:
-            return None
+    hm = _get_binary_info(binary)
+    if not hm:
+        return None
+    handle, module = hm
     # Create a key which is the original pattern and the binary so that we may cache the result.
     key = (pattern, binary)
     if (_offset := offset_cache.get(key)) is not None:
         return _offset
-    handle, module = hm_cache[binary]
     patt = pattern_to_bytes(pattern)
     _offset = pymem.pattern.pattern_scan_module(handle, module, patt, return_multiple=return_multiple)
     if _offset:

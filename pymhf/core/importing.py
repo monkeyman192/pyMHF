@@ -16,7 +16,8 @@ VALID_CHARS = string.ascii_letters + string.digits + "_"
 
 def _clean_name(name: str) -> str:
     """Remove any disallowed characters from the filename so that we get a
-    valid module name."""
+    valid module name.
+    """
     out = ""
     for char in name:
         if char not in VALID_CHARS:

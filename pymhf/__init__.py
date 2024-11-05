@@ -1,5 +1,4 @@
 import argparse
-import configparser
 import os
 import os.path as op
 import shutil
@@ -10,7 +9,7 @@ import questionary
 from .core._types import FUNCDEF  # noqa
 from .core.hooking import FuncHook  # noqa
 from .core.mod_loader import Mod, ModState  # noqa
-from .main import load_module  # noqa
+from .main import load_mod_file, load_module  # noqa
 
 try:
     __version__ = version("pymhf")
@@ -48,13 +47,14 @@ CONFIG_SELECT_Q = questionary.select(
     ],
 )
 
+CFG_FILENAME = "pymhf.toml"
 
-# TODO:
-# Need to support the following commands:
-# --config -> will configure the library
+
 def run():
     """Main entrypoint which can be used to run programs with pymhf.
-    This will take the first argument as the name of a module which has been installed."""
+    This will take the first argument as the name of a module which has been installed.
+    """
+    from .utils.parse_toml import read_pymhf_settings, write_pymhf_settings
 
     parser = argparse.ArgumentParser(
         prog="pyMHF program runner",
@@ -72,6 +72,15 @@ def run():
 
     plugin_name: str = args.plugin_name
     is_config_mode: bool = args.config
+    standalone = False
+
+    if op.isfile(plugin_name) and op.exists(plugin_name):
+        # In this case we are running in stand-alone mode
+        standalone = True
+
+    if standalone:
+        load_mod_file(plugin_name)
+        return
 
     # Get the location of app data, then construct the expected folder name.
     appdata_data = os.environ.get("APPDATA", op.expanduser("~"))
@@ -116,7 +125,7 @@ def run():
 
     module_dir = op.dirname(loaded_lib.__file__)
 
-    cfg_file = op.join(module_dir, "pymhf.cfg")
+    cfg_file = op.join(module_dir, CFG_FILENAME)
     config_progress_file = op.join(cfg_folder, ".config_in_progress")
     if not op.exists(cfg_file):
         print(
@@ -125,7 +134,7 @@ def run():
         )
         return
     else:
-        dst = op.join(cfg_folder, "pymhf.cfg")
+        dst = op.join(cfg_folder, CFG_FILENAME)
         if not op.exists(dst) or op.exists(config_progress_file):
             # In this case we can prompt the user to enter the config values which need to be changed.
             initial_config = True
@@ -136,51 +145,44 @@ def run():
         # Write the file which indicates we are in progress.
         with open(config_progress_file, "w") as f:
             f.write("")
-        config = configparser.ConfigParser()
-        if not config.read(dst):
-            print("Cannot read config file for some reason... Exiting")
-            return
+        pymhf_settings = read_pymhf_settings(cfg_file)
 
         # Modify some of the values in the config file, allowing the user to enter the values they want.
 
         if (mod_dir := MOD_DIR_Q.ask()) is not None:
-            config.set("binary", "mod_dir", mod_dir)
+            pymhf_settings["mod_dir"] = mod_dir
         else:
             return
 
         # Write the config back and then delete the temporary file only once everything is ok.
-        with open(dst, "w") as f:
-            config.write(f)
+        write_pymhf_settings(pymhf_settings, dst)
         os.remove(config_progress_file)
         initial_config = False
     elif is_config_mode:
-        config = configparser.ConfigParser()
-        if not config.read(dst):
-            print("Cannot read config file for some reason... Exiting")
-            return
+        pymhf_settings = read_pymhf_settings(dst)
         keep_going = True
         while keep_going:
             config_choice = CONFIG_SELECT_Q.ask()
             if config_choice == CFG_OPT_BIN_PATH:
                 if (exe_path := EXE_PATH_Q.ask()) is not None:
-                    config.set("binary", "path", exe_path)
-                    config.remove_option("binary", "steam_gameid")
+                    pymhf_settings["exe_path"] = exe_path
+                    del pymhf_settings["steam_gameid"]
                 else:
                     return
             elif config_choice == CFG_OPT_STEAM_ID:
                 if (steam_id := STEAM_ID_Q.ask()) is not None:
-                    config.set("binary", "steam_gameid", steam_id)
-                    config.remove_option("binary", "path")
+                    pymhf_settings["steam_gameid"] = steam_id
+                    del pymhf_settings["exe_path"]
                 else:
                     return
             elif config_choice == CFG_OPT_MOD_PATH:
                 if (mod_dir := MOD_DIR_Q.ask()) is not None:
-                    config.set("binary", "mod_dir", mod_dir)
+                    pymhf_settings["mod_dir"] = mod_dir
                 else:
                     return
             elif config_choice == CFG_OPT_START_PAUSED:
                 if (start_paused := START_PAUSED.ask()) is not None:
-                    config.set("binary", "start_paused", str(start_paused))
+                    pymhf_settings["start_paused"] = start_paused
                 else:
                     return
             elif config_choice is None:
@@ -189,8 +191,7 @@ def run():
             keep_going = CONTINUE_CONFIGURING_Q.ask()
             if keep_going is None:
                 return
-        with open(dst, "w") as f:
-            config.write(f)
+        write_pymhf_settings(dst, pymhf_settings)
 
         if not RUN_GAME.ask():
             return

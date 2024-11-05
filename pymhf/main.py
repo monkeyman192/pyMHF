@@ -1,6 +1,5 @@
 import asyncio
 import concurrent.futures
-import configparser
 import os
 import os.path as op
 import subprocess
@@ -8,7 +7,7 @@ import time
 import webbrowser
 from functools import partial
 from signal import SIGTERM
-from typing import Optional
+from typing import Any, Optional
 
 import psutil
 import pymem
@@ -19,8 +18,11 @@ from pymhf.core.caching import hash_bytes
 from pymhf.core.logging import open_log_console
 from pymhf.core.process import start_process
 from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol
+from pymhf.utils.config import canonicalize_setting
+from pymhf.utils.parse_toml import read_pymhf_settings
 
 CWD = op.dirname(__file__)
+APPDATA_DIR = os.environ.get("APPDATA", op.expanduser("~"))
 
 
 class WrappedProcess:
@@ -111,37 +113,68 @@ def get_process_when_ready(
         return None, None
 
 
+def load_mod_file(filepath):
+    """Load an individual file as a mod."""
+    pymhf_settings = read_pymhf_settings(filepath, True)
+    _run_module(filepath, pymhf_settings, None)
+
+
 def load_module(plugin_name: str, module_path: str, is_local: bool = False):
-    # Parse the config file first so we can load anything we need to know.
-    config = configparser.ConfigParser()
-    # If we are not running local, then we try find the config file in the user APPDATA directory.
-    if not is_local:
-        appdata_data = os.environ.get("APPDATA", op.expanduser("~"))
-        cfg_folder = op.join(appdata_data, "pymhf", plugin_name)
-        cfg_file = op.join(cfg_folder, "pymhf.cfg")
+    """Load the module."""
+    if is_local:
+        cfg_file = op.join(module_path, "pymhf.toml")
     else:
-        cfg_folder = module_path
-        cfg_file = op.join(module_path, "pymhf.cfg")
-    read = config.read(cfg_file)
-    if not read:
-        print(f"No pymhf.cfg file found in specified directory: {module_path}")
-        print("Cannot proceed with loading")
-        return
+        cfg_file = op.join(APPDATA_DIR, "pymhf", plugin_name, "pymhf.toml")
+    pymhf_config = read_pymhf_settings(cfg_file, not is_local)
+    _run_module(module_path, pymhf_config, plugin_name, is_local)
+
+
+def _required_config_val(config: dict[str, str], key: str) -> Any:
+    if (val := config.get(key)) is not None:
+        return val
+    raise ValueError(f"[tool.pymhf] missing config value: {key}")
+
+
+def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[str], is_local: bool = False):
+    """Run the module provided.
+
+    Parameters
+    ----------
+    module_path
+        The path to the module or single-file mod to be run.
+    config
+        A mapping of the associated pymhf config.
+    """
+    single_file_mod = False
+    if op.isfile(module_path):
+        single_file_mod = True
+
     binary_path = None
-    binary_exe = config.get("binary", "exe")
+    binary_exe = _required_config_val(config, "exe")
     required_assemblies = []
-    if _required_assemblies := config.get("binary", "required_assemblies", fallback=""):
-        required_assemblies = [x.strip() for x in _required_assemblies.split(",")]
-    steam_gameid = config.getint("binary", "steam_gameid", fallback=0)
-    start_paused = config.getboolean("binary", "start_paused", fallback=False)
-    log_window_name_override = config.get("pymhf", "log_window_name_override", fallback="pymhf console")
+    required_assemblies = config.get("required_assemblies", [])
+    try:
+        steam_gameid = int(config.get("steam_gameid", 0))
+    except (ValueError, TypeError):
+        steam_gameid = 0
+    start_paused = config.get("start_paused", False)
+
+    # Check if the module_path is a file or a folder.
+    _module_path = module_path
+    if op.isfile(module_path):
+        _module_path = op.dirname(module_path)
+
     is_steam = False
     if steam_gameid:
         cmd = f"steam://rungameid/{steam_gameid}"
         is_steam = True
     else:
-        binary_path = config["binary"]["path"]
-        cmd = binary_path
+        if op.isdir(binary_exe):
+            cmd = binary_path = binary_exe
+            # We only need the binary_exe to be the name from here on.
+            binary_exe = op.basename(binary_exe)
+        else:
+            raise ValueError("[tool.pymhf].exe must be a full path if no steam_gameid is provided.")
 
     pm_binary, proc = get_process_when_ready(cmd, binary_exe, required_assemblies, is_steam, start_paused)
 
@@ -155,7 +188,19 @@ def load_module(plugin_name: str, module_path: str, is_local: bool = False):
     if binary_path is None:
         binary_path = proc.proc.exe()
 
+    binary_dir = None
+    if binary_path is not None:
+        binary_dir = op.dirname(binary_path)
+
     print(f"Found PID: {pm_binary.process_id}")
+
+    logging_config = config.get("logging", {})
+    log_window_name_override = logging_config.get("window_name_override", "pymhf console")
+    log_dir = logging_config.get("log_dir", "{CURR_DIR}")
+    log_dir = canonicalize_setting(log_dir, plugin_name, _module_path, binary_dir, "LOGS")
+
+    mod_save_dir = config.get("mod_save_dir", "{CURR_DIR}")
+    mod_save_dir = canonicalize_setting(mod_save_dir, plugin_name, _module_path, binary_dir, "MOD_SAVES")
 
     executor = None
     futures = []
@@ -174,7 +219,7 @@ def load_module(plugin_name: str, module_path: str, is_local: bool = False):
         loop.run_until_complete(client_completed)
 
     try:
-        log_pid = open_log_console(op.join(CWD, "log_terminal.py"), module_path, log_window_name_override)
+        log_pid = open_log_console(op.join(CWD, "log_terminal.py"), log_dir, log_window_name_override)
         # Have a small nap just to give it some time.
         time.sleep(0.5)
         print(f"Opened the console log with PID: {log_pid}")
@@ -211,9 +256,6 @@ def load_module(plugin_name: str, module_path: str, is_local: bool = False):
             binary_base = offset_map[assem_name][0]
             binary_size = offset_map[assem_name][1]
 
-        # Inject some other dlls:
-        # pymem.process.inject_dll(nms.process_handle, b"path")
-
         try:
             cwd = CWD.replace("\\", "\\\\")
             import sys
@@ -231,6 +273,7 @@ sys.path = {saved_path}
                 _preinject_shellcode = f.read()
             pm_binary.inject_python_shellcode(_preinject_shellcode)
             # Inject the common NMS variables which are required for general use.
+            module_path = op.realpath(module_path)
             module_path = module_path.replace("\\", "\\\\")
             pm_binary.inject_python_shellcode(
                 f"""
@@ -241,8 +284,11 @@ pymhf.core._internal.CWD = {cwd!r}
 pymhf.core._internal.PID = {pm_binary.process_id!r}
 pymhf.core._internal.HANDLE = {pm_binary.process_handle!r}
 pymhf.core._internal.BINARY_HASH = {binary_hash!r}
-pymhf.core._internal.CFG_DIR = {cfg_folder!r}
+pymhf.core._internal.CONFIG = {config!r}
 pymhf.core._internal.EXE_NAME = {binary_exe!r}
+pymhf.core._internal.BINARY_PATH = {binary_path!r}
+pymhf.core._internal.SINGLE_FILE_MOD = {single_file_mod!r}
+pymhf.core._internal.MOD_SAVE_DIR = {mod_save_dir!r}
                 """
             )
         except Exception as e:

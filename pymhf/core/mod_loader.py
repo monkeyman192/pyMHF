@@ -3,6 +3,7 @@
 # Mods will consist of a single file which will generally contain a number of
 # hooks.
 
+import ctypes
 import importlib
 import importlib.util
 import inspect
@@ -23,11 +24,12 @@ from packaging.version import InvalidVersion
 from packaging.version import parse as parse_version
 
 import pymhf.core._internal as _internal
-import pymhf.core.common as common
 from pymhf.core._types import HookProtocol
 from pymhf.core.errors import NoSaveError
 from pymhf.core.hooking import HookManager
 from pymhf.core.importing import import_file
+from pymhf.core.memutils import get_addressof, map_struct
+from pymhf.core.module_data import module_data
 from pymhf.core.utils import does_pid_have_focus, saferun
 from pymhf.gui.protocols import ButtonProtocol, VariableProtocol
 
@@ -112,8 +114,8 @@ class StructDecoder(json.JSONDecoder):
 
 
 class ModState(ABC):
-    """A class which is used as a base class to indicate that the class is to be
-    used as a mod state.
+    """A class which is used as a base class to indicate that the class is to be used as a mod state.
+
     Mod State classes will persist across mod reloads so any variables set in it
     will have the same value after the mod has been reloaded.
     """
@@ -121,6 +123,7 @@ class ModState(ABC):
     _save_fields_: tuple[str]
 
     def save(self, name: str):
+        """Save the current mod state to file."""
         _data = {}
         if hasattr(self, "_save_fields_") and self._save_fields_:
             for field in self._save_fields_:
@@ -135,12 +138,20 @@ class ModState(ABC):
                     "have the _save_fields_ attribute. State was not saved"
                 )
                 return
-        with open(op.join(common.mod_save_dir, name), "w") as fobj:
+        if not _internal.MOD_SAVE_DIR:
+            _internal.MOD_SAVE_DIR = op.join(_internal.MODULE_PATH, "MOD_SAVES")
+            mod_logger.warning(
+                f"No mod_save_dir config value set. Please set one. Falling back to {_internal.MOD_SAVE_DIR}"
+            )
+        if not op.exists(_internal.MOD_SAVE_DIR):
+            os.makedirs(_internal.MOD_SAVE_DIR)
+        with open(op.join(_internal.MOD_SAVE_DIR, name), "w") as fobj:
             json.dump(_data, fobj, cls=StructEncoder, indent=1)
 
     def load(self, name: str):
+        """Load the mod state from file."""
         try:
-            with open(op.join(common.mod_save_dir, name), "r") as f:
+            with open(op.join(_internal.MOD_SAVE_DIR, name), "r") as f:
                 data = json.load(f, cls=StructDecoder)
         except FileNotFoundError as e:
             raise NoSaveError from e
@@ -198,10 +209,10 @@ class ModManager:
 
     def _load_module(self, module: ModuleType) -> bool:
         """Load a mod from the provided module.
+
         This will be called when initially loading the mods, and also when we
         wish to reload a mod.
         """
-
         d: dict[str, type[Mod]] = dict(
             inspect.getmembers(module, partial(_is_mod_predicate, ref_module=module))
         )
@@ -249,12 +260,48 @@ class ModManager:
             self._mod_paths[mod_name] = module
         return True
 
-    def load_mod(self, fpath) -> bool:
-        """Load a mod from the given filepath."""
+    def load_mod(self, fpath) -> Optional[ModuleType]:
+        """Load a mod from the given filepath.
+
+        This returns the loaded module if it contains a valid mod and can be loaded correctly.
+        """
         module = import_file(fpath)
         if module is None:
-            return False
-        return self._load_module(module)
+            return None
+        if self._load_module(module):
+            return module
+
+    # TODO: Can probably move the duplicated functionality between this and the next method into a single
+    # function.
+    def load_single_mod(self, fpath: str, bind: bool = True):
+        """Load a single mod file.
+
+        Params
+        ------
+        folder
+            The path of the folder to be loaded. All mod files within this directory will be loaded and
+            installed.
+        bind
+            Whether or not to actual bind and initialize the hooks within the mod.
+            This should almost always be True except when loading the internal mods initially since it's not
+            necessary.
+            If this function is called with False, then it MUST be called again with True before the hooks
+            are enabled.
+        """
+        self.load_mod(fpath)
+        # Once all the mods in the folder have been loaded, then parse the mod
+        # for function hooks and register then with the hook loader.
+        loaded_mods = len(self._preloaded_mods)
+        for _mod in self._preloaded_mods.values():
+            self.instantiate_mod(_mod)
+
+        self._preloaded_mods.clear()
+
+        bound_hooks = 0
+        if bind:
+            bound_hooks = self.hook_manager.initialize_hooks()
+
+        return loaded_mods, bound_hooks
 
     def load_mod_folder(self, folder: str, bind: bool = True) -> tuple[int, int]:
         """Load the mod folder.
@@ -352,7 +399,7 @@ class ModManager:
                 del sys.modules[module.__name__]
 
                 # Then, add everything back.
-                self.load_mod(module.__file__)
+                new_module = self.load_mod(module.__file__)
                 for _mod in self._preloaded_mods.values():
                     mod = self.instantiate_mod(_mod)
 
@@ -361,7 +408,45 @@ class ModManager:
                     if mod_state := self.mod_states.get(name):
                         for ms in mod_state:
                             field, state = ms
+                            member_req_reinst = {}
+                            for x in inspect.getmembers(state):
+                                member, member_type = x
+                                if not member.startswith("__"):
+                                    if (
+                                        _module := getattr(member_type.__class__, "__module__", None)
+                                    ) is not None and isinstance(member_type, ctypes.Structure):
+                                        if _module == module.__spec__.name:
+                                            # In this case, the instance of the attribute in the ModState was
+                                            # defined in the module that is being reloaded. We need to
+                                            # re-instantiate it so that we can get any potential changes to
+                                            # it.
+                                            member_req_reinst[member] = member_type
+                                            logging.info(f"{member}: {_module}")
+                            logging.info(
+                                f"Reinstantiating the following members: {list(member_req_reinst.keys())}"
+                            )
+                            for name, type_ in member_req_reinst.items():
+                                data_offset = get_addressof(type_)
+                                new_obj_type_name = type_.__class__.__name__
+                                mod_logger.info(f"{name} is of type {new_obj_type_name}")
+                                new_obj_type = getattr(new_module, new_obj_type_name)
+                                new_obj = map_struct(data_offset, new_obj_type)
+                                setattr(state, name, new_obj)
+                                del member_type
                             setattr(mod, field, state)
+
+                    # Check also to see if the file had any module-level __pymhf attributes which we might
+                    # to update the `module_data` with.
+                    _new_binary = getattr(new_module, "__pymhf_func_binary__", None)
+                    _new_offsets = getattr(new_module, "__pymhf_func_offsets__", {})
+                    _new_patterns = getattr(new_module, "__pymhf_func_patterns__", {})
+                    _new_func_call_sigs = getattr(new_module, "__pymhf_func_call_sigs__", {})
+
+                    if _new_binary:
+                        module_data.FUNC_BINARY = _new_binary
+                    module_data.FUNC_OFFSETS.update(_new_offsets)
+                    module_data.FUNC_PATTERNS.update(_new_patterns)
+                    module_data.FUNC_CALL_SIGS.update(_new_func_call_sigs)
 
                     # Return to GUI land to reload the mod.
                     gui.reload_tab(mod)
