@@ -27,7 +27,6 @@ dependencies = [
   "pymem[speed]~=1.12.0",
   "keyboard",
   "pywin32",
-  "dearpygui~=1.11.0",
   "questionary",
   "pywinctl",
   "packaging",
@@ -35,6 +34,11 @@ dependencies = [
   "pefile",
 ]
 dynamic = ["version"]
+
+[project.optional-dependencies]
+gui = [
+  "dearpygui~=1.11.0",
+]
 
 [tool.setuptools.package-dir]
 pymhf = "pymhf"

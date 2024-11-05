@@ -648,7 +648,7 @@ class HookManager:
                 )
             elif hook._is_imported_func_hook:
                 hook = cast(ImportedHookProtocol, hook)
-                dll_name = hook._dll_name
+                dll_name = hook._dll_name.lower()
                 hook_func_name = hook._hook_func_name
                 hook_func_def = hook._hook_func_def
                 hook_logger.info(
@@ -667,6 +667,8 @@ class HookManager:
                         func_def=hook_func_def,
                         offset_is_absolute=True,
                     )
+                else:
+                    hook_logger.error(f"Cannot find {dll_name} in the import list")
             else:
                 # TODO: have a way to differentiate the binary here.
                 self.hooks[hook_func_name] = FuncHook(

@@ -84,7 +84,12 @@ try:
         ExecutionEndedException,
         custom_exception_handler,
     )
-    from pymhf.gui.gui import GUI
+
+    try:
+        from pymhf.gui.gui import GUI
+    except ModuleNotFoundError:
+        # If we can't import this, then DearPyGUI is missing, so we won't create the GUI.
+        GUI = None
     from pymhf.utils.get_imports import get_imports
 
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -246,7 +251,7 @@ try:
     # logging.info("Executing protocol is ready to go!")
 
     futures = []
-    if _internal.CONFIG.get("gui", {}).get("shown", True):
+    if _internal.CONFIG.get("gui", {}).get("shown", True) and GUI is not None:
         gui = GUI(mod_manager, _internal.CONFIG)
         # For each mod, add the corresponding tab to the gui.
         for mod in mod_manager.mods.values():
