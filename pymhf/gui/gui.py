@@ -6,10 +6,12 @@ from typing import Optional, TypedDict, Union
 # import win32con
 import dearpygui.dearpygui as dpg
 
+import pymhf.core._internal as _internal
 from pymhf.core.mod_loader import Mod, ModManager
 from pymhf.gui.protocols import ButtonProtocol, VariableProtocol, VariableType
 
 SETTINGS_NAME = "_pymhf_gui_settings"
+DETAILS_NAME = "_pymhf_gui_details"
 
 # TODO:
 # - add keyboard shortcut to show or hide the GUI
@@ -110,6 +112,18 @@ class GUI:
                 source="show_gui",
                 callback=self.toggle_show_gui,
             )
+
+    def add_details_tab(self):
+        tab = dpg.add_tab(label="Details", tag=DETAILS_NAME, parent="tabbar")
+        tab_alias = dpg.get_alias_id(tab)
+        self.tabs[tab_alias] = DETAILS_NAME
+
+        imports = _internal.imports
+        tree = dpg.add_tree_node(label="Imports", parent=DETAILS_NAME)
+        for dll_name, functions in imports.items():
+            dll_branch = dpg.add_tree_node(label=dll_name, parent=tree)
+            for func_name in functions.keys():
+                dpg.add_tree_node(label=func_name, parent=dll_branch, leaf=True, bullet=True)
 
     def reload_tab(self, cls: Mod):
         """Reload the tab for the specific mod."""

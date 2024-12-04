@@ -14,6 +14,7 @@ EXE_NAME: str = ""
 BINARY_PATH: str = ""
 SINGLE_FILE_MOD: bool = False
 MOD_SAVE_DIR: str = ""
+INCLUDED_ASSEMBLIES: dict[str, str] = {}
 
 _executor: ThreadPoolExecutor = None  # type: ignore
 

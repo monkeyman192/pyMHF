@@ -39,7 +39,9 @@ try:
     _module_path = _internal.MODULE_PATH
     if op.isfile(_module_path):
         _module_path = op.dirname(_module_path)
-    _binary_dir = op.dirname(_internal.BINARY_PATH)
+    _binary_dir = None
+    if _internal.BINARY_PATH:
+        _binary_dir = op.dirname(_internal.BINARY_PATH)
 
     internal_mod_folder = _internal.CONFIG.get("internal_mod_dir")
     internal_mod_folder = canonicalize_setting(internal_mod_folder, "pymhf", _module_path, _binary_dir)
@@ -196,6 +198,8 @@ try:
     # Read the imports
     if _internal.BINARY_PATH:
         _internal.imports = get_imports(_internal.BINARY_PATH)
+    for fpath in _internal.INCLUDED_ASSEMBLIES.values():
+        _internal.imports.update(get_imports(fpath))
 
     mod_manager = ModManager(hook_manager)
     # First, load our internal mod before anything else.
@@ -209,7 +213,7 @@ try:
         else:
             logging.warning(
                 f"Cannot load internal mod directory: {internal_mod_folder}. "
-                "Please make sure it exists or that the path is correct in the pymhf.cfg file."
+                "Please make sure it exists or that the path is correct in the pymhf.toml file."
             )
 
     logging.info("pyMHF injection complete!")
@@ -230,7 +234,7 @@ try:
                 _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(mod_folder)
             else:
                 logging.warning(
-                    """You have not configured the `binary.mod_dir` variable in the pymhf.cfg file.
+                    """You have not configured the `binary.mod_dir` variable in the pymhf.toml file.
                     Please do so so that you can load mods."""
                 )
     except Exception:
@@ -258,6 +262,7 @@ try:
             gui.add_tab(mod)
         # Add the settings tab so that we may configure various settings.
         gui.add_settings_tab()
+        gui.add_details_tab()
 
         # TODO: This needs to have some exception handling because if something
         # goes wrong in here it will just fail "silently".

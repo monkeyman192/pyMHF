@@ -1,3 +1,5 @@
+# TODO: Move this elsewhere.
+
 import ctypes
 import os.path as op
 from logging import getLogger
@@ -13,6 +15,8 @@ def get_imports(binary_path: str) -> dict:
     directory, binary = op.split(binary_path)
     pe = pefile.PE(op.join(directory, binary), fast_load=True)
     pe.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_IMPORT"]])
+    if not hasattr(pe, "DIRECTORY_ENTRY_IMPORT"):
+        return {}
     for entry in pe.DIRECTORY_ENTRY_IMPORT:
         dll_name: str = entry.dll.decode()
         if dll_name.lower().endswith(".dll"):
@@ -44,9 +48,3 @@ def get_imports(binary_path: str) -> dict:
         funcptrs[_dll] = _funcptrs
 
     return funcptrs
-
-
-if __name__ == "__main__":
-    BINARY_PATH = "C:\\Games\\No Man's Sky\\Binaries\\NMS.exe"
-    ptrs = get_imports(BINARY_PATH)
-    print(ptrs["user32"])

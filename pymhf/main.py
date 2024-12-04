@@ -20,6 +20,7 @@ from pymhf.core.process import start_process
 from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol
 from pymhf.utils.config import canonicalize_setting
 from pymhf.utils.parse_toml import read_pymhf_settings
+from pymhf.utils.winapi import get_exe_path_from_pid
 
 CWD = op.dirname(__file__)
 APPDATA_DIR = os.environ.get("APPDATA", op.expanduser("~"))
@@ -119,7 +120,7 @@ def load_mod_file(filepath):
     _run_module(filepath, pymhf_settings, None)
 
 
-def load_module(plugin_name: str, module_path: str, is_local: bool = False):
+def load_module(plugin_name: str, module_path: str, is_local: bool = True):
     """Load the module."""
     if is_local:
         cfg_file = op.join(module_path, "pymhf.toml")
@@ -153,6 +154,7 @@ def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[
     binary_exe = _required_config_val(config, "exe")
     required_assemblies = []
     required_assemblies = config.get("required_assemblies", [])
+    start_exe = config.get("start_exe", True)
     try:
         steam_gameid = int(config.get("steam_gameid", 0))
     except (ValueError, TypeError):
@@ -169,23 +171,34 @@ def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[
         cmd = f"steam://rungameid/{steam_gameid}"
         is_steam = True
     else:
-        if op.isdir(binary_exe):
+        if op.isabs(binary_exe):
             cmd = binary_path = binary_exe
             # We only need the binary_exe to be the name from here on.
             binary_exe = op.basename(binary_exe)
         else:
+            # TODO: Allow support for running local binaries or binaries which are on the path.
             raise ValueError("[tool.pymhf].exe must be a full path if no steam_gameid is provided.")
 
-    pm_binary, proc = get_process_when_ready(cmd, binary_exe, required_assemblies, is_steam, start_paused)
+    if start_exe:
+        pm_binary, proc = get_process_when_ready(cmd, binary_exe, required_assemblies, is_steam, start_paused)
+    else:
+        # If we aren't starting the exe then by the time we have run we expect the process to already exist,
+        # so just find it with pymem.
+        pm_binary = pymem.Pymem(binary_exe)
+        pm_binary.inject_python_interpreter()
+        print("Python injected")
+        if binary_path is None:
+            binary_path = get_exe_path_from_pid(pm_binary)
+        proc = None
 
-    if not pm_binary or not proc:
+    if not pm_binary and not proc:
         # TODO: Raise better error messages/reason why it couldn't load.
         print("FATAL ERROR: Cannot start process!")
         return
 
     # When we start from steam, the binary path will be None, so retreive it from from the psutils Process
     # object.
-    if binary_path is None:
+    if binary_path is None and proc is not None:
         binary_path = proc.proc.exe()
 
     binary_dir = None
@@ -235,18 +248,27 @@ def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[
 
         print(f"proc id from pymem: {pm_binary.process_id}")
         offset_map = {}
+        # This is a mapping of the required assemblies to their filenames so we may do an import look up on
+        # the inside.
+        included_assemblies = {}
+        modules = []
         if required_assemblies:
-            modules = pm_binary.list_modules()
+            modules = list(pm_binary.list_modules())
             found_modules = list(filter(lambda x: x.name in required_assemblies, modules))
             if not found_modules:
                 print(f"Cannot find specified assembly from config ({required_assemblies})")
                 return
             for module in found_modules:
                 offset_map[module.name] = (module.lpBaseOfDll, module.SizeOfImage)
+                included_assemblies[module.name] = module.filename
         else:
             pb = pm_binary.process_base
             offset_map[binary_exe] = (pb.lpBaseOfDll, pb.SizeOfImage)
-        # print(f"The handle: {pm_binary.process_handle}, base: 0x{binary_base:X}")
+        # if not modules:
+        #     modules = pm_binary.list_modules()
+        # for module in modules:
+        #     included_assemblies[module.name] = module.filename
+        # print(f"The handle: {pm_binary.process_handle}, bases: {offset_map}")
 
         if len(offset_map) == 1:
             # Only one thing. For now, we just set these as the `binary_base` and `binary_size`.
@@ -289,6 +311,7 @@ pymhf.core._internal.EXE_NAME = {binary_exe!r}
 pymhf.core._internal.BINARY_PATH = {binary_path!r}
 pymhf.core._internal.SINGLE_FILE_MOD = {single_file_mod!r}
 pymhf.core._internal.MOD_SAVE_DIR = {mod_save_dir!r}
+pymhf.core._internal.INCLUDED_ASSEMBLIES = {included_assemblies!r}
                 """
             )
         except Exception as e:
@@ -302,7 +325,7 @@ pymhf.core._internal.MOD_SAVE_DIR = {mod_save_dir!r}
 
         # Wait for a user input to start the process.
         # TODO: Send a signal back up from the process to trigger this automatically.
-        if start_paused:
+        if start_paused and start_exe is not False:
             try:
                 #     # print("Checking to see if we are ready to run...")
                 #     # client_completed = asyncio.Future()
