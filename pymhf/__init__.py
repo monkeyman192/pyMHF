@@ -84,28 +84,37 @@ def run():
         prog="pyMHF program runner",
         description="Run the registered plugin",
     )
-    parser.add_argument(
+
+    command_parser = parser.add_subparsers(dest="_command")
+
+    # `run` command parser
+    run_parser = command_parser.add_parser("run")
+    run_parser.add_argument(
         "plugin_name",
         help=(
             "The name of the installed library to run, or the single-file script to run, or the path to a "
             "folder which contains a library to run locally."
         ),
     )
-    parser.add_argument(
-        "-c",
-        "--config",
-        action="store_true",
-        required=False,
-        help="Enter the configuration manager for this library",
+
+    config_parser = command_parser.add_parser("config")
+    config_parser.add_argument(
+        "plugin_name",
+        help=(
+            "The name of the installed library to run, or the single-file script to run, or the path to a "
+            "folder which contains a library to run locally."
+        ),
     )
-    args = parser.parse_args()
+
+    args, extras = parser.parse_known_args()  # noqa
+
+    # TODO: The extras can be passed to the registered library in the future.
 
     plugin_name: str = args.plugin_name
-    is_config_mode: bool = args.config
+    command = args._command
+    is_config_mode: bool = (command == "config")
     standalone = False
     local = False
-
-    print(plugin_name)
 
     if op.isfile(plugin_name) and op.exists(plugin_name):
         # In this case we are running in stand-alone mode
@@ -185,7 +194,6 @@ def run():
 
     else:
         module_dir = op.join(local_plugin_dir, plugin_name)
-    print(f"Module dir: {module_dir}")
 
     cfg_file = op.join(module_dir, CFG_FILENAME)
     config_progress_file = op.join(cfg_folder, ".config_in_progress")
