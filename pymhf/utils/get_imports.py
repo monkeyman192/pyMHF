@@ -32,11 +32,12 @@ def get_imports(binary_path: str) -> dict:
         try:
             dll = ctypes.WinDLL(_dll)
         except FileNotFoundError:
-            fullpath = op.join(directory, _dll)
+            # Re-add .dll to the end since absolute paths require the full path.
+            fullpath = op.join(directory, _dll) + ".dll"
             try:
                 dll = ctypes.WinDLL(fullpath)
             except FileNotFoundError:
-                logger.error(f"Cannot find dll {_dll}")
+                logger.error(f"Cannot find dll {_dll} (even at {fullpath})")
                 continue
         _funcptrs = {}
         for name in dll_imports:

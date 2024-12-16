@@ -5,6 +5,7 @@ CWD: str = ""
 MODULE_PATH: str = ""
 HANDLE = None
 MAIN_HWND = None
+DPG_HWND = None
 PID: int = -1
 BINARY_HASH: str = ""
 BASE_ADDRESS: int = -1

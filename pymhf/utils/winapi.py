@@ -17,7 +17,7 @@ MAX_EXE_NAME_SIZE = 1024
 
 
 def get_exe_path_from_pid(proc: pymem.Pymem) -> str:
-    """ Get the name of the exe which was run to create the pymem process. """
+    """Get the name of the exe which was run to create the pymem process."""
     name_buffer = ctypes.create_string_buffer(b"", MAX_EXE_NAME_SIZE)
     GetModuleFileNameExA(proc.process_handle, None, name_buffer, MAX_EXE_NAME_SIZE)
     return name_buffer.value.decode()

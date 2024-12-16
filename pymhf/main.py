@@ -120,14 +120,18 @@ def load_mod_file(filepath):
     _run_module(filepath, pymhf_settings, None)
 
 
-def load_module(plugin_name: str, module_path: str, is_local: bool = True):
+def load_module(plugin_name: str, module_path: str):
     """Load the module."""
-    if is_local:
-        cfg_file = op.join(module_path, "pymhf.toml")
+    local_cfg_file = op.join(APPDATA_DIR, "pymhf", plugin_name, "pymhf.local.toml")
+    if op.exists(local_cfg_file):
+        local_cfg = read_pymhf_settings(local_cfg_file)
     else:
-        cfg_file = op.join(APPDATA_DIR, "pymhf", plugin_name, "pymhf.toml")
-    pymhf_config = read_pymhf_settings(cfg_file, not is_local)
-    _run_module(module_path, pymhf_config, plugin_name, is_local)
+        local_cfg = {}
+    module_cfg_file = op.join(module_path, "pymhf.toml")
+    module_cfg = read_pymhf_settings(module_cfg_file)
+    module_cfg.update(local_cfg)
+
+    _run_module(module_path, module_cfg, plugin_name)
 
 
 def _required_config_val(config: dict[str, str], key: str) -> Any:
@@ -136,7 +140,7 @@ def _required_config_val(config: dict[str, str], key: str) -> Any:
     raise ValueError(f"[tool.pymhf] missing config value: {key}")
 
 
-def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[str], is_local: bool = False):
+def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[str]):
     """Run the module provided.
 
     Parameters
@@ -354,6 +358,10 @@ pymhf.core._internal.INCLUDED_ASSEMBLIES = {included_assemblies!r}
 
         print("pyMHF interactive python command prompt")
         print("Type any valid python commands to execute them within the games' process")
+        # TODO: change this to use a threading.Event object, and in a separate thread, poll every second or so
+        # the running game process to see if it's still running (using psutil?)
+        # Might need to modify the WrappedProcess object to always create the pstuil.Process object to make it
+        # work easier...
         while True:
             try:
                 input_ = input(">>> ")

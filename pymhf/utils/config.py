@@ -38,8 +38,8 @@ def canonicalize_setting(
             tag = "CURR_DIR"
         elif value == "~":
             tag = "USER_DIR"
-        else:
-            raise ValueError("Invalid path")
+        elif not op.exists(value):
+            raise ValueError(f"Invalid path: {value}")
 
     # If the path provided already exists, simply return it.
     if tag is None and op.exists(value):

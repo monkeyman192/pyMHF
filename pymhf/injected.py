@@ -43,9 +43,9 @@ try:
     if _internal.BINARY_PATH:
         _binary_dir = op.dirname(_internal.BINARY_PATH)
 
-    internal_mod_folder = _internal.CONFIG.get("internal_mod_dir")
+    internal_mod_folder = _internal.CONFIG.get("local_config", {}).get("internal_mod_dir")
     internal_mod_folder = canonicalize_setting(internal_mod_folder, "pymhf", _module_path, _binary_dir)
-    mod_folder = _internal.CONFIG.get("mod_dir")
+    mod_folder = _internal.CONFIG.get("local_config", {}).get("mod_dir")
 
     mod_folder = canonicalize_setting(mod_folder, "pymhf", _module_path, _binary_dir)
 

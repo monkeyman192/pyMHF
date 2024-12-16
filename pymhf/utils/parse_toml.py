@@ -25,12 +25,18 @@ def read_inline_metadata(script: str) -> Optional[tomlkit.TOMLDocument]:
         return None
 
 
-def read_pymhf_settings(fpath: str, standalone: bool = False) -> dict:
+def _parse_toml(fpath: str, standalone: bool = False) -> dict:
+    settings = {}
     with open(fpath, "r") as f:
         if standalone:
             settings = read_inline_metadata(f.read())
         else:
             settings = tomlkit.loads(f.read())
+    return settings
+
+
+def read_pymhf_settings(fpath: str, standalone: bool = False) -> dict:
+    settings = _parse_toml(fpath, standalone)
     if not settings:
         return {}
     if standalone:
