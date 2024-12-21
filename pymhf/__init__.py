@@ -2,6 +2,7 @@ import argparse
 import os
 import os.path as op
 import shutil
+import subprocess
 from importlib.metadata import PackageNotFoundError, entry_points, version
 from typing import Optional
 
@@ -99,6 +100,13 @@ def run():
 
     config_parser = command_parser.add_parser("config")
     config_parser.add_argument(
+        "-o",
+        "--open",
+        action="store_true",
+        default=False,
+        help="Open the directory the local config is stored at.",
+    )
+    config_parser.add_argument(
         "plugin_name",
         help=(
             "The name of the installed library to run, or the single-file script to run, or the path to a "
@@ -112,7 +120,7 @@ def run():
 
     plugin_name: str = args.plugin_name
     command = args._command
-    is_config_mode: bool = (command == "config")
+    is_config_mode: bool = command == "config"
     standalone = False
     local = False
 
@@ -210,7 +218,7 @@ def run():
             initial_config = True
 
     if initial_config:
-        local_config = {"pymhf": {"local_config": {}}}
+        local_config = {"local_config": {}}
         if not has_tkinter:
             print(
                 "tkinter cannot be found. Please ensure it's installed as part of your python install.\n"
@@ -230,7 +238,7 @@ def run():
         if (
             mod_folder := get_folder("Select folder where mods are located", MOD_DIR_Q, has_tkinter)
         ) is not None:
-            local_config["pymhf"]["local_config"]["mod_dir"] = mod_folder
+            local_config["local_config"]["mod_dir"] = mod_folder
         else:
             return None
 
@@ -239,15 +247,18 @@ def run():
         os.remove(config_progress_file)
         initial_config = False
     elif is_config_mode:
+        if args.open:
+            print(f"Opening {cfg_folder!r} and exiting")
+            subprocess.call(f'explorer "{cfg_folder}"')
+            return
         local_config = read_pymhf_settings(dst)
-        pymhf_settings = local_config["pymhf"]["local_config"]
+        pymhf_settings = local_config["local_config"]
         keep_going = True
         if has_tkinter:
             root = Tk()
             root.withdraw()
         while keep_going:
             config_choice = CONFIG_SELECT_Q.ask()
-            print(config_choice)
             if config_choice == CFG_OPT_BIN_PATH:
                 if (exe_path := EXE_PATH_Q.ask()) is not None:
                     pymhf_settings["exe_path"] = exe_path
@@ -292,7 +303,7 @@ def run():
             keep_going = CONTINUE_CONFIGURING_Q.ask()
             if keep_going is None:
                 return
-        local_config["pymhf"]["local_config"] = pymhf_settings
+        local_config["local_config"] = pymhf_settings
         write_pymhf_settings(local_config, dst)
 
         if not RUN_GAME.ask():

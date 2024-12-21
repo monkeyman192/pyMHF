@@ -43,9 +43,9 @@ try:
     if _internal.BINARY_PATH:
         _binary_dir = op.dirname(_internal.BINARY_PATH)
 
-    internal_mod_folder = _internal.CONFIG.get("local_config", {}).get("internal_mod_dir")
+    internal_mod_folder = _internal.CONFIG.get("internal_mod_dir")
     internal_mod_folder = canonicalize_setting(internal_mod_folder, "pymhf", _module_path, _binary_dir)
-    mod_folder = _internal.CONFIG.get("local_config", {}).get("mod_dir")
+    mod_folder = _internal.CONFIG.get("mod_dir")
 
     mod_folder = canonicalize_setting(mod_folder, "pymhf", _module_path, _binary_dir)
 
@@ -234,7 +234,7 @@ try:
                 _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(mod_folder)
             else:
                 logging.warning(
-                    """You have not configured the `binary.mod_dir` variable in the pymhf.toml file.
+                    """You have not configured the `mod_dir` variable in the pymhf.toml file.
                     Please do so so that you can load mods."""
                 )
     except Exception:

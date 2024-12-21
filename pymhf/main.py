@@ -124,7 +124,7 @@ def load_module(plugin_name: str, module_path: str):
     """Load the module."""
     local_cfg_file = op.join(APPDATA_DIR, "pymhf", plugin_name, "pymhf.local.toml")
     if op.exists(local_cfg_file):
-        local_cfg = read_pymhf_settings(local_cfg_file)
+        local_cfg = read_pymhf_settings(local_cfg_file).get("local_config", {})
     else:
         local_cfg = {}
     module_cfg_file = op.join(module_path, "pymhf.toml")

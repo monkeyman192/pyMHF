@@ -7,6 +7,22 @@ It is designed to make it very easy to create libraries for any game or applicat
 
 *pyMHF* contains a number of important features to make creatting a modding library as easy as possible:
 
+## Using *pyMHF*
+
+*pyMHF* has a number of command line arguments to make running it easier. The main way to run *pyMHF* is by calling it like so:
+
+`python -m pymhf run <module>`
+
+Where `<module>` can either be the name of any library using *pyMHF*, the absolute or relative path to a folder which contains a `pyproject.toml` file (this method is often used for local development of libraries), or even the absolute or relative path to a single-file mod.
+
+*pyMHF* also has a `config` mode which allows you to override the default values which are provided by the `pymhf.toml` file as part of a library.
+
+This configuration is done by running
+
+`python -m pymhf config <module>`
+
+For all possible options, see `pymhf --help`.
+
 ### Simple hooking
 
 To create a hook, the following pieces of information are required:

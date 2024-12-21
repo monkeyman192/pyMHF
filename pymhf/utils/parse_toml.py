@@ -46,5 +46,8 @@ def read_pymhf_settings(fpath: str, standalone: bool = False) -> dict:
 
 
 def write_pymhf_settings(settings: dict, fpath: str):
+    """Write the pymhf settings to disk as a toml file.
+    This will automatically add the `pymhf` top section.
+    """
     with open(fpath, "w") as f:
-        tomlkit.dump(settings, f)
+        tomlkit.dump({"pymhf": settings}, f)
