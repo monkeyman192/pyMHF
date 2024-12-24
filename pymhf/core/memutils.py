@@ -225,9 +225,11 @@ def pattern_to_bytes(patt: str) -> bytes:
     """Take a pattern that looks like `8C 14 23 56 ?? 12` (etc) and convert it to a bytes object which can
     be searched with pymem.
     The format is what is provided by the IDA plugin `SigMakerEx` and the `??` values indicate a wildcard.
+    This also supports the format by the IDA plugin `IDA-Fusion` which produces single `?` values for
+    wildcards.
     """
     split = patt.split(" ")
-    return b"".join([f"\\x{x}".encode() if x != "??" else b"." for x in split])
+    return b"".join([f"\\x{x}".encode() if (x != "??" and x != "?") else b"." for x in split])
 
 
 def _get_binary_info(binary: str) -> Optional[tuple[int, MODULEINFO]]:

@@ -25,12 +25,18 @@ def read_inline_metadata(script: str) -> Optional[tomlkit.TOMLDocument]:
         return None
 
 
-def read_pymhf_settings(fpath: str, standalone: bool = False) -> dict:
+def _parse_toml(fpath: str, standalone: bool = False) -> dict:
+    settings = {}
     with open(fpath, "r") as f:
         if standalone:
             settings = read_inline_metadata(f.read())
         else:
             settings = tomlkit.loads(f.read())
+    return settings
+
+
+def read_pymhf_settings(fpath: str, standalone: bool = False) -> dict:
+    settings = _parse_toml(fpath, standalone)
     if not settings:
         return {}
     if standalone:
@@ -40,5 +46,8 @@ def read_pymhf_settings(fpath: str, standalone: bool = False) -> dict:
 
 
 def write_pymhf_settings(settings: dict, fpath: str):
+    """Write the pymhf settings to disk as a toml file.
+    This will automatically add the `pymhf` top section.
+    """
     with open(fpath, "w") as f:
-        tomlkit.dump(settings, f)
+        tomlkit.dump({"pymhf": settings}, f)
