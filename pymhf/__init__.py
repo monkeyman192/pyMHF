@@ -89,7 +89,13 @@ def run():
     command_parser = parser.add_subparsers(dest="_command")
 
     # `run` command parser
-    run_parser = command_parser.add_parser("run")
+    run_parser = command_parser.add_parser(
+        "run",
+        help=(
+            "Run the provided plugin name (if registered), or the provided path to a module or single-file "
+            "mod."
+        ),
+    )
     run_parser.add_argument(
         "plugin_name",
         help=(
@@ -98,7 +104,13 @@ def run():
         ),
     )
 
-    config_parser = command_parser.add_parser("config")
+    config_parser = command_parser.add_parser(
+        "config",
+        help=(
+            "Configure the provided plugin name (if registered), or the provided path to a module or "
+            "single-file mod."
+        ),
+    )
     config_parser.add_argument(
         "-o",
         "--open",
@@ -107,6 +119,17 @@ def run():
         help="Open the directory the local config is stored at.",
     )
     config_parser.add_argument(
+        "plugin_name",
+        help=(
+            "The name of the installed library to run, or the single-file script to run, or the path to a "
+            "folder which contains a library to run locally."
+        ),
+    )
+
+    init_parser = command_parser.add_parser(
+        "init", help="[NOT YET IMPLEMENTED] Initialise a new empty project under the given name."
+    )
+    init_parser.add_argument(
         "plugin_name",
         help=(
             "The name of the installed library to run, or the single-file script to run, or the path to a "
