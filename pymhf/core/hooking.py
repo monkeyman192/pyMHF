@@ -659,6 +659,7 @@ class HookManager:
                     func_ptr = dll_func_ptrs.get(hook_func_name)
                     # For now, cast the func_ptr object back to the target location in memory.
                     # This is wasteful, but simple for now for testing...
+                    hook_logger.debug(func_ptr)
                     target = ctypes.cast(func_ptr, ctypes.c_void_p).value
                     hook_logger.info(f"{func_ptr} points to 0x{target:X}")
                     self.hooks[hook_func_name] = FuncHook(

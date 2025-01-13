@@ -3,6 +3,7 @@ import os
 import os.path as op
 import shutil
 import subprocess
+from enum import Enum
 from importlib.metadata import PackageNotFoundError, entry_points, version
 from typing import Optional
 
@@ -24,6 +25,15 @@ try:
     has_tkinter = True
 except ModuleNotFoundError:
     has_tkinter = False
+
+
+class ModeEnum(Enum):
+    INVALID = 0
+    RUN = 1
+    CONFIG = 2
+    INIT = 3
+    COMMAND = 4
+    # DATA = 5
 
 
 def _is_int(val: str) -> bool:
@@ -137,13 +147,58 @@ def run():
         ),
     )
 
+    cmd_parser = command_parser.add_parser("cmd", help="Perform a registered command for the library")
+    cmd_parser.add_argument(
+        "command",
+        help=(
+            "The command to be run by the specified library. These are registered in the "
+            "[project.entry-points.pymhfcmd] section of the pyproject.toml file."
+        ),
+    )
+    cmd_parser.add_argument(
+        "plugin_name",
+        help=(
+            "The name of the installed library to run, or the path to a folder which contains a library to "
+            "run locally."
+        ),
+    )
+
+    # data_parser = command_parser.add_parser(
+    #     "data", help="Configure the data for the provided plugin name (if registered), or the provided path"
+    #     " to a module."
+    # )
+    # data_parser.add_argument(
+    #     "plugin_name",
+    #     help=(
+    #         "The name of the installed library to run, or the path to a folder which contains a library to "
+    #         "run locally."
+    #     ),
+    # )
+    # data_parser.add_argument(
+    #     "-H",
+    #     "--hash",
+    #     action="store_true",
+    #     help="Get the current binary hash",
+    # )
+
     args, extras = parser.parse_known_args()  # noqa
 
     # TODO: The extras can be passed to the registered library in the future.
 
     plugin_name: str = args.plugin_name
     command = args._command
-    is_config_mode: bool = command == "config"
+    if command == "run":
+        mode = ModeEnum.RUN
+    elif command == "config":
+        mode = ModeEnum.CONFIG
+    elif command == "init":
+        mode = ModeEnum.INIT
+    elif command == "cmd":
+        mode = ModeEnum.COMMAND
+    # elif command == "data":
+    #     mode = ModeEnum.DATA
+    else:
+        mode = ModeEnum.INVALID
     standalone = False
     local = False
 
@@ -160,6 +215,10 @@ def run():
         load_mod_file(plugin_name)
         return
 
+    cmd_command = None
+    if mode == ModeEnum.COMMAND:
+        cmd_command = args.command
+
     if local:
         # Parse the pyproject.toml file to get some info...
         pyproject_toml = op.join(op.realpath(plugin_name), "pyproject.toml")
@@ -171,14 +230,43 @@ def run():
             )
             return
         settings = _parse_toml(pyproject_toml, False)
-        if (project_name := settings.get("project", {}).get("entry-points", {}).get("pymhflib")) is not None:
-            plugin_name = list(project_name.keys())[0]
-            print(f"Handling project {plugin_name}")
-        else:
+        plugin_name = None
+        if (project_cfg := settings.get("project", {}).get("entry-points", {}).get("pymhflib")) is not None:
+            plugin_name = list(project_cfg.keys())[0]
+            if mode == ModeEnum.COMMAND:
+                if (
+                    command_cfg := settings.get("project", {}).get("entry-points", {}).get("pymhfcmd")
+                ) is not None:
+                    from .core.importing import import_file
+
+                    if (resolved_command := command_cfg.get(cmd_command)) is not None:
+                        mod = import_file(op.join(local_plugin_dir, plugin_name))
+                        cmd = getattr(mod, resolved_command, None)
+                        if cmd is not None:
+                            cmd()
+                            return
+                        else:
+                            print(
+                                f"Command {resolved_command!r} cannot be found in module {plugin_name}. "
+                                "Please ensure the function exists and can be run from this module."
+                            )
+                            return
+                    else:
+                        print(f"No registered command {cmd_command!r}. Please check your configuration.")
+                        return
+                else:
+                    print(
+                        "No [project.entry-points.pymhfcmd] section found in the pyproject.toml. "
+                        "Please create one to register and run custom commands."
+                    )
+                    return
+        if plugin_name is None:
             print(
                 f"Cannot determine the project at the path specified {plugin_name}.\n"
                 "Please ensure the pyproject.toml file has the [project.entry-points.pymhflib] entry."
+                "This process will not continue."
             )
+            return
 
     # Get the location of app data, then construct the expected folder name.
     appdata_data = os.environ.get("APPDATA", op.expanduser("~"))
@@ -206,13 +294,32 @@ def run():
         # This check is to ensure compatibility with multiple versions of python as the code 3.10+ isn't
         # backward compatible.
         if isinstance(eps, dict):
-            loaded_libs = eps.get("pymhflib", [])
+            pymhf_entry_points = eps.get("pymhflib", [])
         else:
-            loaded_libs = eps.select(group="pymhflib")
+            pymhf_entry_points = eps.select(group="pymhflib")
+        if mode == ModeEnum.COMMAND:
+            if isinstance(eps, dict):
+                pymhf_commands = eps.get("pymhfcmd", [])
+            else:
+                pymhf_commands = eps.select(group="pymhfcmd")
+
+            if not pymhf_commands:
+                print(
+                    "No [project.entry-points.pymhfcmd] section found in the pyproject.toml. "
+                    "Please create one to register and run custom commands."
+                )
+
         required_lib = None
-        for lib in loaded_libs:
-            if lib.name.lower() == plugin_name.lower():
-                required_lib = lib
+        resolved_command = None
+
+        for ep in pymhf_entry_points:
+            if ep.name.lower() == plugin_name.lower():
+                required_lib = ep
+        if mode == ModeEnum.COMMAND:
+            for cmd in pymhf_commands:
+                # See if the library has a check command defined.
+                if cmd.name.lower() == cmd_command:
+                    resolved_command = cmd.value
 
         if required_lib is None:
             print(
@@ -222,6 +329,26 @@ def run():
             return
 
         module_dir = op.dirname(required_lib.load().__file__)
+
+        if mode == ModeEnum.COMMAND:
+            if resolved_command is not None:
+                # We can use importlib here since the library has to be installed if we have made it here.
+                import importlib
+
+                mod = importlib.import_module(plugin_name)
+                cmd = getattr(mod, resolved_command, None)
+                if cmd is not None:
+                    cmd()
+                    return
+                else:
+                    print(
+                        f"Command {resolved_command!r} cannot be found in module {plugin_name}. "
+                        "Please ensure the function exists and can be run from this module."
+                    )
+                    return
+            else:
+                print(f"No registered command {cmd_command!r}. Please check your configuration.")
+                return
 
     else:
         module_dir = op.join(local_plugin_dir, plugin_name)
@@ -269,7 +396,7 @@ def run():
         write_pymhf_settings(local_config, dst)
         os.remove(config_progress_file)
         initial_config = False
-    elif is_config_mode:
+    elif mode == ModeEnum.CONFIG:
         if args.open:
             print(f"Opening {cfg_folder!r} and exiting")
             subprocess.call(f'explorer "{cfg_folder}"')

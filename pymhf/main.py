@@ -117,12 +117,13 @@ def get_process_when_ready(
 def load_mod_file(filepath):
     """Load an individual file as a mod."""
     pymhf_settings = read_pymhf_settings(filepath, True)
-    _run_module(filepath, pymhf_settings, None)
+    _run_module(filepath, pymhf_settings, None, None)
 
 
 def load_module(plugin_name: str, module_path: str):
     """Load the module."""
-    local_cfg_file = op.join(APPDATA_DIR, "pymhf", plugin_name, "pymhf.local.toml")
+    config_dir = op.join(APPDATA_DIR, "pymhf", plugin_name)
+    local_cfg_file = op.join(config_dir, "pymhf.local.toml")
     if op.exists(local_cfg_file):
         local_cfg = read_pymhf_settings(local_cfg_file).get("local_config", {})
     else:
@@ -131,7 +132,7 @@ def load_module(plugin_name: str, module_path: str):
     module_cfg = read_pymhf_settings(module_cfg_file)
     module_cfg.update(local_cfg)
 
-    _run_module(module_path, module_cfg, plugin_name)
+    _run_module(module_path, module_cfg, plugin_name, config_dir)
 
 
 def _required_config_val(config: dict[str, str], key: str) -> Any:
@@ -140,7 +141,7 @@ def _required_config_val(config: dict[str, str], key: str) -> Any:
     raise ValueError(f"[tool.pymhf] missing config value: {key}")
 
 
-def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[str]):
+def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[str], config_dir: str):
     """Run the module provided.
 
     Parameters
@@ -164,6 +165,11 @@ def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[
     except (ValueError, TypeError):
         steam_gameid = 0
     start_paused = config.get("start_paused", False)
+
+    if config_dir is None:
+        cache_dir = op.join(module_path, ".cache")
+    else:
+        cache_dir = op.join(config_dir, ".cache")
 
     # Check if the module_path is a file or a folder.
     _module_path = module_path
@@ -316,6 +322,7 @@ pymhf.core._internal.BINARY_PATH = {binary_path!r}
 pymhf.core._internal.SINGLE_FILE_MOD = {single_file_mod!r}
 pymhf.core._internal.MOD_SAVE_DIR = {mod_save_dir!r}
 pymhf.core._internal.INCLUDED_ASSEMBLIES = {included_assemblies!r}
+pymhf.core._internal.CACHE_DIR = {cache_dir!r}
                 """
             )
         except Exception as e:
