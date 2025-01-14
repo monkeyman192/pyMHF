@@ -243,7 +243,7 @@ def run():
                         mod = import_file(op.join(local_plugin_dir, plugin_name))
                         cmd = getattr(mod, resolved_command, None)
                         if cmd is not None:
-                            cmd()
+                            cmd(extras)
                             return
                         else:
                             print(
@@ -338,7 +338,7 @@ def run():
                 mod = importlib.import_module(plugin_name)
                 cmd = getattr(mod, resolved_command, None)
                 if cmd is not None:
-                    cmd()
+                    cmd(extras)
                     return
                 else:
                     print(
