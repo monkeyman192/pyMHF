@@ -628,11 +628,7 @@ class HookManager:
                         "When creating a manual hook, the first detour for any given name MUST have a "
                         "func_def argument."
                     )
-                if (offset := hook._hook_offset) is None:
-                    offset = module_data.FUNC_OFFSETS.get(hook_func_name)
-                if (pattern := hook._hook_offset) is None:
-                    pattern = module_data.FUNC_PATTERNS.get(hook_func_name)
-                if offset is None and pattern is None:
+                if hook._hook_offset is None and hook._hook_pattern is None:
                     hook_logger.error(
                         f"The manual hook for {hook_func_name} was defined with no offset or pattern. One of"
                         "these is required to register a hook. The hook will not be registered."
@@ -641,8 +637,8 @@ class HookManager:
                 binary = hook._hook_binary or module_data.FUNC_BINARY
                 self.hooks[hook_func_name] = FuncHook(
                     hook._hook_func_name,
-                    offset=offset,
-                    pattern=pattern,
+                    offset=hook._hook_offset,
+                    pattern=hook._hook_pattern,
                     func_def=funcdef,
                     binary=binary,
                 )
@@ -659,6 +655,7 @@ class HookManager:
                     func_ptr = dll_func_ptrs.get(hook_func_name)
                     # For now, cast the func_ptr object back to the target location in memory.
                     # This is wasteful, but simple for now for testing...
+                    hook_logger.debug(func_ptr)
                     target = ctypes.cast(func_ptr, ctypes.c_void_p).value
                     hook_logger.info(f"{func_ptr} points to 0x{target:X}")
                     self.hooks[hook_func_name] = FuncHook(

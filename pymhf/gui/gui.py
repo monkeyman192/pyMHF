@@ -2,16 +2,19 @@ import logging
 from enum import Enum
 from typing import Optional, TypedDict, Union
 
-# import win32gui
 # import win32con
 import dearpygui.dearpygui as dpg
+import win32gui
 
 import pymhf.core._internal as _internal
+import pymhf.core.caching as cache
 from pymhf.core.mod_loader import Mod, ModManager
 from pymhf.gui.protocols import ButtonProtocol, VariableProtocol, VariableType
+from pymhf.utils.winapi import set_window_transparency
 
 SETTINGS_NAME = "_pymhf_gui_settings"
 DETAILS_NAME = "_pymhf_gui_details"
+WINDOW_TITLE = "pyMHF"
 
 # TODO:
 # - add keyboard shortcut to show or hide the GUI
@@ -32,15 +35,19 @@ class Widgets(TypedDict):
     variables: dict[str, list[tuple[Union[int, str], WidgetType]]]
 
 
+def toggle_on_top(item: int, value: bool):
+    dpg.set_viewport_always_top(value)
+
+
 class GUI:
     def __init__(self, mod_manager: ModManager, config: dict):
         self.config = config
         self.scale = config.get("gui", {}).get("scale", 1)
         dpg.create_context()
         dpg.create_viewport(
-            title="pyMHF",
-            width=int(400 * self.scale),
-            height=int(400 * self.scale),
+            title=WINDOW_TITLE,
+            width=int(600 * self.scale),
+            height=int(800 * self.scale),
             decorated=True,
         )
         dpg.setup_dearpygui()
@@ -60,7 +67,13 @@ class GUI:
         self._window_dimensions = [0, 0]
         self._window_position = [0, 0]
 
+        # Some info related settings
+        self._hide_pyd_modules = True
+
         self.add_window()
+
+    def alpha_callback(self, sender, app_data):
+        set_window_transparency(self.hwnd, app_data)
 
     def show_window(self):
         # TODO: This needs to be called twice to run properly...
@@ -98,20 +111,43 @@ class GUI:
         tab_alias = dpg.get_alias_id(tab)
         self.tabs[tab_alias] = SETTINGS_NAME
 
-        # Toggle for debug mode
-        with dpg.group(horizontal=True, parent=SETTINGS_NAME):
-            dpg.add_text("Enable debug mode")
-            dpg.add_checkbox(
-                source="is_debug",
-                callback=self.toggle_debug_mode,
-            )
-        # Toggle for whether to show the gui at all.
-        with dpg.group(horizontal=True, parent=SETTINGS_NAME):
-            dpg.add_text("Show GUI")
-            dpg.add_checkbox(
-                source="show_gui",
-                callback=self.toggle_show_gui,
-            )
+        with dpg.table(header_row=False, parent=SETTINGS_NAME, policy=dpg.mvTable_SizingStretchProp):
+            dpg.add_table_column()
+            dpg.add_table_column()
+
+            # Toggle for debug mode
+            with dpg.table_row():
+                dpg.add_text("Enable debug mode")
+                dpg.add_checkbox(
+                    source="is_debug",
+                    callback=self.toggle_debug_mode,
+                )
+
+            # Toggle for whether to show the gui at all.
+            with dpg.table_row():
+                dpg.add_text("Show GUI")
+                dpg.add_checkbox(
+                    source="show_gui",
+                    callback=self.toggle_show_gui,
+                )
+
+            # Add a slider for the visibility.
+            with dpg.table_row():
+                dpg.add_text("Transparency")
+                dpg.add_slider_float(
+                    default_value=1,
+                    max_value=1,
+                    min_value=0,
+                    callback=self.alpha_callback,
+                )
+
+            # Add a checkbox to toggle whether the window should stay always on top.
+            with dpg.table_row():
+                dpg.add_text("Always on top")
+                dpg.add_checkbox(callback=toggle_on_top)
+
+    def _toggle_show_pyd(self, item: int, value: bool):
+        self._hide_pyd_modules = value
 
     def add_details_tab(self):
         tab = dpg.add_tab(label="Details", tag=DETAILS_NAME, parent="tabbar")
@@ -124,6 +160,20 @@ class GUI:
             dll_branch = dpg.add_tree_node(label=dll_name, parent=tree)
             for func_name in functions.keys():
                 dpg.add_tree_node(label=func_name, parent=dll_branch, leaf=True, bullet=True)
+
+        # TODO: Add this toggle back and make it work.
+        # with dpg.group(horizontal=True, parent=DETAILS_NAME):
+        #     dpg.add_text("Hide *.pyd files")
+        #     dpg.add_checkbox(callback=self._toggle_show_pyd, default_value=True)
+
+        # Add in a section to show the actual list of loaded modules
+        module_tree = dpg.add_tree_node(label="Loaded modules", parent=DETAILS_NAME)
+        if self._hide_pyd_modules:
+            names = (name for name in cache.module_map.keys() if not name.endswith(".pyd"))
+        else:
+            names = (name for name in cache.module_map.keys())
+        for func_name in names:
+            dpg.add_tree_node(label=func_name, parent=module_tree, leaf=True, bullet=True)
 
     def reload_tab(self, cls: Mod):
         """Reload the tab for the specific mod."""
@@ -235,8 +285,8 @@ class GUI:
     def add_window(self):
         with dpg.window(
             label="pyMHF",
-            width=int(200 * self.scale),
-            height=int(200 * self.scale),
+            width=int(600 * self.scale),
+            height=int(800 * self.scale),
             tag="pyMHF",
             on_close=self.exit,
         ):
@@ -340,7 +390,8 @@ class GUI:
     def run(self):
         try:
             dpg.show_viewport()
-            dpg.set_primary_window("pyMHF", True)
+            dpg.set_primary_window(WINDOW_TITLE, True)
+            self.hwnd = win32gui.FindWindow(None, WINDOW_TITLE)
             while dpg.is_dearpygui_running():
                 # For each tracking variable, update the value.
                 for vars in self.tracking_variables.get(self._current_tab, []):
