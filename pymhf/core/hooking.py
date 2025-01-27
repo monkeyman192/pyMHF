@@ -19,8 +19,9 @@ from pymhf.core._types import (
     KeyPressProtocol,
     ManualHookProtocol,
 )
-from pymhf.core.memutils import _get_binary_info, find_pattern_in_binary
+from pymhf.core.memutils import _get_binary_info, find_pattern_in_binary, get_addressof
 from pymhf.core.module_data import module_data
+from pymhf.utils.iced import get_first_jmp_addr, load_rsp
 
 # from pymhf.core.caching import function_cache, pattern_cache
 
@@ -75,6 +76,8 @@ class FuncHook(cyminhook.MinHook):
         self._pattern = pattern
         self._func_def = func_def
         self._binary = binary
+        self._rsp_addr = ctypes.c_ulonglong(0)
+        self._log_rsp = False
         if self._binary is not None:
             if (hm := _get_binary_info(self._binary)) is not None:
                 _, module = hm
@@ -95,6 +98,11 @@ class FuncHook(cyminhook.MinHook):
         self.state = None
         self._name = detour_name
         self._initialised = False
+
+    @property
+    def calling_address(self):
+        if self._rsp_addr.value:
+            return self._rsp_addr.value
 
     @property
     def name(self):
@@ -335,6 +343,12 @@ class FuncHook(cyminhook.MinHook):
 
     def _compound_detour(self, *args):
         ret = None
+
+        # If the hook needs to log the address it was called from, do so before anything else.
+        if self._log_rsp and self.calling_address:
+            offset = self.calling_address - _internal.BASE_ADDRESS
+            hook_logger.info(f"The function {self.name} got called from 0x{offset:X}")
+
         # Loop over the before detours, keeping the last none-None return value.
         try:
             for i, func in enumerate(self._before_detours):
@@ -537,6 +551,18 @@ def one_shot(func: HookProtocol) -> HookProtocol:
     return func
 
 
+def get_caller(log: bool = False):
+    """Log the location relative to the binary where the function was called from.
+    This will be logged every time the function detour is run."""
+
+    def inner(func: HookProtocol) -> HookProtocol:
+        setattr(func, "_get_caller", True)
+        setattr(func, "_log_caller", log)
+        return func
+
+    return inner
+
+
 def on_key_pressed(event: str):
     def wrapped(func: Callable[..., Any]) -> KeyPressProtocol:
         setattr(func, "_hotkey", event)
@@ -565,6 +591,8 @@ class HookManager:
         # for individual mods.
         self.custom_callbacks: dict[str, dict[DetourTime, set[HookProtocol]]] = {}
         self._uninitialized_hooks: set[str] = set()
+
+        self._caller_logging_detours: dict[str, bool] = {}
 
     def resolve_dependencies(self):
         """Resolve dependencies of hooks.
@@ -675,6 +703,14 @@ class HookManager:
             self._uninitialized_hooks.add(hook_func_name)
         self.hooks[hook_func_name].add_detour(hook)
 
+        if getattr(hook, "_get_caller", False):
+            # Add a tuple to the set of caller
+            should_log = getattr(hook, "_log_caller", False)
+            if hook_func_name not in self._caller_logging_detours:
+                self._caller_logging_detours[hook_func_name] = should_log
+            else:
+                self._caller_logging_detours[hook_func_name] |= should_log
+
     def initialize_hooks(self) -> int:
         """Initialize any uninitialized hooks.
         This will also enable the hooks so that they become active.
@@ -702,6 +738,33 @@ class HookManager:
             except Exception:
                 hook_logger.error(f"Unable to enable {hook_name} because:")
                 hook_logger.error(traceback.format_exc())
+
+            # If any of the hooked functions want to log where they were called from, we need to overwrite
+            # part of the trampoline bytes to capture the RSP register.
+            if hook_name in self._caller_logging_detours:
+                # First, get the first jump so we can go to the trampoline bytes.
+                jmp_data = (ctypes.c_char * 0x10).from_address(hook.target)
+                jmp_addr = get_first_jmp_addr(jmp_data.raw, hook.target)
+                if jmp_addr:
+                    # minhook seems to have only gotten 0x20 bytes for the trampoline. Would be nice to have
+                    # more but this is all we have to work with. It's luckily *just* enough.
+                    # If we ever need more we'll need to make our own little detour somewhere else.
+                    data_at_detour = (ctypes.c_char * 0x20).from_address(jmp_addr)
+
+                    rsp_buff_addr = get_addressof(hook._rsp_addr)
+
+                    # Get the original bytes written by minhook so that we can restore them.
+                    orig_bytes = data_at_detour.raw[:0xE]
+                    rsp_load_bytes = load_rsp(rsp_buff_addr, jmp_addr)
+                    for i in range(len(rsp_load_bytes)):
+                        data_at_detour[i] = rsp_load_bytes[i]
+                    for j in range(len(orig_bytes)):
+                        data_at_detour[i + j + 1] = orig_bytes[j]
+                    hook_logger.info(
+                        f"The function {hook_name} has a modified hook to get the calling address."
+                    )
+                    hook._log_rsp = self._caller_logging_detours[hook_name]
+
         # There are no uninitialized hooks.
         self._uninitialized_hooks = set()
         return count
