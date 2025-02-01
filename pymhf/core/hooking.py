@@ -2,6 +2,7 @@ import ast
 import ctypes
 import inspect
 import logging
+import struct
 import traceback
 from _ctypes import CFuncPtr
 from collections.abc import Callable
@@ -13,6 +14,7 @@ import cyminhook
 import pymhf.core._internal as _internal
 from pymhf.core._types import (
     FUNCDEF,
+    CallerHookProtocol,
     DetourTime,
     HookProtocol,
     ImportedHookProtocol,
@@ -42,6 +44,9 @@ def _detour_is_valid(f):
 
 # A VERY rudimentary cache untill we implement gh-2.
 pattern_cache: dict[str, int] = {}
+
+
+IS_64BIT = struct.calcsize("P") * 8 == 64
 
 
 # TODO: Move to a different file with `Mod` from mod_loader.py
@@ -77,7 +82,6 @@ class FuncHook(cyminhook.MinHook):
         self._func_def = func_def
         self._binary = binary
         self._rsp_addr = ctypes.c_ulonglong(0)
-        self._log_rsp = False
         if self._binary is not None:
             if (hm := _get_binary_info(self._binary)) is not None:
                 _, module = hm
@@ -100,9 +104,9 @@ class FuncHook(cyminhook.MinHook):
         self._initialised = False
 
     @property
-    def calling_address(self):
+    def caller_address(self):
         if self._rsp_addr.value:
-            return self._rsp_addr.value
+            return self._rsp_addr.value - _internal.BASE_ADDRESS
 
     @property
     def name(self):
@@ -283,6 +287,11 @@ class FuncHook(cyminhook.MinHook):
             self._oneshot_detours[detour] = _one_shot
             detour_list.append(_one_shot)
 
+        # If the detour needs the `caller_address` property, add it.
+        if getattr(detour, "_get_caller", False) is True:
+            # We need to get the type of the class and assign the attribute to the class function itself.
+            detour.__func__.caller_address = lambda: self.caller_address
+
     def remove_detour(self, detour: HookProtocol):
         """Remove the provided detour from this FuncHook."""
         # Determine the detour list to use. If none, then return.
@@ -343,11 +352,6 @@ class FuncHook(cyminhook.MinHook):
 
     def _compound_detour(self, *args):
         ret = None
-
-        # If the hook needs to log the address it was called from, do so before anything else.
-        if self._log_rsp and self.calling_address:
-            offset = self.calling_address - _internal.BASE_ADDRESS
-            hook_logger.info(f"The function {self.name} got called from 0x{offset:X}")
 
         # Loop over the before detours, keeping the last none-None return value.
         try:
@@ -551,16 +555,15 @@ def one_shot(func: HookProtocol) -> HookProtocol:
     return func
 
 
-def get_caller(log: bool = False):
+def get_caller(func: HookProtocol) -> CallerHookProtocol:
     """Log the location relative to the binary where the function was called from.
     This will be logged every time the function detour is run."""
 
-    def inner(func: HookProtocol) -> HookProtocol:
-        setattr(func, "_get_caller", True)
-        setattr(func, "_log_caller", log)
+    if not IS_64BIT:
+        hook_logger.warning("Getting the caller in 32bit applications is not currently supported")
         return func
-
-    return inner
+    setattr(func, "_get_caller", True)
+    return func
 
 
 def on_key_pressed(event: str):
@@ -592,7 +595,7 @@ class HookManager:
         self.custom_callbacks: dict[str, dict[DetourTime, set[HookProtocol]]] = {}
         self._uninitialized_hooks: set[str] = set()
 
-        self._caller_logging_detours: dict[str, bool] = {}
+        self._get_caller_detours: set[str] = set()
 
     def resolve_dependencies(self):
         """Resolve dependencies of hooks.
@@ -704,12 +707,7 @@ class HookManager:
         self.hooks[hook_func_name].add_detour(hook)
 
         if getattr(hook, "_get_caller", False):
-            # Add a tuple to the set of caller
-            should_log = getattr(hook, "_log_caller", False)
-            if hook_func_name not in self._caller_logging_detours:
-                self._caller_logging_detours[hook_func_name] = should_log
-            else:
-                self._caller_logging_detours[hook_func_name] |= should_log
+            self._get_caller_detours.add(hook_func_name)
 
     def initialize_hooks(self) -> int:
         """Initialize any uninitialized hooks.
@@ -741,7 +739,7 @@ class HookManager:
 
             # If any of the hooked functions want to log where they were called from, we need to overwrite
             # part of the trampoline bytes to capture the RSP register.
-            if hook_name in self._caller_logging_detours:
+            if hook_name in self._get_caller_detours:
                 # First, get the first jump so we can go to the trampoline bytes.
                 jmp_data = (ctypes.c_char * 0x10).from_address(hook.target)
                 jmp_addr = get_first_jmp_addr(jmp_data.raw, hook.target)
@@ -763,7 +761,6 @@ class HookManager:
                     hook_logger.info(
                         f"The function {hook_name} has a modified hook to get the calling address."
                     )
-                    hook._log_rsp = self._caller_logging_detours[hook_name]
 
         # There are no uninitialized hooks.
         self._uninitialized_hooks = set()

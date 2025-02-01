@@ -20,15 +20,23 @@ BITS = 64
 
 
 def create_jmp_bytes(target: int, rip: int):
+    """Assemble the required bytes to jump to some address."""
     instructions = []
     instructions.append(Instruction.create_branch(Code.JMP_REL32_64, target))
-
     encoder = BlockEncoder(64)
     encoder.add_many(instructions)
     return encoder.encode(rip)
 
 
-def load_rsp(pAllocated: int, rip: int):
+def load_rsp(rsp_buff_addr: int, rip: int) -> bytes:
+    """Assemble the required bytes to write the value of the rsp register into a buffer which can be accessed
+    by the detour.
+    The asm which is assembled is
+    ```x86asm
+    mov rax, [rsp]
+    mov [rsp_buff_addr], rax
+    ```
+    """
     instructions = [
         Instruction.create_reg_mem(
             Code.MOV_R64_RM64,
@@ -37,7 +45,7 @@ def load_rsp(pAllocated: int, rip: int):
         ),
         Instruction.create_mem_reg(
             Code.MOV_MOFFS64_RAX,
-            MemoryOperand(displ=pAllocated, displ_size=8),
+            MemoryOperand(displ=rsp_buff_addr, displ_size=8),
             Register.RAX,
         ),
     ]
@@ -47,6 +55,7 @@ def load_rsp(pAllocated: int, rip: int):
 
 
 def get_first_jmp_addr(data: bytes, ip: int) -> int:
+    """Get the address of the first jmp instruction found in the bytes when disassembled."""
     decoder = Decoder(BITS, data, ip=ip)
     for instr in decoder:
         if instr.mnemonic == Mnemonic.JMP:
@@ -55,6 +64,7 @@ def get_first_jmp_addr(data: bytes, ip: int) -> int:
 
 
 def disassemble(data: bytes, ip: int) -> None:
+    """Utility function for disassembly bytes."""
     formatter = FastFormatter()
     decoder = Decoder(BITS, data, ip=ip)
     for instruction in decoder:
