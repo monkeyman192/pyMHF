@@ -1,9 +1,20 @@
 # Change Log
 
-## Current (0.1.8)
+## Current (0.1.10)
+
+- Added `pymhf.core.hooking.get_caller` decorator for detours. When added, this will determine the location the function was called from. To see this value automatically pass `log=True` in to the decorator. ([gh-34](https://github.com/monkeyman192/pyMHF/issues/34)). NOTE: This currently will only work for 64bit applications.
+
+## 0.1.9 (23/01/2025)
+
+- Added `cmd` mode to the configuration to run commands in any registered libraries.
+- Added trapaarency slider and "always on top" options to the pymhf window.
+- Made a fix to manual hooks which were being declared with a pattern and name only.
+
+## 0.1.8 (26/12/2024)
 
 - Add ability for single-file mods to be run by pymhf. ([gh-19](https://github.com/monkeyman192/pyMHF/issues/19))
-- Changed the config system to use toml files.
+- Changed the config system to use toml files. ([gh-27])(https://github.com/monkeyman192/pyMHF/issues/27)
+- Added ability for pymhf to be attached to an already running process. ([gh-28])(https://github.com/monkeyman192/pyMHF/issues/28)
 
 ### 0.1.7 (10/10/2024)
 

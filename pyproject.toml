@@ -32,6 +32,7 @@ dependencies = [
   "packaging",
   "tomlkit",
   "pefile",
+  "iced_x86",
 ]
 dynamic = ["version"]
 

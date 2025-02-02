@@ -25,8 +25,18 @@ class HookProtocol(Protocol):
     _hook_time: DetourTime
     _custom_trigger: Optional[str]
     _func_overload: Optional[str]
+    _get_caller: Optional[bool]
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
+
+
+class CallerHookProtocol(HookProtocol):
+    def caller_address(self) -> int:
+        """The address within the calling binary that this functiuon detour was called from.
+        Note that this will be the address one instruction after the caller since this value is where
+        execution returns to after the detours and original function have been run.
+        """
+        ...
 
 
 class ManualHookProtocol(HookProtocol):
