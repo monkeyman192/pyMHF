@@ -2,7 +2,8 @@
 
 ## Current (0.1.10)
 
-- Added `pymhf.core.hooking.get_caller` decorator for detours. When added, this will determine the location the function was called from. To see this value automatically pass `log=True` in to the decorator. ([gh-34](https://github.com/monkeyman192/pyMHF/issues/34)). NOTE: This currently will only work for 64bit applications.
+- Added support for `pymhf.core.hooking.get_caller` in 32bit applications.
+- Added `pymhf.core.hooking.get_caller` decorator for detours. When added, this will determine the location the function was called from.. ([gh-34](https://github.com/monkeyman192/pyMHF/issues/34)). NOTE: This currently will only work for 64bit applications.
 
 ## 0.1.9 (23/01/2025)
 

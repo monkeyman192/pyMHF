@@ -23,11 +23,18 @@ from pymhf.core._types import (
 )
 from pymhf.core.memutils import _get_binary_info, find_pattern_in_binary, get_addressof
 from pymhf.core.module_data import module_data
-from pymhf.utils.iced import get_first_jmp_addr, load_rsp
+from pymhf.utils.iced import generate_load_stack_pointer_bytes, get_first_jmp_addr
 
 # from pymhf.core.caching import function_cache, pattern_cache
 
 hook_logger = logging.getLogger("HookManager")
+
+
+IS_64BIT = struct.calcsize("P") * 8 == 64
+if IS_64BIT:
+    BITS = 64
+else:
+    BITS = 32
 
 
 # Currently unused, but can maybe figure out how to utilise it.
@@ -558,10 +565,6 @@ def one_shot(func: HookProtocol) -> HookProtocol:
 def get_caller(func: HookProtocol) -> CallerHookProtocol:
     """Log the location relative to the binary where the function was called from.
     This will be logged every time the function detour is run."""
-
-    if not IS_64BIT:
-        hook_logger.warning("Getting the caller in 32bit applications is not currently supported")
-        return func
     setattr(func, "_get_caller", True)
     return func
 
@@ -751,9 +754,9 @@ class HookManager:
 
                     rsp_buff_addr = get_addressof(hook._rsp_addr)
 
+                    rsp_load_bytes = generate_load_stack_pointer_bytes(rsp_buff_addr, jmp_addr, BITS)
                     # Get the original bytes written by minhook so that we can restore them.
-                    orig_bytes = data_at_detour.raw[:0xE]
-                    rsp_load_bytes = load_rsp(rsp_buff_addr, jmp_addr)
+                    orig_bytes = data_at_detour.raw[:len(rsp_load_bytes)]
                     for i in range(len(rsp_load_bytes)):
                         data_at_detour[i] = rsp_load_bytes[i]
                     for j in range(len(orig_bytes)):

@@ -105,7 +105,7 @@ def get_process_when_ready(
             print("Failed to inject python for some reason... Trying again in 2 seconds")
             time.sleep(2)
             binary.inject_python_interpreter()
-        print("Python injected")
+        print(f"Python injected into pid {binary.process_id}")
         if start_paused:
             target_process.suspend()
 
@@ -332,7 +332,9 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
             shellcode = f.read()
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
         print(f"Injecting hooking code into proc id {pm_binary.process_id}")
-        futures.append(executor.submit(pm_binary.inject_python_shellcode, shellcode))
+        fut = executor.submit(pm_binary.inject_python_shellcode, shellcode)
+        fut.add_done_callback(lambda x: print(f"INJECTOR HAS EXITED! {x.result()}"))
+        futures.append(fut)
 
         # Wait for a user input to start the process.
         # TODO: Send a signal back up from the process to trigger this automatically.
