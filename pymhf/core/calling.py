@@ -1,4 +1,4 @@
-from ctypes import CFUNCTYPE
+from ctypes import CFUNCTYPE, WinDLL
 from logging import getLogger
 from typing import Any, Optional
 
@@ -10,6 +10,29 @@ from pymhf.core.module_data import module_data
 from pymhf.core.utils import saferun_decorator
 
 calling_logger = getLogger("CallingManager")
+
+
+@saferun_decorator
+def call_exported(name: str, func_def: FUNCDEF, *args):
+    """ Call a function exported by the main binary.
+
+    Parameters
+    ----------
+    name
+        The name of the exported function. This will generally be the mangled name of the function as provided
+        by IDA/ghidra.
+    func_def
+        The restype and argtypes of the function being called.
+    *args
+        The arguments to be passed to the function being called.
+    """
+    # TODO: Improve this so that the own_dll is cached as well as the func_def so that we only incur a slight
+    # performance hit the very first time.
+    own_dll = WinDLL(_internal.BINARY_PATH)
+    func_ptr = getattr(own_dll, name)
+    func_ptr.restype = func_def.restype
+    func_ptr.argtypes = func_def.argtypes
+    return func_ptr(*args)
 
 
 @saferun_decorator

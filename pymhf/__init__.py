@@ -3,6 +3,7 @@ import os
 import os.path as op
 import shutil
 import subprocess
+import sys
 from enum import Enum
 from importlib.metadata import PackageNotFoundError, entry_points, version
 from typing import Optional
@@ -92,9 +93,11 @@ def run():
     from .utils.parse_toml import _parse_toml, read_pymhf_settings, write_pymhf_settings
 
     parser = argparse.ArgumentParser(
-        prog="pyMHF program runner",
+        prog="pymhf",
         description="Run the registered plugin",
     )
+
+    parser.add_argument("--version", action="store_true", help="Print the version of pyMHF and exit")
 
     command_parser = parser.add_subparsers(dest="_command")
 
@@ -182,6 +185,10 @@ def run():
     # )
 
     args, extras = parser.parse_known_args()  # noqa
+
+    if args.version:
+        print(__version__)
+        sys.exit(0)
 
     # TODO: The extras can be passed to the registered library in the future.
 

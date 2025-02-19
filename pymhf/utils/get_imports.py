@@ -11,7 +11,7 @@ imports = {}
 logger = getLogger(__name__)
 
 
-def get_imports(binary_path: str) -> dict:
+def get_imports(binary_path: str) -> dict[str, ctypes._CFuncPtr]:
     directory, binary = op.split(binary_path)
     pe = pefile.PE(op.join(directory, binary), fast_load=True)
     pe.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_IMPORT"]])

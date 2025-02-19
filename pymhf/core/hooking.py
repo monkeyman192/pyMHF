@@ -16,6 +16,7 @@ from pymhf.core._types import (
     FUNCDEF,
     CallerHookProtocol,
     DetourTime,
+    ExportedHookProtocol,
     HookProtocol,
     ImportedHookProtocol,
     KeyPressProtocol,
@@ -23,18 +24,14 @@ from pymhf.core._types import (
 )
 from pymhf.core.memutils import _get_binary_info, find_pattern_in_binary, get_addressof
 from pymhf.core.module_data import module_data
-from pymhf.utils.iced import generate_load_stack_pointer_bytes, get_first_jmp_addr
+from pymhf.utils.iced import disassemble, generate_load_stack_pointer_bytes, get_first_jmp_addr
 
 # from pymhf.core.caching import function_cache, pattern_cache
 
 hook_logger = logging.getLogger("HookManager")
 
 
-IS_64BIT = struct.calcsize("P") * 8 == 64
-if IS_64BIT:
-    BITS = 64
-else:
-    BITS = 32
+BITS = struct.calcsize("P") * 8
 
 
 # Currently unused, but can maybe figure out how to utilise it.
@@ -51,9 +48,6 @@ def _detour_is_valid(f):
 
 # A VERY rudimentary cache untill we implement gh-2.
 pattern_cache: dict[str, int] = {}
-
-
-IS_64BIT = struct.calcsize("P") * 8 == 64
 
 
 # TODO: Move to a different file with `Mod` from mod_loader.py
@@ -88,7 +82,10 @@ class FuncHook(cyminhook.MinHook):
         self._pattern = pattern
         self._func_def = func_def
         self._binary = binary
-        self._rsp_addr = ctypes.c_ulonglong(0)
+        if BITS == 64:
+            self._rsp_addr = ctypes.c_ulonglong(0)
+        else:
+            self._rsp_addr = ctypes.c_ulong(0)
         if self._binary is not None:
             if (hm := _get_binary_info(self._binary)) is not None:
                 _, module = hm
@@ -114,6 +111,7 @@ class FuncHook(cyminhook.MinHook):
     def caller_address(self):
         if self._rsp_addr.value:
             return self._rsp_addr.value - _internal.BASE_ADDRESS
+        return 0
 
     @property
     def name(self):
@@ -544,13 +542,30 @@ def disable(obj):
     return obj
 
 
-def imported(dll_name: str, func_name: str, func_def: FUNCDEF):
+def imported(dll_name: str, func_name: str, func_def: FUNCDEF, detour_time: str = "after"):
     def inner(detour: Callable[..., Any]) -> ImportedHookProtocol:
         HookFactory._set_detour_as_funchook(detour, None, func_name)
         setattr(detour, "_dll_name", dll_name)
         setattr(detour, "_is_imported_func_hook", True)
         setattr(detour, "_hook_func_def", func_def)
-        setattr(detour, "_hook_time", DetourTime.AFTER)
+        if detour_time == "before":
+            setattr(detour, "_hook_time", DetourTime.BEFORE)
+        else:
+            setattr(detour, "_hook_time", DetourTime.AFTER)
+        return detour
+
+    return inner
+
+
+def exported(func_name: str, func_def: FUNCDEF, detour_time: str = "after"):
+    def inner(detour: Callable[..., Any]) -> ExportedHookProtocol:
+        HookFactory._set_detour_as_funchook(detour, None, func_name)
+        setattr(detour, "_is_exported_func_hook", True)
+        setattr(detour, "_hook_func_def", func_def)
+        if detour_time == "before":
+            setattr(detour, "_hook_time", DetourTime.BEFORE)
+        else:
+            setattr(detour, "_hook_time", DetourTime.AFTER)
         return detour
 
     return inner
@@ -664,7 +679,7 @@ class HookManager:
                     )
                 if hook._hook_offset is None and hook._hook_pattern is None:
                     hook_logger.error(
-                        f"The manual hook for {hook_func_name} was defined with no offset or pattern. One of"
+                        f"The manual hook for {hook_func_name} was defined with no offset or pattern. One of "
                         "these is required to register a hook. The hook will not be registered."
                     )
                     return
@@ -691,7 +706,6 @@ class HookManager:
                     # This is wasteful, but simple for now for testing...
                     hook_logger.debug(func_ptr)
                     target = ctypes.cast(func_ptr, ctypes.c_void_p).value
-                    hook_logger.info(f"{func_ptr} points to 0x{target:X}")
                     self.hooks[hook_func_name] = FuncHook(
                         hook._hook_func_name,
                         offset=target,
@@ -700,6 +714,21 @@ class HookManager:
                     )
                 else:
                     hook_logger.error(f"Cannot find {dll_name} in the import list")
+            elif hook._is_exported_func_hook:
+                hook = cast(ExportedHookProtocol, hook)
+                if _internal.BINARY_PATH is None:
+                    hook_logger.error("Current running binary path unknown. Cannot hook exported functions")
+                    return
+                # TODO: This is inefficient. We should only instantiate the "dll" once.
+                own_dll = ctypes.WinDLL(_internal.BINARY_PATH)
+                func_ptr = getattr(own_dll, hook_func_name)
+                target = ctypes.cast(func_ptr, ctypes.c_void_p).value
+                self.hooks[hook_func_name] = FuncHook(
+                    hook._hook_func_name,
+                    offset=target,
+                    func_def=hook._hook_func_def,
+                    offset_is_absolute=True,
+                )
             else:
                 # TODO: have a way to differentiate the binary here.
                 self.hooks[hook_func_name] = FuncHook(
@@ -752,11 +781,18 @@ class HookManager:
                     # If we ever need more we'll need to make our own little detour somewhere else.
                     data_at_detour = (ctypes.c_char * 0x20).from_address(jmp_addr)
 
+                    # hook_logger.info("Instructions before:")
+                    # disassemble(data_at_detour.raw, jmp_addr)
+                    # hook_logger.info(data_at_detour.raw.hex())
+
                     rsp_buff_addr = get_addressof(hook._rsp_addr)
+                    # hook_logger.info(f"[{BITS}bit] RSP addr: 0x{rsp_buff_addr:X} RIP: 0x{jmp_addr:X}")
 
                     rsp_load_bytes = generate_load_stack_pointer_bytes(rsp_buff_addr, jmp_addr, BITS)
+                    # hook_logger.info("Generated instructions:")
+                    # disassemble(rsp_load_bytes, jmp_addr)
                     # Get the original bytes written by minhook so that we can restore them.
-                    orig_bytes = data_at_detour.raw[:len(rsp_load_bytes)]
+                    orig_bytes = data_at_detour.raw[:0xE]
                     for i in range(len(rsp_load_bytes)):
                         data_at_detour[i] = rsp_load_bytes[i]
                     for j in range(len(orig_bytes)):
@@ -764,6 +800,11 @@ class HookManager:
                     hook_logger.info(
                         f"The function {hook_name} has a modified hook to get the calling address."
                     )
+
+                    # hook_logger.info("Instructions after:")
+                    # data_at_detour = (ctypes.c_char * 0x20).from_address(jmp_addr)
+                    # hook_logger.info(data_at_detour.raw.hex())
+                    # disassemble(data_at_detour.raw, jmp_addr)
 
         # There are no uninitialized hooks.
         self._uninitialized_hooks = set()

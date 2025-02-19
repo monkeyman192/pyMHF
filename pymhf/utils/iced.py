@@ -1,6 +1,7 @@
 # A few functions to interface with iced_x86.
 
 import logging
+import struct
 
 from iced_x86 import (
     BlockEncoder,
@@ -16,7 +17,7 @@ from iced_x86 import (
 logger = logging.getLogger("iced")
 
 
-BITS = 64
+BITS = struct.calcsize("P") * 8
 
 
 def create_jmp_bytes(target: int, rip: int):
