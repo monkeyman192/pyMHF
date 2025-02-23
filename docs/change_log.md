@@ -4,6 +4,11 @@
 
 - Added support for `pymhf.core.hooking.get_caller` in 32bit applications.
 - Added `pymhf.core.hooking.get_caller` decorator for detours. When added, this will determine the location the function was called from.. ([gh-34](https://github.com/monkeyman192/pyMHF/issues/34)). NOTE: This currently will only work for 64bit applications.
+- Added an `pymhf.core.hooking.exported` hook to allow hooking functions which are exported by the main exe.
+- Added the `pymhf.core.calling.call_exported` function which allows exported functions by the game to be called.
+- Added the ability to specify in the `pymhf.core.hooking.imported` decorator whether the detour time is `"before"` or `"after"`.
+- Fixed an issue where hooks defined using the `manual_hook` decorator didn't use the `__pymhf_func_offsets__` etc. variables defined. (Thanks to `._harmonic` on discord for finding the bug.)
+- Made improvements to the shutting down of `pyMHF` so that when the process it is attached to exits, so does `pyMHF`.
 
 ## 0.1.9 (23/01/2025)
 

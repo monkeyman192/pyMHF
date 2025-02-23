@@ -261,6 +261,7 @@ def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[
             print(log_pid)
             print(f"INJECTOR HAS EXITED! {x.result()}")
             os.kill(log_pid, SIGTERM)
+            os.kill(os.getpid(), SIGTERM)
             raise pymhfExitException
 
         # Wait some time for the data to be written to memory.
