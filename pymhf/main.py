@@ -45,6 +45,10 @@ class WrappedProcess:
             pymem.ressources.kernel32.ResumeThread(self.thread_handle)
 
 
+class pymhfExitException(Exception):
+    pass
+
+
 def get_process_when_ready(
     cmd: str,
     target: str,
@@ -105,7 +109,7 @@ def get_process_when_ready(
             print("Failed to inject python for some reason... Trying again in 2 seconds")
             time.sleep(2)
             binary.inject_python_interpreter()
-        print("Python injected")
+        print(f"Python injected into pid {binary.process_id}")
         if start_paused:
             target_process.suspend()
 
@@ -253,6 +257,13 @@ def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[
         else:
             binary_hash = 0
 
+        def close_callback(x):
+            print(log_pid)
+            print(f"INJECTOR HAS EXITED! {x.result()}")
+            os.kill(log_pid, SIGTERM)
+            os.kill(os.getpid(), SIGTERM)
+            raise pymhfExitException
+
         # Wait some time for the data to be written to memory.
         time.sleep(3)
 
@@ -332,7 +343,9 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
             shellcode = f.read()
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
         print(f"Injecting hooking code into proc id {pm_binary.process_id}")
-        futures.append(executor.submit(pm_binary.inject_python_shellcode, shellcode))
+        fut = executor.submit(pm_binary.inject_python_shellcode, shellcode)
+        fut.add_done_callback(lambda x: close_callback(x))
+        futures.append(fut)
 
         # Wait for a user input to start the process.
         # TODO: Send a signal back up from the process to trigger this automatically.
@@ -369,6 +382,8 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
         # the running game process to see if it's still running (using psutil?)
         # Might need to modify the WrappedProcess object to always create the pstuil.Process object to make it
         # work easier...
+
+        # TODO: This should become False when we exit form the program...
         while True:
             try:
                 input_ = input(">>> ")

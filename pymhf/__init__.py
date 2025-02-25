@@ -3,6 +3,7 @@ import os
 import os.path as op
 import shutil
 import subprocess
+import sys
 from enum import Enum
 from importlib.metadata import PackageNotFoundError, entry_points, version
 from typing import Optional
@@ -92,9 +93,11 @@ def run():
     from .utils.parse_toml import _parse_toml, read_pymhf_settings, write_pymhf_settings
 
     parser = argparse.ArgumentParser(
-        prog="pyMHF program runner",
+        prog="pymhf",
         description="Run the registered plugin",
     )
+
+    parser.add_argument("--version", action="store_true", help="Print the version of pyMHF and exit")
 
     command_parser = parser.add_subparsers(dest="_command")
 
@@ -182,6 +185,10 @@ def run():
     # )
 
     args, extras = parser.parse_known_args()  # noqa
+
+    if args.version:
+        print(__version__)
+        sys.exit(0)
 
     # TODO: The extras can be passed to the registered library in the future.
 
@@ -412,13 +419,15 @@ def run():
             if config_choice == CFG_OPT_BIN_PATH:
                 if (exe_path := EXE_PATH_Q.ask()) is not None:
                     pymhf_settings["exe_path"] = exe_path
-                    del pymhf_settings["steam_gameid"]
+                    if "steam_gameid" in pymhf_settings:
+                        del pymhf_settings["steam_gameid"]
                 else:
                     return
             elif config_choice == CFG_OPT_STEAM_ID:
                 if (steam_id := STEAM_ID_Q.ask()) is not None:
                     pymhf_settings["steam_gameid"] = steam_id
-                    del pymhf_settings["exe_path"]
+                    if "exe_path" in pymhf_settings:
+                        del pymhf_settings["exe_path"]
                 else:
                     return
             elif config_choice == CFG_OPT_MOD_PATH:

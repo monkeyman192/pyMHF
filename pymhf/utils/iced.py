@@ -1,6 +1,7 @@
 # A few functions to interface with iced_x86.
 
 import logging
+import struct
 
 from iced_x86 import (
     BlockEncoder,
@@ -16,7 +17,7 @@ from iced_x86 import (
 logger = logging.getLogger("iced")
 
 
-BITS = 64
+BITS = struct.calcsize("P") * 8
 
 
 def create_jmp_bytes(target: int, rip: int):
@@ -28,7 +29,16 @@ def create_jmp_bytes(target: int, rip: int):
     return encoder.encode(rip)
 
 
-def load_rsp(rsp_buff_addr: int, rip: int) -> bytes:
+def generate_load_stack_pointer_bytes(buff_addr: int, rip: int, bits: int = 64) -> bytes:
+    if bits == 64:
+        return load_rsp(buff_addr, rip)
+    elif bits == 32:
+        return load_esp(buff_addr, rip)
+    else:
+        raise ValueError("Number of bits must be 32 or 64")
+
+
+def load_rsp(buff_addr: int, rip: int) -> bytes:
     """Assemble the required bytes to write the value of the rsp register into a buffer which can be accessed
     by the detour.
     The asm which is assembled is
@@ -45,11 +55,37 @@ def load_rsp(rsp_buff_addr: int, rip: int) -> bytes:
         ),
         Instruction.create_mem_reg(
             Code.MOV_MOFFS64_RAX,
-            MemoryOperand(displ=rsp_buff_addr, displ_size=8),
+            MemoryOperand(displ=buff_addr, displ_size=8),
             Register.RAX,
         ),
     ]
     encoder = BlockEncoder(64)
+    encoder.add_many(instructions)
+    return encoder.encode(rip)
+
+
+def load_esp(buff_addr: int, rip: int) -> bytes:
+    """Assemble the required bytes to write the value of the esp register into a buffer which can be accessed
+    by the detour.
+    The asm which is assembled is
+    ```x86asm
+    mov eax, [esp]
+    mov [rsp_buff_addr], eax
+    ```
+    """
+    instructions = [
+        Instruction.create_reg_mem(
+            Code.MOV_R32_RM32,
+            Register.EAX,
+            MemoryOperand(Register.ESP),
+        ),
+        Instruction.create_mem_reg(
+            Code.MOV_MOFFS32_EAX,
+            MemoryOperand(displ=buff_addr, displ_size=4),
+            Register.EAX,
+        ),
+    ]
+    encoder = BlockEncoder(32)
     encoder.add_many(instructions)
     return encoder.encode(rip)
 
