@@ -24,7 +24,7 @@ from pymhf.core._types import (
 )
 from pymhf.core.memutils import _get_binary_info, find_pattern_in_binary, get_addressof
 from pymhf.core.module_data import module_data
-from pymhf.utils.iced import disassemble, generate_load_stack_pointer_bytes, get_first_jmp_addr
+from pymhf.utils.iced import generate_load_stack_pointer_bytes, get_first_jmp_addr
 
 # from pymhf.core.caching import function_cache, pattern_cache
 
@@ -788,16 +788,9 @@ class HookManager:
                     # If we ever need more we'll need to make our own little detour somewhere else.
                     data_at_detour = (ctypes.c_char * 0x20).from_address(jmp_addr)
 
-                    # hook_logger.info("Instructions before:")
-                    # disassemble(data_at_detour.raw, jmp_addr)
-                    # hook_logger.info(data_at_detour.raw.hex())
-
                     rsp_buff_addr = get_addressof(hook._rsp_addr)
-                    # hook_logger.info(f"[{BITS}bit] RSP addr: 0x{rsp_buff_addr:X} RIP: 0x{jmp_addr:X}")
 
                     rsp_load_bytes = generate_load_stack_pointer_bytes(rsp_buff_addr, jmp_addr, BITS)
-                    # hook_logger.info("Generated instructions:")
-                    # disassemble(rsp_load_bytes, jmp_addr)
                     # Get the original bytes written by minhook so that we can restore them.
                     orig_bytes = data_at_detour.raw[:0xE]
                     for i in range(len(rsp_load_bytes)):
@@ -807,11 +800,6 @@ class HookManager:
                     hook_logger.info(
                         f"The function {hook_name} has a modified hook to get the calling address."
                     )
-
-                    # hook_logger.info("Instructions after:")
-                    # data_at_detour = (ctypes.c_char * 0x20).from_address(jmp_addr)
-                    # hook_logger.info(data_at_detour.raw.hex())
-                    # disassemble(data_at_detour.raw, jmp_addr)
 
         # There are no uninitialized hooks.
         self._uninitialized_hooks = set()

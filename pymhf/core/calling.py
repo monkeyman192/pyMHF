@@ -14,7 +14,7 @@ calling_logger = getLogger("CallingManager")
 
 @saferun_decorator
 def call_exported(name: str, func_def: FUNCDEF, *args):
-    """ Call a function exported by the main binary.
+    """Call a function exported by the main binary.
 
     Parameters
     ----------

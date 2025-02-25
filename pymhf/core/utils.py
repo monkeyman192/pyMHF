@@ -21,7 +21,7 @@ def get_main_window_handle() -> Optional[int]:
     main_pid_hwnds = get_hwnds_for_pid(_internal.PID)
     wins = [x for x, y in windows.items() if (x in main_pid_hwnds and y.title != "pyMHF")]
     if len(wins) == 0:
-        logger.error(f"Cannot find window handle for PID {_internal.PID}")
+        logger.warning(f"Cannot find window handle for PID {_internal.PID}")
         return None
     elif len(wins) > 1:
         logger.error(
