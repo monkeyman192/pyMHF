@@ -1,12 +1,25 @@
 from typing import Any, Callable, Optional
 
-from pymhf.gui.protocols import ButtonProtocol, VariableProtocol, VariableType
+from pymhf.gui.protocols import ButtonProtocol, ComboBoxProtocol, VariableProtocol, VariableType
 
 
 def gui_button(text: str):
     def inner(func) -> ButtonProtocol:
         func._is_button = True
         func._button_text = text
+        return func
+
+    return inner
+
+
+def gui_combobox(text: str, items: Optional[list[str]] = None):
+    if items is None:
+        items = []
+
+    def inner(func) -> ComboBoxProtocol:
+        func._is_combobox = True
+        func._combobox_text = text
+        func._items = items
         return func
 
     return inner

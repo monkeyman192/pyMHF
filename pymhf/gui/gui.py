@@ -9,7 +9,7 @@ import win32gui
 import pymhf.core._internal as _internal
 import pymhf.core.caching as cache
 from pymhf.core.mod_loader import Mod, ModManager
-from pymhf.gui.protocols import ButtonProtocol, VariableProtocol, VariableType
+from pymhf.gui.protocols import ButtonProtocol, ComboBoxProtocol, VariableProtocol, VariableType
 from pymhf.utils.winapi import set_window_transparency
 
 SETTINGS_NAME = "_pymhf_gui_settings"
@@ -28,10 +28,12 @@ class WidgetType(Enum):
     BUTTON = 0
     VARIABLE = 1
     TEXT = 2
+    COMBOBOX = 3
 
 
 class Widgets(TypedDict):
     buttons: dict[str, Union[int, str]]
+    comboboxes: dict[str, Union[int, str]]
     variables: dict[str, list[tuple[Union[int, str], WidgetType]]]
 
 
@@ -182,6 +184,7 @@ class GUI:
         widgets = self.widgets.get(name, {})
 
         self.reload_buttons(cls, widgets)
+        self.reload_comboboxes(cls, widgets)
         self.reload_variables(cls, widgets)
 
     def reload_buttons(self, cls: Mod, widgets: Widgets):
@@ -211,6 +214,36 @@ class GUI:
         for button_name in removed_buttons:
             dpg.delete_item(button_widgets[button_name])
             button_widgets.pop(button_name)
+
+    def reload_comboboxes(self, cls: Mod, widgets: Widgets):
+        """Reload all the comboboxes. Any new combos will be added, any old ones will be removed, and any that
+        remain will be reconfigured to point to the new bound method with any modified parameters (such as
+        combo label and items).
+        """
+        combo_widgets = widgets["comboboxes"]
+
+        existing_combo_names = set([c for c in combo_widgets.keys()])
+        mod_combo_names = set([c for c in cls._gui_comboboxes.keys()])
+
+        new_combos = mod_combo_names - existing_combo_names
+        for combo_name in new_combos:
+            self.add_combobox(cls._gui_comboboxes[combo_name])
+
+        remaining_combos = existing_combo_names & mod_combo_names
+        for combo_name in remaining_combos:
+            _combo = cls._gui_comboboxes[combo_name]
+            # Combo boxes have their text prepended.
+            for var_id, var_type in combo_widgets[combo_name]:
+                if var_type == WidgetType.TEXT:
+                    dpg.set_value(var_id, _combo._combobox_text)
+                else:
+                    dpg.configure_item(var_id, items=_combo._items, callback=_combo)
+
+        removed_combos = existing_combo_names - mod_combo_names
+        for combo_name in removed_combos:
+            for var_id, _ in combo_widgets[combo_name]:
+                dpg.delete_item(var_id)
+            combo_widgets.pop(combo_name)
 
     def reload_variables(self, cls: Mod, widgets: Widgets):
         """Reload all variables associated with a mod.
@@ -264,6 +297,7 @@ class GUI:
         self.widgets[name] = {
             "buttons": {},
             "variables": {},
+            "comboboxes": {},
         }
 
         dpg.add_button(
@@ -273,8 +307,13 @@ class GUI:
             parent=name,
         )
 
+        dpg.add_separator(parent=name)
+
         for _button in cls._gui_buttons.values():
             self.add_button(_button)
+
+        for _combobox in cls._gui_comboboxes.values():
+            self.add_combobox(_combobox)
 
         for variable_name, getter in cls._gui_variables.items():
             self.add_variable(cls, variable_name, getter)
@@ -297,6 +336,19 @@ class GUI:
         meth_name = callback.__qualname__
         button = dpg.add_button(label=callback._button_text, callback=callback, parent=name)
         self.widgets[name]["buttons"][meth_name] = button
+
+    def add_combobox(self, callback: ComboBoxProtocol):
+        name = callback.__self__.__class__.__name__
+        meth_name = callback.__qualname__
+
+        with dpg.group(horizontal=True, parent=name):
+            txt_id = dpg.add_text(callback._combobox_text)
+            combobox = dpg.add_combo(
+                items=callback._items,
+                callback=callback,
+            )
+            self.widgets[name]["comboboxes"][meth_name] = [(txt_id, WidgetType.TEXT)]
+            self.widgets[name]["comboboxes"][meth_name].append((combobox, WidgetType.COMBOBOX))
 
     def add_variable_gui_elements(self, cls: Mod, variable: str, getter: VariableProtocol):
         name = cls.__class__.__name__
@@ -392,6 +444,7 @@ class GUI:
             dpg.show_viewport()
             dpg.set_primary_window(WINDOW_TITLE, True)
             self.hwnd = win32gui.FindWindow(None, WINDOW_TITLE)
+            self._current_tab = list(self.tabs.values())[0]
             while dpg.is_dearpygui_running():
                 # For each tracking variable, update the value.
                 for vars in self.tracking_variables.get(self._current_tab, []):

@@ -31,7 +31,7 @@ from pymhf.core.importing import import_file
 from pymhf.core.memutils import get_addressof, map_struct
 from pymhf.core.module_data import module_data
 from pymhf.core.utils import does_pid_have_focus, saferun
-from pymhf.gui.protocols import ButtonProtocol, VariableProtocol
+from pymhf.gui.protocols import ButtonProtocol, ComboBoxProtocol, VariableProtocol
 
 if TYPE_CHECKING:
     from pymhf.gui.gui import GUI
@@ -68,6 +68,10 @@ def _has_hotkey_predicate(value: Any) -> bool:
 
 def _gui_button_predicate(value) -> bool:
     return getattr(value, "_is_button", False) and hasattr(value, "_button_text")
+
+
+def _gui_combobox_predicate(value) -> bool:
+    return getattr(value, "_is_combobox", False) and hasattr(value, "_combobox_text")
 
 
 def _gui_variable_predicate(value) -> bool:
@@ -175,6 +179,9 @@ class Mod(ABC):
         self._hotkey_funcs = self.get_members(_has_hotkey_predicate)
         self._gui_buttons: dict[str, ButtonProtocol] = {
             x[1].__qualname__: x[1] for x in inspect.getmembers(self, _gui_button_predicate)
+        }
+        self._gui_comboboxes: dict[str, ComboBoxProtocol] = {
+            x[1].__qualname__: x[1] for x in inspect.getmembers(self, _gui_combobox_predicate)
         }
         self._gui = None
         # For variables, unless there is a better way, store just the name so we

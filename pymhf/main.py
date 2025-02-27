@@ -258,11 +258,15 @@ def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[
             binary_hash = 0
 
         def close_callback(x):
-            print(log_pid)
-            print(f"INJECTOR HAS EXITED! {x.result()}")
-            os.kill(log_pid, SIGTERM)
+            print("pyMHF exiting...")
+            for _pid in {pm_binary.process_id, log_pid}:
+                try:
+                    os.kill(_pid, SIGTERM)
+                except Exception:
+                    # If we can't kill it, it's probably already dead. Just continue.
+                    pass
+            # Finally, send a SIGTERM to ourselves...
             os.kill(os.getpid(), SIGTERM)
-            raise pymhfExitException
 
         # Wait some time for the data to be written to memory.
         time.sleep(3)
