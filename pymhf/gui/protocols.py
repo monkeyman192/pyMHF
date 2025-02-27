@@ -16,6 +16,14 @@ class ButtonProtocol(Protocol):
     def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
 
 
+class ComboBoxProtocol(Protocol):
+    _is_combobox: bool
+    _combobox_text: str
+    _items: list[str]
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
+
+
 class VariableProtocol(Protocol):
     _is_variable: bool
     _variable_type: VariableType

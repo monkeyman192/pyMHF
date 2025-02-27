@@ -1,8 +1,12 @@
 # Change Log
 
-## Current (0.1.10)
+## Current (0.1.11-dev)
 
-- Added `pymhf.core.hooking.get_caller` decorator for detours. When added, this will determine the location the function was called from.. ([gh-34](https://github.com/monkeyman192/pyMHF/issues/34)). NOTE: This currently will only work properly for 64bit applications.
+- Added the `gui_combobox(label: str, items: list[str])` decorator (partial work on [gh-15](https://github.com/monkeyman192/pyMHF/issues/15))
+
+## 0.1.10 (26/02/2025)
+
+- Added `pymhf.core.hooking.get_caller` decorator for detours. When added, this will determine the location the function was called from. ([gh-34](https://github.com/monkeyman192/pyMHF/issues/34)). NOTE: This currently will only work properly for 64bit applications.
 - Added an `pymhf.core.hooking.exported` hook to allow hooking functions which are exported by the main exe.
 - Added the `pymhf.core.calling.call_exported` function which allows exported functions by the game to be called.
 - Added the ability to specify in the `pymhf.core.hooking.imported` decorator whether the detour time is `"before"` or `"after"`.
