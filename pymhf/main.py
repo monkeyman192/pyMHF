@@ -14,6 +14,7 @@ import pymem
 import pymem.exception
 import pymem.process
 
+from pymhf.core._internal import LoadTypeEnum
 from pymhf.core.caching import hash_bytes
 from pymhf.core.logging import open_log_console
 from pymhf.core.process import start_process
@@ -155,9 +156,11 @@ def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[
     config
         A mapping of the associated pymhf config.
     """
-    single_file_mod = False
+    load_type = LoadTypeEnum.LIBRARY
     if op.isfile(module_path):
-        single_file_mod = True
+        load_type = LoadTypeEnum.SINGLE_FILE
+    if op.exists(op.join(module_path, "pymhf.toml")):
+        load_type = LoadTypeEnum.MOD_FOLDER
 
     binary_path = None
     binary_exe = _required_config_val(config, "exe")
@@ -334,7 +337,7 @@ pymhf.core._internal.BINARY_HASH = {binary_hash!r}
 pymhf.core._internal.CONFIG = {config!r}
 pymhf.core._internal.EXE_NAME = {binary_exe!r}
 pymhf.core._internal.BINARY_PATH = {binary_path!r}
-pymhf.core._internal.SINGLE_FILE_MOD = {single_file_mod!r}
+pymhf.core._internal.LOAD_TYPE = {load_type.value!r}
 pymhf.core._internal.MOD_SAVE_DIR = {mod_save_dir!r}
 pymhf.core._internal.INCLUDED_ASSEMBLIES = {included_assemblies!r}
 pymhf.core._internal.CACHE_DIR = {cache_dir!r}

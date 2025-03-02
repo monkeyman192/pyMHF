@@ -17,7 +17,7 @@ from abc import ABC
 from dataclasses import fields
 from functools import partial
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Type, TypeVar, Union
 
 import keyboard
 from packaging.version import InvalidVersion
@@ -200,8 +200,11 @@ class Mod(ABC):
         return {x[1] for x in inspect.getmembers(self, predicate)}
 
 
+T = TypeVar("T", bound=Mod)
+
+
 class ModManager:
-    def __init__(self, hook_manager: HookManager):
+    def __init__(self):
         # Internal mapping of mods.
         # TODO: Probably change datatype
         self._preloaded_mods: dict[str, type[Mod]] = {}
@@ -210,9 +213,14 @@ class ModManager:
         self._mod_hooks: dict[str, list] = {}
         self.mod_states: dict[str, list[tuple[str, ModState]]] = {}
         self._mod_paths: dict[str, ModuleType] = {}
-        self.hook_manager = hook_manager
+        self.hook_manager: HookManager = None
         # Keep a mapping of the hotkey callbacks
         self.hotkey_callbacks: dict[tuple[str, str], Any] = {}
+
+    def __getitem__(self, key: Type[T]) -> T:
+        if not issubclass(key, Mod):
+            raise TypeError("The lookup object must be the class type")
+        return self.mods.get(key.__name__)
 
     def _load_module(self, module: ModuleType) -> bool:
         """Load a mod from the provided module.
@@ -471,3 +479,6 @@ class ModManager:
                 mod_logger.error(f"Cannot find mod {name}")
         except Exception:
             mod_logger.error(traceback.format_exc())
+
+
+mod_manager = ModManager()
