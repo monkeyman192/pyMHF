@@ -10,7 +10,7 @@
 - Added an `pymhf.core.hooking.exported` hook to allow hooking functions which are exported by the main exe.
 - Added the `pymhf.core.calling.call_exported` function which allows exported functions by the game to be called.
 - Added the ability to specify in the `pymhf.core.hooking.imported` decorator whether the detour time is `"before"` or `"after"`.
-- Fixed an issue where hooks defined using the `manual_hook` decorator didn't use the `__pymhf_func_offsets__` etc. variables defined. (Thanks to `._harmonic` on discord for finding the bug.)
+- Fixed an issue where hooks defined using the `manual_hook` decorator didn't use the `__pymhf_func_offsets__` etc. variables defined. (Thanks to [@hashcatHitman](https://www.github.com/hashcatHitman) for finding the bug.)
 - Made improvements to the shutting down of `pyMHF` so that when the process it is attached to exits, so does `pyMHF`.
 - Added a class decorator `partial_struct` in `pymhf.utils.partial_struct` which can be used to creat `ctypes.Structure` types without needing to know the entire layout of the struct.
 
