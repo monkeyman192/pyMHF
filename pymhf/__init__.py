@@ -37,6 +37,13 @@ class ModeEnum(Enum):
     # DATA = 5
 
 
+class FolderModeEnum(Enum):
+    INVALID = 0
+    LIBRARY = 1
+    MOD_FOLDER = 2
+    NON_LOCAL = 3
+
+
 def _is_int(val: str) -> bool:
     try:
         int(val)
@@ -192,7 +199,10 @@ def run():
 
     # TODO: The extras can be passed to the registered library in the future.
 
-    plugin_name: str = args.plugin_name
+    try:
+        plugin_name: str = args.plugin_name
+    except AttributeError:
+        parser.error("No command provided. Please provide a valid command. See `pymhf --help` for details.")
     command = args._command
     if command == "run":
         mode = ModeEnum.RUN
@@ -226,47 +236,67 @@ def run():
     if mode == ModeEnum.COMMAND:
         cmd_command = args.command
 
+    folder_mode = FolderModeEnum.INVALID
+
     if local:
+        # Check to see if the folder we are pointing to has a pyproject.toml file, or a pymhf.toml file.
+        # If it's a pyproject.toml, then we are running a library directly.
+        # If it's a pymhf.toml, then it's a mod folder.
         # Parse the pyproject.toml file to get some info...
-        pyproject_toml = op.join(op.realpath(plugin_name), "pyproject.toml")
+        # We'll give precedency to the pyproject.toml file.
         local_plugin_dir = op.realpath(plugin_name)
-        if not op.exists(pyproject_toml):
+        pyproject_toml = op.join(local_plugin_dir, "pyproject.toml")
+        pymhf_toml = op.join(local_plugin_dir, CFG_FILENAME)
+        if op.exists(pyproject_toml):
+            folder_mode = FolderModeEnum.LIBRARY
+        elif op.exists(pymhf_toml):
+            folder_mode = FolderModeEnum.MOD_FOLDER
+
+        if folder_mode == FolderModeEnum.INVALID:
             print(
-                f"Error: No pyproject.toml file in the directory {op.realpath(plugin_name)}. Please ensure "
-                "the target project has one."
+                f"Error: No pyproject.toml or pymhf.toml file in the directory {local_plugin_dir}."
+                "Please ensure the target project has one of these."
             )
             return
-        settings = _parse_toml(pyproject_toml, False)
-        plugin_name = None
-        if (project_cfg := settings.get("project", {}).get("entry-points", {}).get("pymhflib")) is not None:
-            plugin_name = list(project_cfg.keys())[0]
-            if mode == ModeEnum.COMMAND:
-                if (
-                    command_cfg := settings.get("project", {}).get("entry-points", {}).get("pymhfcmd")
-                ) is not None:
-                    from .core.importing import import_file
+        if folder_mode == FolderModeEnum.LIBRARY:
+            settings = _parse_toml(pyproject_toml, False)
+            plugin_name = None
+            if (
+                project_cfg := settings.get("project", {}).get("entry-points", {}).get("pymhflib")
+            ) is not None:
+                plugin_name = list(project_cfg.keys())[0]
+                if mode == ModeEnum.COMMAND:
+                    if (
+                        command_cfg := settings.get("project", {}).get("entry-points", {}).get("pymhfcmd")
+                    ) is not None:
+                        from .core.importing import import_file
 
-                    if (resolved_command := command_cfg.get(cmd_command)) is not None:
-                        mod = import_file(op.join(local_plugin_dir, plugin_name))
-                        cmd = getattr(mod, resolved_command, None)
-                        if cmd is not None:
-                            cmd(extras)
-                            return
+                        if (resolved_command := command_cfg.get(cmd_command)) is not None:
+                            mod = import_file(op.join(local_plugin_dir, plugin_name))
+                            cmd = getattr(mod, resolved_command, None)
+                            if cmd is not None:
+                                cmd(extras)
+                                return
+                            else:
+                                print(
+                                    f"Command {resolved_command!r} cannot be found in module {plugin_name}. "
+                                    "Please ensure the function exists and can be run from this module."
+                                )
+                                return
                         else:
-                            print(
-                                f"Command {resolved_command!r} cannot be found in module {plugin_name}. "
-                                "Please ensure the function exists and can be run from this module."
-                            )
+                            print(f"No registered command {cmd_command!r}. Please check your configuration.")
                             return
                     else:
-                        print(f"No registered command {cmd_command!r}. Please check your configuration.")
+                        print(
+                            "No [project.entry-points.pymhfcmd] section found in the pyproject.toml. "
+                            "Please create one to register and run custom commands."
+                        )
                         return
-                else:
-                    print(
-                        "No [project.entry-points.pymhfcmd] section found in the pyproject.toml. "
-                        "Please create one to register and run custom commands."
-                    )
-                    return
+        elif folder_mode == FolderModeEnum.MOD_FOLDER:
+            # Parse the pymhf.toml file to get some details about what we are running.
+            settings = _parse_toml(pymhf_toml, False)
+            # We'll set the plugin name as the name of the folder
+            plugin_name = op.basename(local_plugin_dir)
         if plugin_name is None:
             print(
                 f"Cannot determine the project at the path specified {plugin_name}.\n"
@@ -274,6 +304,8 @@ def run():
                 "This process will not continue."
             )
             return
+    else:
+        folder_mode = FolderModeEnum.NON_LOCAL
 
     # Get the location of app data, then construct the expected folder name.
     appdata_data = os.environ.get("APPDATA", op.expanduser("~"))
@@ -358,7 +390,10 @@ def run():
                 return
 
     else:
-        module_dir = op.join(local_plugin_dir, plugin_name)
+        if folder_mode == FolderModeEnum.LIBRARY:
+            module_dir = op.join(local_plugin_dir, plugin_name)
+        else:
+            module_dir = local_plugin_dir
 
     cfg_file = op.join(module_dir, CFG_FILENAME)
     config_progress_file = op.join(cfg_folder, ".config_in_progress")
@@ -386,18 +421,19 @@ def run():
         # Write the file which indicates we are in progress.
         with open(config_progress_file, "w") as f:
             f.write("")
-        # pymhf_settings = read_pymhf_settings(cfg_file)
 
-        # Modify some of the values in the config file, allowing the user to enter the values they want.
-        if has_tkinter:
-            root = Tk()
-            root.withdraw()
-        if (
-            mod_folder := get_folder("Select folder where mods are located", MOD_DIR_Q, has_tkinter)
-        ) is not None:
-            local_config["local_config"]["mod_dir"] = mod_folder
-        else:
-            return None
+        if folder_mode != FolderModeEnum.MOD_FOLDER:
+            # Modify some of the values in the config file, allowing the user to enter the values they want.
+            # We only do this if we are not dealing with a mod folder...
+            if has_tkinter:
+                root = Tk()
+                root.withdraw()
+            if (
+                mod_folder := get_folder("Select folder where mods are located", MOD_DIR_Q, has_tkinter)
+            ) is not None:
+                local_config["local_config"]["mod_dir"] = mod_folder
+            else:
+                return None
 
         # Write the config back and then delete the temporary file only once everything is ok.
         write_pymhf_settings(local_config, dst)
