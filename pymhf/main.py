@@ -51,6 +51,17 @@ class pymhfExitException(Exception):
     pass
 
 
+def _wait_until_process_running(target: str):
+    run = True
+    while run:
+        try:
+            for p in psutil.process_iter(["name", "pid"]):
+                if p.name().lower() == target.lower():
+                    return WrappedProcess(proc=p)
+        except KeyboardInterrupt:
+            return None
+
+
 def get_process_when_ready(
     cmd: str,
     target: str,
@@ -217,7 +228,13 @@ def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[
     # When we start from steam, the binary path will be None, so retreive it from from the psutils Process
     # object.
     if binary_path is None and proc is not None:
-        binary_path = proc.proc.exe()
+        try:
+            binary_path = proc.proc.exe()
+        except psutil.NoSuchProcess:
+            # In this case it failed to find the process. Let's try find it again
+            proc = _wait_until_process_running(binary_exe)
+            if proc is not None:
+                binary_path = proc.proc.exe()
 
     binary_dir = None
     if binary_path is not None:
