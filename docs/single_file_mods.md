@@ -66,7 +66,7 @@ To modify the above script, the only values that really need to be changed are t
 If the game is being ran via steam, replace `steam_gameid` with the value found in steam, and set `exe` to be the name of the game binary.
 If the game or program is not run through steam, remove the `steam_gameid` value and instead set `exe` and the absolute path to the binary.
 
-Note that by default the GUI will not be installed by uv. If you want the GUI to be included, add the `[gui]` extra to your script dependecies metadata, like so:
+Note that by default the GUI will not be installed by uv and is only available on 64-bit installations of Python due to DearPyGui lacking support for 32-bit. If you want the GUI to be included, add the `[gui]` extra to your script dependecies metadata, like so:
 
 ```py
 # /// script
