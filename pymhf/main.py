@@ -24,6 +24,7 @@ from pymhf.utils.parse_toml import read_pymhf_settings
 from pymhf.utils.winapi import get_exe_path_from_pid
 
 CWD = op.dirname(__file__)
+PYMHF_DIR = op.dirname(CWD)
 APPDATA_DIR = os.environ.get("APPDATA", op.expanduser("~"))
 
 
@@ -310,7 +311,10 @@ def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[
             cwd = CWD.replace("\\", "\\\\")
             import sys
 
-            saved_path = [x.replace("\\", "\\\\") for x in sys.path]
+            _path = sys.path
+            _path.insert(0, PYMHF_DIR)
+
+            saved_path = [x.replace("\\", "\\\\") for x in _path]
             # TODO: This can fail sometimes.... Figure out why??
             pm_binary.inject_python_shellcode(
                 f"""
