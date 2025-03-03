@@ -199,7 +199,10 @@ def run():
 
     # TODO: The extras can be passed to the registered library in the future.
 
-    plugin_name: str = args.plugin_name
+    try:
+        plugin_name: str = args.plugin_name
+    except AttributeError:
+        parser.error("No command provided. Please provide a valid command. See `pymhf --help` for details.")
     command = args._command
     if command == "run":
         mode = ModeEnum.RUN
