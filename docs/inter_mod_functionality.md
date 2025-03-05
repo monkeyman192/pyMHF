@@ -64,6 +64,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger("EventUser")
 
 class EventUser(Mod):
+    __dependencies__ = ["EventProvider"]
     @on_key_pressed("k")
     def press_k(self):
         event_provider = mod_manager[EventProvider]
@@ -73,9 +74,12 @@ class EventUser(Mod):
 The above mod shows off a few other useful features; key binding events and inter-mod functionality.
 As with the previous mod, it won't hook anything or do anything, however, when the `k` key is pressed in game, the value of the event id entered into the GUI for the other mod will be logged from `EventUser`.
 
+Note that the mod has a `__dependencies__` attribute. This is required so that `pyMHF` knows what dependencies to inject into the script. It's also an optimisation so that we don't inject every single mod into every single other mod.
+In the future we may raise a warning or error if a mod has a dependency which has not been registered within the current `pyMHF` run.
+
 ## Caveats / Things to keep in mind
 
 - One must always do a lookup on the *type* of the mod being accessed, not an instance of it. We do this because internally, `pyMHF` manages the state of these mods, and these states and instances may change if some mod is reloaded, so one should always rely on `pyMHF` to do this lookup and not do it themselves.
 - Never cache the result of `mod_manager[<type>]`. Again, for the same reasons as above. If you cache this result, and then the mod you are accessing is reloaded, you will not have the updated value. The lookup os on a dictionary and will be quick so need to worry about getting the mod whenever necessary.
-- Avoiding circular imports. You will notice in the `mod2.py` file that we have a pattern to import `TYPE_CHECKING` from `typing`. This may look odd, but it's a convenient "trick" to get around circular imports. Because `pyMHF` handles all the importing logic of loading these python files, both initially and on reload, it is crucial that if you are importing any other mods it is done within a `if TYPE_CHECKING` branch, otherwise a circular import may occur and the mod will not function/may cause a crash. This is all necessary so that referenced mods can be correclty type-hinted.
+- Avoiding circular imports. You will notice in the `mod2.py` file that we have a pattern to import `TYPE_CHECKING` from `typing`. This may look odd, but it's a convenient "trick" to get around circular imports. Because `pyMHF` handles all the importing logic of loading these python files, both initially and on reload, it is crucial that if you are importing any other mods it is done within a `if TYPE_CHECKING` branch, otherwise a circular import may occur and the mod will not function/may cause a crash. This is all necessary so that referenced mods can be correctly type-hinted.
 - If two mods reference each other and call functions within each other a loop may occur where they call each other endlessly. This will obviously cause issues and should be avoided.

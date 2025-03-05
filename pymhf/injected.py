@@ -254,6 +254,8 @@ try:
         logging.error(traceback.format_exc())
     logging.info(f"Loaded {_loaded_mods} mods and {_loaded_hooks} hooks in {time.time() - start_time:.3f}s")
 
+    mod_manager._assign_mod_instances()
+
     _internal.MAIN_HWND = utils.get_main_window_handle()
 
     for func_name, hook_class in hook_manager.failed_hooks.items():
@@ -264,7 +266,6 @@ try:
     # Each client connection will create a new protocol instance
     coro = loop.create_server(ExecutingProtocol, "127.0.0.1", 6770)
     server = loop.run_until_complete(coro)
-    # logging.info("Executing protocol is ready to go!")
 
     futures = []
     if _internal.CONFIG.get("gui", {}).get("shown", True) and GUI is not None:

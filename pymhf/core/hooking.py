@@ -26,8 +26,6 @@ from pymhf.core.memutils import _get_binary_info, find_pattern_in_binary, get_ad
 from pymhf.core.module_data import module_data
 from pymhf.utils.iced import generate_load_stack_pointer_bytes, get_first_jmp_addr
 
-# from pymhf.core.caching import function_cache, pattern_cache
-
 hook_logger = logging.getLogger("HookManager")
 
 
