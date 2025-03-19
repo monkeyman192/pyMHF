@@ -17,7 +17,7 @@ from abc import ABC
 from dataclasses import fields
 from functools import partial
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Type, TypeVar, Union
 
 import keyboard
 from packaging.version import InvalidVersion
@@ -167,6 +167,7 @@ class Mod(ABC):
     __author__: Union[str, list[str]] = "Name(s) of the mod author(s)"
     __description__: str = "Short description of the mod"
     __version__: str = "Mod version"
+    __dependencies__: list[str] = []
     # Minimum required pyMHF version for this mod.
     __pymhf_required_version__: Optional[str] = None
 
@@ -200,8 +201,11 @@ class Mod(ABC):
         return {x[1] for x in inspect.getmembers(self, predicate)}
 
 
+T = TypeVar("T", bound=Mod)
+
+
 class ModManager:
-    def __init__(self, hook_manager: HookManager):
+    def __init__(self):
         # Internal mapping of mods.
         # TODO: Probably change datatype
         self._preloaded_mods: dict[str, type[Mod]] = {}
@@ -210,9 +214,14 @@ class ModManager:
         self._mod_hooks: dict[str, list] = {}
         self.mod_states: dict[str, list[tuple[str, ModState]]] = {}
         self._mod_paths: dict[str, ModuleType] = {}
-        self.hook_manager = hook_manager
+        self.hook_manager: HookManager = None
         # Keep a mapping of the hotkey callbacks
         self.hotkey_callbacks: dict[tuple[str, str], Any] = {}
+
+    def __getitem__(self, key: Type[T]) -> T:
+        if not issubclass(key, Mod):
+            raise TypeError("The lookup object must be the class type")
+        return self.mods.get(key.__name__)
 
     def _load_module(self, module: ModuleType) -> bool:
         """Load a mod from the provided module.
@@ -372,9 +381,24 @@ class ModManager:
         self.mods[_mod._mod_name] = _mod
         return _mod
 
-    def _gui_reload(self, _sender, _keyword, user_data: tuple[Mod, "GUI"]):
+    def _gui_reload(self, _sender, _keyword, user_data: tuple[str, "GUI"]):
         # Callback to register with the GUI to enable reloading of mods from there.
         self.reload(*user_data)
+        self._assign_mod_instances(user_data[0])
+
+    def _assign_mod_instances(self, specific_mod: Optional[str] = None):
+        """Assign the types of the mod classes in each mod to all of the mods which are loaded."""
+        # Loop over the loaded mods. If it has any dependencies, get the module it belongs to and assign those
+        # dependencies to it.
+        if specific_mod is not None:
+            iter_ = [(specific_mod, self.mods[specific_mod])]
+        else:
+            iter_ = self.mods.items()
+        for _mod_name, mod in iter_:
+            if dependencies := getattr(mod, "__dependencies__", []):
+                module = self._mod_paths[_mod_name]
+                for dependency in dependencies:
+                    setattr(module, dependency, self.mods[dependency].__class__)
 
     def reload(self, name: str, gui: "GUI"):
         """Reload a mod with the given name."""
@@ -471,3 +495,6 @@ class ModManager:
                 mod_logger.error(f"Cannot find mod {name}")
         except Exception:
             mod_logger.error(traceback.format_exc())
+
+
+mod_manager = ModManager()

@@ -5,6 +5,7 @@ import ctypes.wintypes
 import locale
 import logging
 import logging.handlers
+import os
 import os.path as op
 import time
 import traceback
@@ -36,6 +37,8 @@ try:
     log_level = _internal.CONFIG.get("logging", {}).get("log_level", "info")
     log_level = "info"
 
+    _internal.LOAD_TYPE = _internal.LoadTypeEnum(_internal.LOAD_TYPE)
+
     _module_path = _internal.MODULE_PATH
     if op.isfile(_module_path):
         _module_path = op.dirname(_module_path)
@@ -53,22 +56,30 @@ try:
     if debug_mode:
         rootLogger.setLevel(logging.DEBUG)
 
-    module = import_file(_internal.MODULE_PATH)
-
     from pymhf.core.module_data import module_data
 
-    _pymhf_functions_ = getattr(module, "__pymhf_functions__", None)
-    if _pymhf_functions_ is not None:
-        module_data.FUNC_OFFSETS = getattr(module.__pymhf_functions__, "FUNC_OFFSETS", {})
-        module_data.FUNC_PATTERNS = getattr(module.__pymhf_functions__, "FUNC_PATTERNS", {})
-        module_data.FUNC_CALL_SIGS = getattr(module.__pymhf_functions__, "FUNC_CALL_SIGS", {})
+    if _internal.LOAD_TYPE == _internal.LoadTypeEnum.MOD_FOLDER:
+        for fname in os.listdir(_internal.MODULE_PATH):
+            if fname.endswith(".py"):
+                module = import_file(op.join(_internal.MODULE_PATH, fname))
+                module_data.FUNC_OFFSETS.update(getattr(module, "__pymhf_func_offsets__", {}))
+                module_data.FUNC_PATTERNS.update(getattr(module, "__pymhf_func_patterns__", {}))
+                module_data.FUNC_CALL_SIGS.update(getattr(module, "__pymhf_func_call_sigs__", {}))
     else:
-        # Can also try and see if there are any other "magic" attributes assigned, otherwise fallback to
-        # empty dicts
-        module_data.FUNC_BINARY = getattr(module, "__pymhf_func_binary__", None)
-        module_data.FUNC_OFFSETS = getattr(module, "__pymhf_func_offsets__", {})
-        module_data.FUNC_PATTERNS = getattr(module, "__pymhf_func_patterns__", {})
-        module_data.FUNC_CALL_SIGS = getattr(module, "__pymhf_func_call_sigs__", {})
+        module = import_file(_internal.MODULE_PATH)
+
+        _pymhf_functions_ = getattr(module, "__pymhf_functions__", None)
+        if _pymhf_functions_ is not None:
+            module_data.FUNC_OFFSETS = getattr(module.__pymhf_functions__, "FUNC_OFFSETS", {})
+            module_data.FUNC_PATTERNS = getattr(module.__pymhf_functions__, "FUNC_PATTERNS", {})
+            module_data.FUNC_CALL_SIGS = getattr(module.__pymhf_functions__, "FUNC_CALL_SIGS", {})
+        else:
+            # Can also try and see if there are any other "magic" attributes assigned, otherwise fallback to
+            # empty dicts
+            module_data.FUNC_BINARY = getattr(module, "__pymhf_func_binary__", None)
+            module_data.FUNC_OFFSETS = getattr(module, "__pymhf_func_offsets__", {})
+            module_data.FUNC_PATTERNS = getattr(module, "__pymhf_func_patterns__", {})
+            module_data.FUNC_CALL_SIGS = getattr(module, "__pymhf_func_call_sigs__", {})
 
     import keyboard._winkeyboard as kwk
 
@@ -78,7 +89,7 @@ try:
     import pymhf.core.caching as cache
     from pymhf.core.hooking import hook_manager
     from pymhf.core.memutils import getsize
-    from pymhf.core.mod_loader import ModManager
+    from pymhf.core.mod_loader import mod_manager
     from pymhf.core.protocols import (
         ESCAPE_SEQUENCE,
         READY_ACK_SEQUENCE,
@@ -201,7 +212,7 @@ try:
     for fpath in _internal.INCLUDED_ASSEMBLIES.values():
         _internal.imports.update(get_imports(fpath))
 
-    mod_manager = ModManager(hook_manager)
+    mod_manager.hook_manager = hook_manager
     # First, load our internal mod before anything else.
     if internal_mod_folder is not None:
         logging.debug(f"Loading internal mods: {internal_mod_folder}")
@@ -226,9 +237,11 @@ try:
     _loaded_mods = 0
     _loaded_hooks = 0
     try:
-        if _internal.SINGLE_FILE_MOD:
+        if _internal.LOAD_TYPE == _internal.LoadTypeEnum.SINGLE_FILE:
             # For a single file mod, we just load that file.
             _loaded_mods, _loaded_hooks = mod_manager.load_single_mod(_internal.MODULE_PATH)
+        elif _internal.LOAD_TYPE == _internal.LoadTypeEnum.MOD_FOLDER:
+            _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(_internal.MODULE_PATH)
         else:
             if mod_folder is not None:
                 _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(mod_folder)
@@ -241,7 +254,8 @@ try:
         logging.error(traceback.format_exc())
     logging.info(f"Loaded {_loaded_mods} mods and {_loaded_hooks} hooks in {time.time() - start_time:.3f}s")
 
-    # hook_manager._debug_show_states()
+    mod_manager._assign_mod_instances()
+
     _internal.MAIN_HWND = utils.get_main_window_handle()
 
     for func_name, hook_class in hook_manager.failed_hooks.items():
@@ -252,7 +266,6 @@ try:
     # Each client connection will create a new protocol instance
     coro = loop.create_server(ExecutingProtocol, "127.0.0.1", 6770)
     server = loop.run_until_complete(coro)
-    # logging.info("Executing protocol is ready to go!")
 
     futures = []
     if _internal.CONFIG.get("gui", {}).get("shown", True) and GUI is not None:

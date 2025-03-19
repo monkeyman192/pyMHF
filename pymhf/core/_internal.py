@@ -1,5 +1,14 @@
 import ctypes
 from concurrent.futures import ThreadPoolExecutor
+from enum import Enum
+
+
+class LoadTypeEnum(Enum):
+    INVALID = 0
+    SINGLE_FILE = 1
+    LIBRARY = 2
+    MOD_FOLDER = 3
+
 
 CWD: str = ""
 MODULE_PATH: str = ""
@@ -13,7 +22,7 @@ SIZE_OF_IMAGE: int = -1
 CONFIG: dict = {}
 EXE_NAME: str = ""
 BINARY_PATH: str = ""
-SINGLE_FILE_MOD: bool = False
+LOAD_TYPE: LoadTypeEnum = LoadTypeEnum.INVALID
 MOD_SAVE_DIR: str = ""
 INCLUDED_ASSEMBLIES: dict[str, str] = {}
 

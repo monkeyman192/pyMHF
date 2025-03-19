@@ -26,8 +26,6 @@ from pymhf.core.memutils import _get_binary_info, find_pattern_in_binary, get_ad
 from pymhf.core.module_data import module_data
 from pymhf.utils.iced import generate_load_stack_pointer_bytes, get_first_jmp_addr
 
-# from pymhf.core.caching import function_cache, pattern_cache
-
 hook_logger = logging.getLogger("HookManager")
 
 
@@ -552,6 +550,8 @@ def imported(dll_name: str, func_name: str, func_def: FUNCDEF, detour_time: str 
             setattr(detour, "_hook_time", DetourTime.BEFORE)
         else:
             setattr(detour, "_hook_time", DetourTime.AFTER)
+            if "_result_" in inspect.signature(detour).parameters.keys():
+                setattr(detour, "_has__result_", True)
         return detour
 
     return inner
@@ -578,8 +578,17 @@ def one_shot(func: HookProtocol) -> HookProtocol:
 
 
 def get_caller(func: HookProtocol) -> CallerHookProtocol:
-    """Log the location relative to the binary where the function was called from.
-    This will be logged every time the function detour is run."""
+    """Capture the address this hooked function was called from.
+    This address will be acessible by the `caller_address()` method which will belong to the function that is
+    decorated by this.
+
+    Examples
+    --------
+    @get_caller
+    @manual_hook("test_function", 0x12345678, FUNCDEF(restype=ctypes.void, argtypes=[ctypes.c_ulonglong]))
+    def something(self, *args):
+        logger.info(f"'test_function' called with {args} from 0x{self.something.caller_address():X}")
+    """
     setattr(func, "_get_caller", True)
     return func
 

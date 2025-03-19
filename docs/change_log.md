@@ -3,6 +3,9 @@
 ## Current (0.1.11-dev)
 
 - Added the `gui_combobox(label: str, items: list[str])` decorator (partial work on [gh-15](https://github.com/monkeyman192/pyMHF/issues/15))
+- Added the ability for mods to access each others' attributes and methods. ([gh-5](https://github.com/monkeyman192/pyMHF/issues/5)). See [this page](inter_mod_functionality.md) for more details.
+- Fixed a few issues regarding running `pyMHF`. Thanks to [@Foundit3923](https://github.com/Foundit3923) for helping to figure out the issues.
+- Fixed an issue where hooks of imported functions which have `_result_` as an argument work.
 
 ## 0.1.10 (26/02/2025)
 
