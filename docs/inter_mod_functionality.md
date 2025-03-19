@@ -77,6 +77,11 @@ As with the previous mod, it won't hook anything or do anything, however, when t
 Note that the mod has a `__dependencies__` attribute. This is required so that `pyMHF` knows what dependencies to inject into the script. It's also an optimisation so that we don't inject every single mod into every single other mod.
 In the future we may raise a warning or error if a mod has a dependency which has not been registered within the current `pyMHF` run.
 
+## Running multiple mods in a single folder.
+
+Similar to how single-file mods work. `pyMHF` can be pointed to a folder to run (ie. the path you provide to the `pymhf run` command is the folder.)
+Currently, for this to work the folder must contain the `pymhf.toml` file as if it were a library (see the [settings](../settings.md) docs for more details).
+
 ## Caveats / Things to keep in mind
 
 - One must always do a lookup on the *type* of the mod being accessed, not an instance of it. We do this because internally, `pyMHF` manages the state of these mods, and these states and instances may change if some mod is reloaded, so one should always rely on `pyMHF` to do this lookup and not do it themselves.
