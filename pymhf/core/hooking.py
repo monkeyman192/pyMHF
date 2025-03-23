@@ -92,6 +92,7 @@ class FuncHook(cyminhook.MinHook):
             self._binary = _internal.EXE_NAME
             self._binary_base = _internal.BASE_ADDRESS
 
+        self._has_noop = False
         self._before_detours: list[HookProtocol] = []
         self._after_detours: list[HookProtocol] = []
         self._after_detours_with_results: list[HookProtocol] = []
@@ -255,6 +256,14 @@ class FuncHook(cyminhook.MinHook):
             self._disabled_detours.add(detour)
             return
 
+        if getattr(detour, "_noop", False):
+            self._has_noop = True
+            hook_logger.warning(
+                f"The hook {detour._hook_func_name} has been marked as NOOP. If there are multiple detours "
+                "registered for this hook they may behave weirdly and the game may crash if this hook is not "
+                "defined well."
+            )
+
         # Determine the detour list to use. If none, then return.
         if (detour_list := self._determine_detour_list(detour)) is None:
             hook_logger.error(
@@ -322,6 +331,10 @@ class FuncHook(cyminhook.MinHook):
             self.disable()
             self.close()
 
+        # Check to see if we have any detours marked as NOOP. If not, make sure the flag is set to false.
+        # We can always just check the before detours since only a before detour can be marked as NOOP.
+        self._has_noop == any([getattr(d, "_noop", False) for d in self._before_detours])
+
     @property
     def _should_enable(self):
         return (
@@ -367,15 +380,23 @@ class FuncHook(cyminhook.MinHook):
             hook_logger.error(f"There was an error with detour {bad_detour}. It has been disabled.")
             hook_logger.error(traceback.format_exc())
             self._disabled_detours.add(bad_detour)
-        # If we get a return value that is not None, then pass it through.
-        if ret is not None:
-            result = self.original(*ret)
+
+        # If we don't have any decorators which NOOP the original function then run as usual.
+        if not self._has_noop:
+            # If we get a return value that is not None, then pass it through.
+            if ret is not None:
+                result = self.original(*ret)
+            else:
+                result = self.original(*args)
+            after_ret = None
+        # If we have any NOOP's, then we don't want to run the original, and instead will have the last result
+        # returned from our functions as the "result".
         else:
-            result = self.original(*args)
+            result = ret
+            after_ret = ret
 
         # Now loop over the after functions. We'll need to handle the cases of
         # functions which take the `_result_` kwarg, and those that don't.
-        after_ret = None
         try:
             for i, func in enumerate(self._after_detours):
                 after_ret = func(*args)
@@ -438,6 +459,7 @@ class HookFactory:
         setattr(detour, "_is_manual_hook", False)
         setattr(detour, "_is_imported_func_hook", False)
         setattr(detour, "_has__result_", False)
+        setattr(detour, "_noop", False)
         if cls:
             if hasattr(cls, "_overload"):
                 setattr(detour, "_func_overload", cls._overload)
@@ -530,6 +552,25 @@ def manual_hook(
         return detour
 
     return inner
+
+
+def NOOP(detour: HookProtocol) -> HookProtocol:
+    """
+    Specify the hook to not run the original function.
+    This decorator must be used with extreme caution as it can cause the hooked program to not run correctly
+    if not used right.
+    The decorated function MUST return something of the same type as the original function if the hooked
+    function normally returns something otherwise the hooked program will almost certainly crash.
+    """
+    if getattr(detour, "_hook_time", None) == DetourTime.BEFORE:
+        setattr(detour, "_noop", True)
+    else:
+        hook_logger.warning(
+            "NOOP decorator can only be applied to 'before' hooks."
+            "Either change the detour to a before detour, or, if it is, ensure that this decorator is "
+            "applied above the hook decorator."
+        )
+    return detour
 
 
 def disable(obj):

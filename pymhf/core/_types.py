@@ -27,6 +27,7 @@ class HookProtocol(Protocol):
     _custom_trigger: Optional[str]
     _func_overload: Optional[str]
     _get_caller: Optional[bool]
+    _noop: Optional[bool]
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
 
