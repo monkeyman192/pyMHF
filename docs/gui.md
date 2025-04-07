@@ -42,7 +42,7 @@ To see what extra arguments are available, see the DearPyGUI documentation [here
 
 ## Accessing the GUI via code
 
-In general, you shouldn't need to access the gui via code within your mod, however, there are a few reasons for doing so (may want more control over what and how things are rendered), but the primary reason is to communicate with the Hex View tab.
+In general, you shouldn't need to access the gui via code within your mod, however, there are a few reasons for doing so (may want more control over what and how things are rendered), but the primary reason is to communicate with the "Hex View" tab.
 
 Every instance of a mod has the `pymhf_gui` property which is the instance of the `pymhf.gui.gui.GUI` class which contains all the controls to the GUI.
 
