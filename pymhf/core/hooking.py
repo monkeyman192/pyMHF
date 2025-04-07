@@ -355,8 +355,7 @@ class FuncHook(cyminhook.MinHook):
         except cyminhook._cyminhook.Error as e:  # type: ignore
             if e.status == cyminhook._cyminhook.Status.MH_ERROR_ALREADY_CREATED:
                 hook_logger.info(
-                    "Hook is already created. This shouldn't be possible. "
-                    "Please raise an issue on github..."
+                    "Hook is already created. This shouldn't be possible. Please raise an issue on github..."
                 )
             hook_logger.error(f"Failed to initialize hook {self._name} at 0x{self.target:X}")
             hook_logger.error(e)

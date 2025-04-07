@@ -81,6 +81,10 @@ def match(patt: bytes, input: bytes):
     return True
 
 
+def get_mem(offset: int, size: int) -> bytes:
+    return (ctypes.c_char * size).from_address(offset)
+
+
 def pprint_mem(offset: int, size: int, stride: Optional[int] = None) -> str:
     # TODO: Make this print a much nicer output... It sucks right now...
     if not offset:

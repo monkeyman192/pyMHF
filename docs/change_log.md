@@ -7,6 +7,7 @@
 - Fixed a few issues regarding running `pyMHF`. Thanks to [@Foundit3923](https://github.com/Foundit3923) for helping to figure out the issues.
 - Fixed an issue where hooks of imported functions which have `_result_` as an argument work.
 - Added `@pymhf.core.hooking.NOOP` decorator which indicates that the original game function shouldn't be called. See docstring for more details. ([gh-20](https://github.com/monkeyman192/pyMHF/issues/20))
+- Added a hex editor to the `pyMHF` gui. This is accessible from the `Hex Viewer` tab of the gui and allows real time viewing of data, following pointer values, and capturing memory snapshots. ([gh-43](https://github.com/monkeyman192/pyMHF/issues/43))
 
 ## 0.1.10 (26/02/2025)
 

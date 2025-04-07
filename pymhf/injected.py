@@ -274,6 +274,7 @@ try:
         for mod in mod_manager.mods.values():
             gui.add_tab(mod)
         # Add the settings tab so that we may configure various settings.
+        gui.add_hex_tab()
         gui.add_settings_tab()
         gui.add_details_tab()
 

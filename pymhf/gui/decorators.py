@@ -97,7 +97,7 @@ class gui_variable:
 
     @classmethod
     def BOOLEAN(cls, label: Optional[str] = None, **extra_args):
-        """Create an string entry field which can take extra arguments.
+        """Create an boolean entry field in the form of a checkbox which can take extra arguments.
         To see what extra arguments are available, see the DearPyGUI documentation:
         https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_checkbox
         """
