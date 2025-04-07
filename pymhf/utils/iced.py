@@ -40,7 +40,7 @@ def generate_load_stack_pointer_bytes(buff_addr: int, rip: int, bits: int = 64) 
 
 def load_rsp(buff_addr: int, rip: int) -> bytes:
     """Assemble the required bytes to write the value of the rsp register into a buffer which can be accessed
-    by the detour.
+    by the detour. This is for getting the caller address in a 64 bit process.
     The asm which is assembled is
     ```x86asm
     mov rax, [rsp]
@@ -66,7 +66,7 @@ def load_rsp(buff_addr: int, rip: int) -> bytes:
 
 def load_esp(buff_addr: int, rip: int) -> bytes:
     """Assemble the required bytes to write the value of the esp register into a buffer which can be accessed
-    by the detour.
+    by the detour. This is for getting the caller address in a 32 bit process.
     The asm which is assembled is
     ```x86asm
     mov eax, [esp]

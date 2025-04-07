@@ -6,16 +6,14 @@ A lot of the power and functionality of pyMHF comes from a set of decorators whi
 
 ### `manual_hook`:
 
-Parameters
-----------
+#### Parameters
+
 `name`:
-    The name of the function to hook. This doesn't need to be known, but any two manual hooks sharing the
-    same name will be combined together so one should remember to keep the name/offset combination unique.
+    The name of the function to hook. This doesn't need to be known, but any two manual hooks sharing the same name will be combined together so one should remember to keep the name/offset combination unique.
 
 `offset`:
     The offset in bytes relative to the start of the binary.
-    To determine this, you normally subtract off the exe Imagebase value from the address in IDA (or
-    similar program.)
+    To determine this, you normally subtract off the exe Imagebase value from the address in IDA (or similar program.)
 
 `pattern`:
     A pattern which can be used to unqiuely find the function to be hooked within the binary.
@@ -31,7 +29,7 @@ Parameters
 
 `binary`:
     If provided, this will be the name of the binary which the function being hooked is within.
-    `offset`~ and `pattern` are found relative to/within the memory region of this binary.
+    `offset` and `pattern` are found relative to/within the memory region of this binary.
 
 ### `one_shot`:
 

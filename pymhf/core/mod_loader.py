@@ -172,6 +172,7 @@ class Mod(ABC):
     __pymhf_required_version__: Optional[str] = None
 
     custom_callbacks: dict[str, set[HookProtocol]]
+    pymhf_gui: "GUI"
 
     def __init__(self):
         # Find all the hooks defined for the mod.
@@ -184,7 +185,7 @@ class Mod(ABC):
         self._gui_comboboxes: dict[str, ComboBoxProtocol] = {
             x[1].__qualname__: x[1] for x in inspect.getmembers(self, _gui_combobox_predicate)
         }
-        self._gui = None
+        self.pymhf_gui = None
         # For variables, unless there is a better way, store just the name so we
         # can our own special binding of the name to the GUI.
         self._gui_variables: dict[str, VariableProtocol] = {}
@@ -253,8 +254,7 @@ class ModManager:
                 mod_version = parse_version(mod.__pymhf_required_version__)
             except InvalidVersion:
                 mod_logger.warning(
-                    "__pymhf_required_version__ defined on mod "
-                    f"{mod.__name__} is not a valid version string"
+                    f"__pymhf_required_version__ defined on mod {mod.__name__} is not a valid version string"
                 )
                 mod_version = None
             if mod_version is None or mod_version <= pymhf_version:

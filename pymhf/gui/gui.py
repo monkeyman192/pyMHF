@@ -9,10 +9,12 @@ import win32gui
 import pymhf.core._internal as _internal
 import pymhf.core.caching as cache
 from pymhf.core.mod_loader import Mod, ModManager
+from pymhf.gui.hexview import HexView
 from pymhf.gui.protocols import ButtonProtocol, ComboBoxProtocol, VariableProtocol, VariableType
 from pymhf.utils.winapi import set_window_transparency
 
 SETTINGS_NAME = "_pymhf_gui_settings"
+HEX_NAME = "_pymhf_gui_hex"
 DETAILS_NAME = "_pymhf_gui_details"
 WINDOW_TITLE = "pyMHF"
 
@@ -42,6 +44,8 @@ def toggle_on_top(item: int, value: bool):
 
 
 class GUI:
+    hex_view: HexView
+
     def __init__(self, mod_manager: ModManager, config: dict):
         self.config = config
         self.scale = config.get("gui", {}).get("scale", 1)
@@ -103,6 +107,14 @@ class GUI:
 
     def toggle_show_gui(self, _sender, show_gui):
         self.config.set("gui", "shown", show_gui)
+
+    def add_hex_tab(self):
+        tab = dpg.add_tab(label="Hex View", tag=HEX_NAME, parent="tabbar")
+        tab_alias = dpg.get_alias_id(tab)
+        self.tabs[tab_alias] = HEX_NAME
+
+        self.hex_view = HexView(HEX_NAME)
+        self.hex_view._setup()
 
     def add_settings_tab(self):
         """Add a settings tab to configure the gui and other things."""
@@ -180,7 +192,7 @@ class GUI:
     def reload_tab(self, cls: Mod):
         """Reload the tab for the specific mod."""
         name = cls.__class__.__name__
-        cls._gui = self
+        cls.pymhf_gui = self
         widgets = self.widgets.get(name, {})
 
         self.reload_buttons(cls, widgets)
@@ -288,7 +300,7 @@ class GUI:
             return
 
         name = cls.__class__.__name__
-        cls._gui = self
+        cls.pymhf_gui = self
 
         tab = dpg.add_tab(label=name, tag=name, parent="tabbar")
         tab_alias = dpg.get_alias_id(tab)
