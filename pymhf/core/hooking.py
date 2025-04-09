@@ -24,7 +24,7 @@ from pymhf.core._types import (
 )
 from pymhf.core.memutils import _get_binary_info, find_pattern_in_binary, get_addressof
 from pymhf.core.module_data import module_data
-from pymhf.utils.iced import generate_load_stack_pointer_bytes, get_first_jmp_addr
+from pymhf.utils.iced import HAS_ICED, generate_load_stack_pointer_bytes, get_first_jmp_addr
 
 hook_logger = logging.getLogger("HookManager")
 
@@ -828,6 +828,12 @@ class HookManager:
             # If any of the hooked functions want to log where they were called from, we need to overwrite
             # part of the trampoline bytes to capture the RSP register.
             if hook_name in self._get_caller_detours:
+                if not HAS_ICED:
+                    hook_logger.error(
+                        f"Cannot get calling address of {hook_name} as `iced_x86` package is not installed.\n"
+                        "Please install and try again."
+                    )
+                    continue
                 # First, get the first jump so we can go to the trampoline bytes.
                 jmp_data = (ctypes.c_char * 0x10).from_address(hook.target)
                 jmp_addr = get_first_jmp_addr(jmp_data.raw, hook.target)
