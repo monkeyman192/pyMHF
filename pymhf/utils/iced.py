@@ -14,6 +14,7 @@ try:
         Mnemonic,
         Register,
     )
+
     HAS_ICED = True
 except ImportError:
     HAS_ICED = False
