@@ -457,6 +457,7 @@ class HookFactory:
         setattr(detour, "_is_funchook", True)
         setattr(detour, "_is_manual_hook", False)
         setattr(detour, "_is_imported_func_hook", False)
+        setattr(detour, "_is_exported_func_hook", False)
         setattr(detour, "_has__result_", False)
         setattr(detour, "_noop", False)
         if cls:
