@@ -48,6 +48,8 @@ class GUI:
 
     def __init__(self, mod_manager: ModManager, config: dict):
         self.config = config
+        self.always_on_top = config.get("gui", {}).get("always_on_top", False)
+        self.is_debug = config.get("logging", {}).get("log_level") == "debug"
         self.scale = config.get("gui", {}).get("scale", 1)
         dpg.create_context()
         dpg.create_viewport(
@@ -55,6 +57,7 @@ class GUI:
             width=int(600 * self.scale),
             height=int(800 * self.scale),
             decorated=True,
+            always_on_top=self.always_on_top,
         )
         dpg.setup_dearpygui()
         dpg.set_global_font_scale(self.scale)
@@ -119,7 +122,8 @@ class GUI:
     def add_settings_tab(self):
         """Add a settings tab to configure the gui and other things."""
         with dpg.value_registry():
-            dpg.add_bool_value(tag="is_debug", default_value=False)
+            dpg.add_bool_value(tag="always_on_top", default_value=self.always_on_top)
+            dpg.add_bool_value(tag="is_debug", default_value=self.is_debug)
             dpg.add_bool_value(tag="show_gui", default_value=True)
         tab = dpg.add_tab(label="Settings", tag=SETTINGS_NAME, parent="tabbar")
         tab_alias = dpg.get_alias_id(tab)
@@ -158,7 +162,10 @@ class GUI:
             # Add a checkbox to toggle whether the window should stay always on top.
             with dpg.table_row():
                 dpg.add_text("Always on top")
-                dpg.add_checkbox(callback=toggle_on_top)
+                dpg.add_checkbox(
+                    source="always_on_top",
+                    callback=toggle_on_top,
+                )
 
     def _toggle_show_pyd(self, item: int, value: bool):
         self._hide_pyd_modules = value

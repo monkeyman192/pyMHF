@@ -35,7 +35,6 @@ try:
     from pymhf.utils.config import canonicalize_setting
 
     log_level = _internal.CONFIG.get("logging", {}).get("log_level", "info")
-    log_level = "info"
 
     _internal.LOAD_TYPE = _internal.LoadTypeEnum(_internal.LOAD_TYPE)
 

@@ -8,6 +8,8 @@
 - Fixed an issue where hooks of imported functions which have `_result_` as an argument work.
 - Added `@pymhf.core.hooking.NOOP` decorator which indicates that the original game function shouldn't be called. See docstring for more details. ([gh-20](https://github.com/monkeyman192/pyMHF/issues/20))
 - Added a hex editor to the `pyMHF` gui. This is accessible from the `Hex Viewer` tab of the gui and allows real time viewing of data, following pointer values, and capturing memory snapshots. ([gh-43](https://github.com/monkeyman192/pyMHF/issues/43))
+- Fixed an issue with loading hooks. Thanks to [@cengelha](https://github.com/cengelha) for finding the bug.
+- Added "always on top" gui setting to the config. Thanks to [@cengelha](https://github.com/cengelha) for adding it.
 
 ## 0.1.10 (26/02/2025)
 
@@ -17,12 +19,12 @@
 - Added the ability to specify in the `pymhf.core.hooking.imported` decorator whether the detour time is `"before"` or `"after"`.
 - Fixed an issue where hooks defined using the `manual_hook` decorator didn't use the `__pymhf_func_offsets__` etc. variables defined. (Thanks to [@hashcatHitman](https://www.github.com/hashcatHitman) for finding the bug.)
 - Made improvements to the shutting down of `pyMHF` so that when the process it is attached to exits, so does `pyMHF`.
-- Added a class decorator `partial_struct` in `pymhf.utils.partial_struct` which can be used to creat `ctypes.Structure` types without needing to know the entire layout of the struct.
+- Added a class decorator `partial_struct` in `pymhf.utils.partial_struct` which can be used to create `ctypes.Structure` types without needing to know the entire layout of the struct.
 
 ## 0.1.9 (23/01/2025)
 
 - Added `cmd` mode to the configuration to run commands in any registered libraries.
-- Added trapaarency slider and "always on top" options to the pymhf window.
+- Added transparency slider and "always on top" options to the pymhf window.
 - Made a fix to manual hooks which were being declared with a pattern and name only.
 
 ## 0.1.8 (26/12/2024)

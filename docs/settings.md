@@ -42,6 +42,7 @@ This section related to properties specifically for the GUI which is auto-genera
 
 - **scale**: The scale of the GUI. For some high-resolution monitors the GUI may end up scaled down when running from within a process, so sometimes this may need to be set to 1.5 for the GUI to look correct.
 
+- **always_on_top**: Whether or not the GUI is always on top (`True` or `False`).
 
 ## Magic path variables
 
