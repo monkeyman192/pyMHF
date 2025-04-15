@@ -3,16 +3,21 @@
 import logging
 import struct
 
-from iced_x86 import (
-    BlockEncoder,
-    Code,
-    Decoder,
-    FastFormatter,
-    Instruction,
-    MemoryOperand,
-    Mnemonic,
-    Register,
-)
+try:
+    from iced_x86 import (
+        BlockEncoder,
+        Code,
+        Decoder,
+        FastFormatter,
+        Instruction,
+        MemoryOperand,
+        Mnemonic,
+        Register,
+    )
+
+    HAS_ICED = True
+except ImportError:
+    HAS_ICED = False
 
 logger = logging.getLogger("iced")
 
