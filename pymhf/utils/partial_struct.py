@@ -15,7 +15,6 @@ def partial_struct(cls: StructType):
     _fields_ = []
     curr_position = 0
     for field_name, annotation in cls.__annotations__.items():
-        print(field_name)
         if len(annotation.__metadata__) == 1:
             field_data = annotation.__metadata__[0]
         else:

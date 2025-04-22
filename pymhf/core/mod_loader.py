@@ -127,7 +127,14 @@ class ModState(ABC):
     _save_fields_: tuple[str]
 
     def save(self, name: str):
-        """Save the current mod state to file."""
+        """Save the current mod state to a file.
+
+        Parameters
+        ----------
+        name:
+            The name of the file this ``ModState`` will be saved to.
+            Note that this will be a json file saved within the ``MOD_SAVE_DIR`` directory.
+        """
         _data = {}
         if hasattr(self, "_save_fields_") and self._save_fields_:
             for field in self._save_fields_:
@@ -153,7 +160,14 @@ class ModState(ABC):
             json.dump(_data, fobj, cls=StructEncoder, indent=1)
 
     def load(self, name: str):
-        """Load the mod state from file."""
+        """Load the mod state from a file.
+
+        Parameters
+        ----------
+        name:
+            The name of the file this ``ModState`` will be loaded from.
+            Note that this will be a json file loaded from the ``MOD_SAVE_DIR`` directory.
+        """
         try:
             with open(op.join(_internal.MOD_SAVE_DIR, name), "r") as f:
                 data = json.load(f, cls=StructDecoder)
@@ -171,13 +185,13 @@ class Mod(ABC):
     # Minimum required pyMHF version for this mod.
     __pymhf_required_version__: Optional[str] = None
 
-    custom_callbacks: dict[str, set[HookProtocol]]
+    _custom_callbacks: dict[str, set[HookProtocol]]
     pymhf_gui: "GUI"
 
     def __init__(self):
         # Find all the hooks defined for the mod.
         self.hooks: set[HookProtocol] = self.get_members(_funchook_predicate)
-        self.custom_callbacks = self.get_members(_callback_predicate)
+        self._custom_callbacks = self.get_members(_callback_predicate)
         self._hotkey_funcs = self.get_members(_has_hotkey_predicate)
         self._gui_buttons: dict[str, ButtonProtocol] = {
             x[1].__qualname__: x[1] for x in inspect.getmembers(self, _gui_button_predicate)
@@ -358,7 +372,7 @@ class ModManager:
         for hook in _mod.hooks:
             self.hook_manager.register_hook(hook)
         # Add any custom callbacks which may be defined by the calling library.
-        self.hook_manager.add_custom_callbacks(_mod.custom_callbacks)
+        self.hook_manager.add_custom_callbacks(_mod._custom_callbacks)
         # Finally, set up any keyboard bindings.
         for hotkey_func in _mod._hotkey_funcs:
             # Don't need to tell the hook manager, register the keyboard
@@ -416,7 +430,7 @@ class ModManager:
                         if fh.state == "closed":
                             del self.hook_manager.hooks[hook_name]
 
-                self.hook_manager.remove_custom_callbacks(mod.custom_callbacks)
+                self.hook_manager.remove_custom_callbacks(mod._custom_callbacks)
                 for hotkey_func in mod._hotkey_funcs:
                     cb = self.hotkey_callbacks.pop(
                         (hotkey_func._hotkey, hotkey_func._hotkey_press),

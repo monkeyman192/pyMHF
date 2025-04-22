@@ -1,22 +1,24 @@
-# Hex View
+Hex View
+========
 
-In the auto-generated `pyMHF` GUI, you will notice a tab called "Hex View".
-This tab can be used to explore the memory of the running process that `pyMHF` is running within.
+In the auto-generated pyMHF GUI, you will notice a tab called "Hex View".
+This tab can be used to explore the memory of the running process that pyMHF is running within.
 
 When you initially open this tab there will be no data, however you can enter an address (in hex) in the address bar and it will show the 4kb of memory from that address.
 Note that the view can only access memory that the process has access to, so entering an invalid address will cause an error to display in the console, and nothing to happen in the editor.
 
-## Methods
+Methods
+-------
 
-The `gui` property of the mod is a `pymhf.gui.gui.GUI` instance which has the `hex_view` property.
+The ``gui`` property of the mod is a ``pymhf.gui.gui.GUI`` instance which has the ``hex_view`` property.
 
-## `pymhf.gui.hex_view.HexView`
+``pymhf.gui.hex_view.HexView``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-### add_snapshot(address: int, size: Optional[int] = None, tag: Optional[str] = None) -> bool:
+``add_snapshot(address: int, size: Optional[int] = None, tag: Optional[str] = None) -> bool:``
+    Add a snapshot of the data at the specified address to the hex viewer. These memory snapshots will be viewable later from a drop down in the hex viewer.
 
-Add a snapshot of the data at the specified address to the hex viewer. These memory snapshots will be viewable later from a drop down in the hex viewer.
-
-#### Parameters
+Parameters
 
 `address`:
     The absolute memory address to take a snapshot at.

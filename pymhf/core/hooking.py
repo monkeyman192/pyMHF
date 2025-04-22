@@ -582,6 +582,20 @@ def disable(obj):
 
 
 def imported(dll_name: str, func_name: str, func_def: FUNCDEF, detour_time: str = "after"):
+    """Hook an imported function in `dll_name` dll.
+
+    Parameters
+    ----------
+    dll_name:
+        The name of the dll which contains the function.
+    func_name:
+        The name of the function in the dll which is to be hooked.
+    func_def:
+        The function signature.
+    detour_time:
+        Whether to run the detour before or after the original function.
+    """
+
     def inner(detour: Callable[..., Any]) -> ImportedHookProtocol:
         HookFactory._set_detour_as_funchook(detour, None, func_name)
         setattr(detour, "_dll_name", dll_name)
@@ -599,6 +613,20 @@ def imported(dll_name: str, func_name: str, func_def: FUNCDEF, detour_time: str 
 
 
 def exported(func_name: str, func_def: FUNCDEF, detour_time: str = "after"):
+    """Hook an exported function.
+
+    Parameters
+    ----------
+    func_name:
+        The name of the function which is to be hooked.
+        Note: It is recommended that the function name is the "mangled" version.
+        Ie. do not "demangle" the function name.
+    func_def:
+        The function signature.
+    detour_time:
+        Whether to run the detour before or after the original function.
+    """
+
     def inner(detour: Callable[..., Any]) -> ExportedHookProtocol:
         HookFactory._set_detour_as_funchook(detour, None, func_name)
         setattr(detour, "_is_exported_func_hook", True)
@@ -625,16 +653,26 @@ def get_caller(func: HookProtocol) -> CallerHookProtocol:
 
     Examples
     --------
-    @get_caller
-    @manual_hook("test_function", 0x12345678, FUNCDEF(restype=ctypes.void, argtypes=[ctypes.c_ulonglong]))
-    def something(self, *args):
-        logger.info(f"'test_function' called with {args} from 0x{self.something.caller_address():X}")
+    .. code:: py
+
+        @get_caller
+        @manual_hook("test_function", 0x12345678, FUNCDEF(restype=ctypes.void, argtypes=[ctypes.c_ulonglong]))
+        def something(self, *args):
+            logger.info(f"'test_function' called with {args} from 0x{self.something.caller_address():X}")
     """
     setattr(func, "_get_caller", True)
     return func
 
 
 def on_key_pressed(event: str):
+    """ Register the provided event as a key press handler.
+    When the key is pressed, the decorated function will be called.
+
+    Parameters
+    ----------
+    event:
+        The string representing the key which is to trigger the event.
+    """
     def wrapped(func: Callable[..., Any]) -> KeyPressProtocol:
         setattr(func, "_hotkey", event)
         setattr(func, "_hotkey_press", "down")
@@ -644,6 +682,14 @@ def on_key_pressed(event: str):
 
 
 def on_key_release(event: str):
+    """ Register the provided event as a key release handler.
+    When the key is released, the decorated function will be called.
+
+    Parameters
+    ----------
+    event:
+        The string representing the key which is to trigger the event.
+    """
     def wrapped(func: Callable[..., Any]) -> KeyPressProtocol:
         setattr(func, "_hotkey", event)
         setattr(func, "_hotkey_press", "up")

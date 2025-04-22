@@ -13,6 +13,8 @@ from pymem.ressources.structure import MODULEINFO
 import pymhf.core._internal as _internal
 import pymhf.core.caching as cache
 
+__all__ = ["getsize", "get_addressof", "map_struct", "find_pattern_in_binary"]
+
 # Custom objects know their class.
 # Function objects seem to know way too much, including modules.
 # Exclude modules as well.
@@ -212,7 +214,7 @@ def map_struct(offset: int, type_: Type[Struct]) -> Struct:
     ----------
     offset:
         The memory address to start reading the struct from.
-    type_:
+    type\_:
         The type of the ctypes.Structure to be loaded at this location.
 
     Returns
