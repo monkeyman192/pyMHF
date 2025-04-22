@@ -10,51 +10,17 @@ Note that the view can only access memory that the process has access to, so ent
 Methods
 -------
 
-The ``gui`` property of the mod is a ``pymhf.gui.gui.GUI`` instance which has the ``hex_view`` property.
+The ``gui`` property of the mod is a :py:class:`~pymhf.gui.gui.GUI` instance which has the ``hex_view`` property.
 
-``pymhf.gui.hex_view.HexView``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This :py:class:`~pymhf.gui.hexview.HexView` instance has two methods which are useful:
 
-``add_snapshot(address: int, size: Optional[int] = None, tag: Optional[str] = None) -> bool:``
-    Add a snapshot of the data at the specified address to the hex viewer. These memory snapshots will be viewable later from a drop down in the hex viewer.
+:py:meth:`add_snapshot(address: int, size: Optional[int] = None, tag: Optional[str] = None) -> bool <pymhf.gui.hexview.HexView.add_snapshot>`
 
-Parameters
+and
 
-`address`:
-    The absolute memory address to take a snapshot at.
-    *Note*: The start address of the region will be aligned to a 0x10 byte boundary for convenience.
+:py:meth:`load_address(address: int, size: Optional[int] = None) -> bool <pymhf.gui.hexview.HexView.load_address>`
 
-`size`:
-    The size of the region to take a snapshot of. Note that if this is larger than 0x1000 (4kb), it will be rounded down to 0x1000.
-    *Note*: It is recommended to set this value just a bit larger than the expected size of the data.
+The first method is useful to snapshot a memory region when a function is hooked.
+For example, if you have a detour which takes the pointer to some class as an argument, you may want to snapshot a few 100 bytes of this class to see what it's structure is.
 
-`tag`:
-    An optional tag which can be used to identify the snapshot in the selector in the GUI.
-    If not provided it will default to the hex representation of the provided memory address.
-    *Note*: If the tag already exists, it won't be overwritten but will be suffixed by a number which automatically increments (this includes auto-generated tags as per above.)
-
-#### Returns
-
-`bool`:
-    If a memory snapshot was sucessfully taken at the provided address and size this will return True.
-    If the memory at the provided address was unable to be read or captured this will return False.
-
-----
-
-### load_address(address: int, size: Optional[int] = None) -> bool:
-
-Load the provided address into the hex viewer.
-
-#### Parameters
-
-`address`:
-    The absolute memory address to take a snapshot at. Note that the start address of the region will be aligned to a 0x10 byte boundary for convenience.
-
-`size`:
-    The size of the region to take a snapshot of. Note that if this is larger than 0x1000 (4kb), it will be rounded down to 0x1000.
-
-#### Returns
-
-`bool`:
-    If a memory snapshot was sucessfully taken at the provided address and size this will return True.
-    If the memory at the provided address was unable to be read or captured this will return False.
+The second method is more likely to be used from a key binding so that the contents of the Hex View is updated with some data located at some previously determined pointer.
