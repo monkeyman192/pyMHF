@@ -1,0 +1,7 @@
+pymhf.extensions.cpptypes module
+================================
+
+.. automodule:: pymhf.extensions.cpptypes
+   :members:
+   :undoc-members:
+   :show-inheritance:

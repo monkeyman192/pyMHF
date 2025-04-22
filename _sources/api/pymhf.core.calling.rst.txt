@@ -1,0 +1,7 @@
+pymhf.core.calling module
+=========================
+
+.. automodule:: pymhf.core.calling
+   :members:
+   :undoc-members:
+   :show-inheritance:

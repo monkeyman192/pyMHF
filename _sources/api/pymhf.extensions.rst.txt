@@ -1,0 +1,12 @@
+pymhf.extensions namespace
+==========================
+
+.. py:module:: pymhf.extensions
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   pymhf.extensions.cpptypes

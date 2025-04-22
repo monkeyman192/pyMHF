@@ -1,0 +1,734 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>pymhf.core.hooking module &#8212; pyMHF  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf.core.hooking';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pymhf.core.importing module" href="pymhf.core.importing.html" />
+    <link rel="prev" title="pymhf.core.errors module" href="pymhf.core.errors.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pyMHF  documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../docs/index.html">
+    Usage guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    API docs
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/monkeyman192/pyMHF" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../docs/index.html">
+    Usage guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    API docs
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/monkeyman192/pyMHF" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="pymhf.html">pymhf package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="pymhf.core.html">pymhf.core package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="pymhf.core.calling.html">pymhf.core.calling module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.core.errors.html">pymhf.core.errors module</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">pymhf.core.hooking module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.core.importing.html">pymhf.core.importing module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.core.memutils.html">pymhf.core.memutils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.core.mod_loader.html">pymhf.core.mod_loader module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.core.module_data.html">pymhf.core.module_data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.core.utils.html">pymhf.core.utils module</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="pymhf.extensions.html">pymhf.extensions namespace</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.extensions.cpptypes.html">pymhf.extensions.cpptypes module</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="pymhf.gui.html">pymhf.gui package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.decorators.html">pymhf.gui.decorators module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.gui.html">pymhf.gui.gui module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.hexview.html">pymhf.gui.hexview module</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="pymhf.utils.html">pymhf.utils namespace</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.utils.config.html">pymhf.utils.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.utils.iced.html">pymhf.utils.iced module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.utils.imports.html">pymhf.utils.imports module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.utils.parse_toml.html">pymhf.utils.parse_toml module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.utils.partial_struct.html">pymhf.utils.partial_struct module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.utils.winapi.html">pymhf.utils.winapi module</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="pymhf.main.html">pymhf.main module</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">API docs</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="pymhf.html" class="nav-link">pymhf package</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="pymhf.core.html" class="nav-link">pymhf.core package</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pymhf.core.hooking module</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-pymhf.core.hooking">
+<span id="pymhf-core-hooking-module"></span><h1>pymhf.core.hooking module<a class="headerlink" href="#module-pymhf.core.hooking" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FuncHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">FuncHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detour_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func_def</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FUNCDEF</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset_is_absolute</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.FuncHook" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MinHook</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FuncHook.add_detour">
+<span class="sig-name descname"><span class="pre">add_detour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HookProtocol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.FuncHook.add_detour" title="Link to this definition">#</a></dt>
+<dd><p>Add the provided detour to this FuncHook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FuncHook.bind">
+<span class="sig-name descname"><span class="pre">bind</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#pymhf.core.hooking.FuncHook.bind" title="Link to this definition">#</a></dt>
+<dd><p>Actually initialise the base class. Returns whether the hook is bound.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FuncHook.caller_address">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">caller_address</span></span><a class="headerlink" href="#pymhf.core.hooking.FuncHook.caller_address" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FuncHook.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.FuncHook.close" title="Link to this definition">#</a></dt>
+<dd><p>Close the hook. Removing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FuncHook.disable">
+<span class="sig-name descname"><span class="pre">disable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.FuncHook.disable" title="Link to this definition">#</a></dt>
+<dd><p>Disable the hook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FuncHook.enable">
+<span class="sig-name descname"><span class="pre">enable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.FuncHook.enable" title="Link to this definition">#</a></dt>
+<dd><p>Enable the hook.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FuncHook.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#pymhf.core.hooking.FuncHook.name" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FuncHook.offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#pymhf.core.hooking.FuncHook.offset" title="Link to this definition">#</a></dt>
+<dd><p>The relative offset of the target to the binary base.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FuncHook.remove_detour">
+<span class="sig-name descname"><span class="pre">remove_detour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HookProtocol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.FuncHook.remove_detour" title="Link to this definition">#</a></dt>
+<dd><p>Remove the provided detour from this FuncHook.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.core.hooking.HookFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">HookFactory</span></span><a class="headerlink" href="#pymhf.core.hooking.HookFactory" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.HookFactory.after">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">after</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">HookProtocol</span></span></span><a class="headerlink" href="#pymhf.core.hooking.HookFactory.after" title="Link to this definition">#</a></dt>
+<dd><p>Run the detour <em>after</em> the original function.
+An optional <cite>_result_</cite> argument can be added as the final argument.
+If this argument is provided it will be the result of calling the original function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.HookFactory.before">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">before</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">HookProtocol</span></span></span><a class="headerlink" href="#pymhf.core.hooking.HookFactory.before" title="Link to this definition">#</a></dt>
+<dd><p>Run the detour <em>before</em> the original function.
+If this detour returns any values they must be the same types and order as the original arguments to
+the function. If this happens these values will be passed into the original function instead of the
+original arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.HookFactory.overload">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">overload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overload_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookFactory.overload" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.core.hooking.HookManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">HookManager</span></span><a class="headerlink" href="#pymhf.core.hooking.HookManager" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.add_custom_callbacks">
+<span class="sig-name descname"><span class="pre">add_custom_callbacks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><span class="pre">HookProtocol</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookManager.add_custom_callbacks" title="Link to this definition">#</a></dt>
+<dd><p>Add the provided function to the specified callback type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.call_custom_callbacks">
+<span class="sig-name descname"><span class="pre">call_custom_callbacks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">detour_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DetourTime</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DetourTime.NONE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookManager.call_custom_callbacks" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.disable">
+<span class="sig-name descname"><span class="pre">disable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookManager.disable" title="Link to this definition">#</a></dt>
+<dd><p>Disable the hook for the provided function name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.enable">
+<span class="sig-name descname"><span class="pre">enable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookManager.enable" title="Link to this definition">#</a></dt>
+<dd><p>Enable the hook for the provided function name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.initialize_hooks">
+<span class="sig-name descname"><span class="pre">initialize_hooks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#pymhf.core.hooking.HookManager.initialize_hooks" title="Link to this definition">#</a></dt>
+<dd><p>Initialize any uninitialized hooks.
+This will also enable the hooks so that they become active.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.register_hook">
+<span class="sig-name descname"><span class="pre">register_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hook</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HookProtocol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookManager.register_hook" title="Link to this definition">#</a></dt>
+<dd><p>Register the provided hook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.remove_custom_callbacks">
+<span class="sig-name descname"><span class="pre">remove_custom_callbacks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><span class="pre">HookProtocol</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookManager.remove_custom_callbacks" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.resolve_dependencies">
+<span class="sig-name descname"><span class="pre">resolve_dependencies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookManager.resolve_dependencies" title="Link to this definition">#</a></dt>
+<dd><p>Resolve dependencies of hooks.
+This will get all the functions which are to be hooked and construct
+compound hooks as required.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.core.hooking.NOOP">
+<span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">NOOP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HookProtocol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">HookProtocol</span></span></span><a class="headerlink" href="#pymhf.core.hooking.NOOP" title="Link to this definition">#</a></dt>
+<dd><p>Specify the hook to not run the original function.
+This decorator must be used with extreme caution as it can cause the hooked program to not run correctly
+if not used right.
+The decorated function MUST return something of the same type as the original function if the hooked
+function normally returns something otherwise the hooked program will almost certainly crash.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.core.hooking.disable">
+<span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">disable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.disable" title="Link to this definition">#</a></dt>
+<dd><p>Disable the current function or class.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.core.hooking.exported">
+<span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">exported</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">func_def</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FUNCDEF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detour_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'after'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.exported" title="Link to this definition">#</a></dt>
+<dd><p>Hook an exported function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func_name</strong> – The name of the function which is to be hooked.
+Note: It is recommended that the function name is the “mangled” version.
+Ie. do not “demangle” the function name.</p></li>
+<li><p><strong>func_def</strong> – The function signature.</p></li>
+<li><p><strong>detour_time</strong> – Whether to run the detour before or after the original function.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.core.hooking.get_caller">
+<span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">get_caller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HookProtocol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">CallerHookProtocol</span></span></span><a class="headerlink" href="#pymhf.core.hooking.get_caller" title="Link to this definition">#</a></dt>
+<dd><p>Capture the address this hooked function was called from.
+This address will be acessible by the <cite>caller_address()</cite> method which will belong to the function that is
+decorated by this.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="nd">@get_caller</span>
+<span class="nd">@manual_hook</span><span class="p">(</span><span class="s2">&quot;test_function&quot;</span><span class="p">,</span> <span class="mh">0x12345678</span><span class="p">,</span> <span class="n">FUNCDEF</span><span class="p">(</span><span class="n">restype</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">void</span><span class="p">,</span> <span class="n">argtypes</span><span class="o">=</span><span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulonglong</span><span class="p">]))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">something</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;test_function&#39; called with </span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2"> from 0x</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">something</span><span class="o">.</span><span class="n">caller_address</span><span class="p">()</span><span class="si">:</span><span class="s2">X</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.core.hooking.imported">
+<span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">imported</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dll_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">func_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">func_def</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FUNCDEF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detour_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'after'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.imported" title="Link to this definition">#</a></dt>
+<dd><p>Hook an imported function in <cite>dll_name</cite> dll.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dll_name</strong> – The name of the dll which contains the function.</p></li>
+<li><p><strong>func_name</strong> – The name of the function in the dll which is to be hooked.</p></li>
+<li><p><strong>func_def</strong> – The function signature.</p></li>
+<li><p><strong>detour_time</strong> – Whether to run the detour before or after the original function.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.core.hooking.manual_hook">
+<span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">manual_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func_def</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FUNCDEF</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detour_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'before'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.manual_hook" title="Link to this definition">#</a></dt>
+<dd><p>Manually hook a function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – The name of the function to hook. This doesn’t need to be known, but any two manual hooks sharing the
+same name will be combined together so one should remember to keep the name/offset combination unique.</p></li>
+<li><p><strong>offset</strong> – The offset in bytes relative to the start of the binary.
+To determine this, you normally subtract off the exe Imagebase value from the address in IDA (or
+similar program.)</p></li>
+<li><p><strong>pattern</strong> – A pattern which can be used to unqiuely find the function to be hooked within the binary.
+The pattern must have a format like “01 23 45 67 89 AB CD EF”.
+The format is what is provided by the IDA plugin <cite>SigMakerEx</cite> and the <cite>??</cite> values indicate a wildcard.</p></li>
+<li><p><strong>func_def</strong> – The function arguments and return value. This is provided as a <cite>pymhf.FUNCDEF</cite> object.
+This argument is only optional if another function with the same offset and name has already been
+hooked in the same mod.</p></li>
+<li><p><strong>detour_time</strong> – When the detour should run (“before” or “after”)</p></li>
+<li><p><strong>binary</strong> – If provided, this will be the name of the binary which the function being hooked is within.
+<cite>offset</cite> and <cite>pattern</cite> are found relative to/within the memory region of this binary.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.core.hooking.on_key_pressed">
+<span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">on_key_pressed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.on_key_pressed" title="Link to this definition">#</a></dt>
+<dd><p>Register the provided event as a key press handler.
+When the key is pressed, the decorated function will be called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>event</strong> – The string representing the key which is to trigger the event.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.core.hooking.on_key_release">
+<span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">on_key_release</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.on_key_release" title="Link to this definition">#</a></dt>
+<dd><p>Register the provided event as a key release handler.
+When the key is released, the decorated function will be called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>event</strong> – The string representing the key which is to trigger the event.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.core.hooking.one_shot">
+<span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">one_shot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HookProtocol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">HookProtocol</span></span></span><a class="headerlink" href="#pymhf.core.hooking.one_shot" title="Link to this definition">#</a></dt>
+<dd><p>Run this detour once only.</p>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="pymhf.core.errors.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">pymhf.core.errors module</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="pymhf.core.importing.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">pymhf.core.importing module</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, monkeyman192.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+pymhf.core.module\_data module
+==============================
+
+.. automodule:: pymhf.core.module_data
+   :members:
+   :undoc-members:
+   :show-inheritance:

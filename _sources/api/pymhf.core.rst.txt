@@ -1,0 +1,25 @@
+pymhf.core package
+==================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   pymhf.core.calling
+   pymhf.core.errors
+   pymhf.core.hooking
+   pymhf.core.importing
+   pymhf.core.memutils
+   pymhf.core.mod_loader
+   pymhf.core.module_data
+   pymhf.core.utils
+
+Module contents
+---------------
+
+.. automodule:: pymhf.core
+   :members:
+   :undoc-members:
+   :show-inheritance:

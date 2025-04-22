@@ -1,0 +1,549 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Change Log &#8212; pyMHF  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/change_log';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API docs" href="../api/index.html" />
+    <link rel="prev" title="Hex View" href="gui/hex_view.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pyMHF  documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Usage guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API docs
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/monkeyman192/pyMHF" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Usage guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API docs
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/monkeyman192/pyMHF" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="settings.html">Configuring pyMHF</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writing_mods.html">Writing Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mod_states.html">Mod States</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inter_mod_functionality.html">Inter-mod functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="partial_structs.html">Partial Structs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="single_file_mods.html">Single-file mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writing_libraries.html">Writing Libraries</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="gui/index.html">GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui/gui.html">Automatic-GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui/hex_view.html">Hex View</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Change Log</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Usage guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Change Log</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="change-log">
+<h1>Change Log<a class="headerlink" href="#change-log" title="Link to this heading">#</a></h1>
+<section id="current-0-1-11-dev">
+<h2>Current (0.1.11-dev)<a class="headerlink" href="#current-0-1-11-dev" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Added the <a class="reference internal" href="../api/pymhf.gui.decorators.html#pymhf.gui.decorators.gui_combobox" title="pymhf.gui.decorators.gui_combobox"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.gui.decorators.gui_combobox</span></code></a> decorator (partial work on <a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/15">#15</a>)</p></li>
+<li><p>Added the ability for mods to access each others’ attributes and methods. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/5">#5</a>). See [this page](inter_mod_functionality.md) for more details.</p></li>
+<li><p>Fixed a few issues regarding running pyMHF. Thanks to <a class="reference external" href="https://github.com/Foundit3923">&#64;Foundit3923</a> for helping to figure out the issues.</p></li>
+<li><p>Fixed an issue where hooks of imported functions which have <code class="docutils literal notranslate"><span class="pre">_result_</span></code> as an argument work.</p></li>
+<li><p>Added <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.NOOP" title="pymhf.core.hooking.NOOP"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.core.hooking.NOOP</span></code></a> decorator which indicates that the original game function shouldn’t be called. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/20">#20</a>)</p></li>
+<li><p>Added a hex editor to the pyMHF gui. This is accessible from the “Hex Viewer” tab of the gui and allows real time viewing of data, following pointer values, and capturing memory snapshots. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/43">#43</a>)</p></li>
+<li><p>Fixed an issue with loading hooks. Thanks to <a class="reference external" href="https://github.com/cengelha">&#64;cengelha</a> for finding the bug.</p></li>
+<li><p>Added “always on top” gui setting to the config. Thanks to <a class="reference external" href="https://github.com/cengelha">&#64;cengelha</a> for adding it.</p></li>
+</ul>
+</section>
+<section id="id6">
+<h2>0.1.10 (26/02/2025)<a class="headerlink" href="#id6" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Added <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.get_caller" title="pymhf.core.hooking.get_caller"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.core.hooking.get_caller</span></code></a> decorator for detours. When added, this will determine the location the function was called from. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/34">#34</a>). NOTE: This currently will only work properly for 64bit applications.</p></li>
+<li><p>Added an <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.exported" title="pymhf.core.hooking.exported"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.core.hooking.exported</span></code></a> hook to allow hooking functions which are exported by the main exe.</p></li>
+<li><p>Added the <a class="reference internal" href="../api/pymhf.core.calling.html#pymhf.core.calling.call_exported" title="pymhf.core.calling.call_exported"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.core.calling.call_exported</span></code></a> function which allows exported functions by the game to be called.</p></li>
+<li><p>Added the ability to specify in the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.imported" title="pymhf.core.hooking.imported"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.core.hooking.imported</span></code></a> decorator whether the detour time is <code class="docutils literal notranslate"><span class="pre">&quot;before&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;after&quot;</span></code>.</p></li>
+<li><p>Fixed an issue where hooks defined using the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.manual_hook" title="pymhf.core.hooking.manual_hook"><code class="xref py py-func docutils literal notranslate"><span class="pre">manual_hook</span></code></a> decorator didn’t use the <code class="docutils literal notranslate"><span class="pre">__pymhf_func_offsets__</span></code> etc. variables defined. (Thanks to <a class="reference external" href="https://www.github.com/hashcatHitman">&#64;hashcatHitman</a> for finding the bug.)</p></li>
+<li><p>Made improvements to the shutting down of pyMHF so that when the process it is attached to exits, so does pyMHF.</p></li>
+<li><p>Added a class decorator <a class="reference internal" href="../api/pymhf.utils.partial_struct.html#pymhf.utils.partial_struct.partial_struct" title="pymhf.utils.partial_struct.partial_struct"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.utils.partial_struct.partial_struct</span></code></a> which can be used to create <code class="docutils literal notranslate"><span class="pre">ctypes.Structure</span></code> types without needing to know the entire layout of the struct. See <a class="reference internal" href="partial_structs.html"><span class="doc">here</span></a> for details.</p></li>
+</ul>
+</section>
+<section id="id8">
+<h2>0.1.9 (23/01/2025)<a class="headerlink" href="#id8" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">cmd</span></code> mode to the configuration to run commands in any registered libraries.</p></li>
+<li><p>Added transparency slider and “always on top” options to the pymhf window.</p></li>
+<li><p>Made a fix to manual hooks which were being declared with a pattern and name only.</p></li>
+</ul>
+</section>
+<section id="id9">
+<h2>0.1.8 (26/12/2024)<a class="headerlink" href="#id9" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Add ability for single-file mods to be run by pymhf. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/19">#19</a>)</p></li>
+<li><p>Changed the config system to use toml files. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/27">#27</a>)</p></li>
+<li><p>Added ability for pymhf to be attached to an already running process. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/28">#28</a>)</p></li>
+</ul>
+</section>
+<section id="id13">
+<h2>0.1.7 (10/10/2024)<a class="headerlink" href="#id13" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Implement ability to call overloaded functions which have patterns.</p></li>
+<li><p>Improve safety of hooking functions and keyboard bindings as well as GUI reload fix.</p></li>
+<li><p>Added functions to set the main window active (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/6">#6</a>) - Contributed by <a class="reference external" href="https://github.com/Foundit3923">&#64;Foundit3923</a></p></li>
+</ul>
+</section>
+<section id="id16">
+<h2>0.1.6 (08/09/2024)<a class="headerlink" href="#id16" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Add ability for GUI widgets to reload when their associated mod gets reloaded (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/4">#4</a>)</p></li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">extra_args</span></code> option to GUI field type decorators (eg, <code class="docutils literal notranslate"><span class="pre">FLOAT</span></code>) which are passed through to DearPyGui (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/8">#8</a>)</p></li>
+<li><p>Fix issues with hooking multiple functions which are overloads of the same base function.</p></li>
+<li><p>Add the ability for patterns to be hooked up using the <code class="docutils literal notranslate"><span class="pre">FUNC_PATTERNS</span></code> data in implementing libraries (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/14">#14</a>)</p></li>
+</ul>
+</section>
+<section id="id20">
+<h2>0.1.5 (26/08/2024)<a class="headerlink" href="#id20" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Allow overriding of function return values.</p></li>
+<li><p>Fixed issue with <code class="docutils literal notranslate"><span class="pre">after</span></code> manual hooks with a <code class="docutils literal notranslate"><span class="pre">_result_</span></code> argument.</p></li>
+<li><p>Implement pattern scanning functionality (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/1">#1</a>)</p></li>
+</ul>
+</section>
+<section id="id22">
+<h2>0.1.4 (14/08/2024)<a class="headerlink" href="#id22" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Overhauled config system to provide a more user-friendly experience.</p></li>
+<li><p>Fixed a critical bug in hooking which meant that no result was returned.</p></li>
+<li><p>Fixed an issue injecting variables into pymhf.</p></li>
+</ul>
+</section>
+<section id="id23">
+<h2>0.1.3 (31/07/2024)<a class="headerlink" href="#id23" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Implemented manual hooks. These are a decorator which have the can take an offset, name, and function definition, and allow for hooking a function without having to rely on the underlying library which utilises pymhf.</p></li>
+<li><p>Made changes so that libraries can be installed as plugins to pymhf so that they can be run like <code class="docutils literal notranslate"><span class="pre">pymhf</span> <span class="pre">&lt;libname&gt;</span></code></p></li>
+</ul>
+</section>
+<section id="id24">
+<h2>0.1.2 (15/07/2024)<a class="headerlink" href="#id24" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Made improvements to config reading</p></li>
+</ul>
+</section>
+<section id="id25">
+<h2>0.1.1 (05/07/2024)<a class="headerlink" href="#id25" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Fixed issues loading applications which aren’t loaded with steam.</p></li>
+<li><p>Fixed logging number of mods loaded.</p></li>
+<li><p>Implemented custom triggers. They can be implemented by libraries which use this framework to enable custom triggers which are specific to the game/application.</p></li>
+<li><p>Fixed some issues with reloading of mods when there are multiple mods all contributing to compound hooks, including hooks with completely disabled detours.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">&#64;no_gui</span></code> decorator which can be applied to a <code class="docutils literal notranslate"><span class="pre">Mod</span></code> class to indicate that it doesn’t need to be shown in the GUI.</p></li>
+</ul>
+</section>
+<section id="id26">
+<h2>0.1.0 (30/06/2024)<a class="headerlink" href="#id26" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Initial release. Much of the functionality has been copied over from <a class="reference external" href="https://github.com/monkeyman192/NMS.py">NMS.py</a> which was how this project started.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="gui/hex_view.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Hex View</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../api/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API docs</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, monkeyman192.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,550 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Configuring pyMHF &#8212; pyMHF  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/settings';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Writing Mods" href="writing_mods.html" />
+    <link rel="prev" title="Usage guide" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pyMHF  documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Usage guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API docs
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/monkeyman192/pyMHF" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Usage guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API docs
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/monkeyman192/pyMHF" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Configuring pyMHF</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writing_mods.html">Writing Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mod_states.html">Mod States</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inter_mod_functionality.html">Inter-mod functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="partial_structs.html">Partial Structs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="single_file_mods.html">Single-file mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writing_libraries.html">Writing Libraries</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="gui/index.html">GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui/gui.html">Automatic-GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui/hex_view.html">Hex View</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="change_log.html">Change Log</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Usage guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Configuring pyMHF</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="configuring-pymhf">
+<h1>Configuring pyMHF<a class="headerlink" href="#configuring-pymhf" title="Link to this heading">#</a></h1>
+<p>pyMHF configuration is written in the <a class="reference external" href="https://toml.io/en/">toml</a> format.
+These can be provided in one of two ways, depending on whether you are providing them as part of a library, or as part of a single-file mod.</p>
+<p>For a library, the settings MUST be provided in a <code class="docutils literal notranslate"><span class="pre">pymhf.toml</span></code> file within the root directory of the library (ie. not the top level, but the named directory which contains all the files relevant to the library, cf. <a class="reference internal" href="writing_libraries.html"><span class="doc">Writing Libraries</span></a>)
+For a single-file mod, the settings are provided in the inline metadata (see <a class="reference internal" href="single_file_mods.html"><span class="doc">here</span></a>).</p>
+<section id="configuration-sections-and-values">
+<h2>Configuration sections and values<a class="headerlink" href="#configuration-sections-and-values" title="Link to this heading">#</a></h2>
+<p>In the following we shall name the sections as how they must be typed in the <code class="docutils literal notranslate"><span class="pre">pymhf.toml</span></code> file. To use these in the inline metadata for a single-file mod, simply prepend <code class="docutils literal notranslate"><span class="pre">tool.</span></code> to the section name.</p>
+<section id="pymhf-section">
+<h3><code class="docutils literal notranslate"><span class="pre">pymhf</span></code> section:<a class="headerlink" href="#pymhf-section" title="Link to this heading">#</a></h3>
+<p>This section handles properties which relate to the game or program that the library will be for.</p>
+<section id="exe">
+<span id="settings-pymhf-exe"></span><h4><code class="docutils literal notranslate"><span class="pre">exe</span></code><a class="headerlink" href="#exe" title="Link to this heading">#</a></h4>
+<p>Either the absolute path to the binary being run, or the name of the exe which is being run by steam.</p>
+</section>
+<section id="steam-guid">
+<span id="settings-pymhf-steam-guid"></span><h4><code class="docutils literal notranslate"><span class="pre">steam_guid</span></code><a class="headerlink" href="#steam-guid" title="Link to this heading">#</a></h4>
+<p><em>Optional</em></p>
+<p>If the game is run through steam, this should set to the Steam App ID. This can be found by right clicking on the game in your library and selecting “Properties…”. The value can be found under the “Updates” option on the left.</p>
+</section>
+<section id="required-assemblies">
+<span id="settings-pymhf-required-assemblies"></span><h4><code class="docutils literal notranslate"><span class="pre">required_assemblies</span></code><a class="headerlink" href="#required-assemblies" title="Link to this heading">#</a></h4>
+<p><em>Optional</em></p>
+<p>A list of assemblies that are required to be loaded by the binary at <code class="docutils literal notranslate"><span class="pre">path</span></code> for the game to be considered “loaded”. For now, if this is provided, it will also be the binary within which offsets are found relative to, however this will be relaxed in the future as better functionality regarding this is developed.</p>
+</section>
+<section id="start-paused">
+<span id="settings-pymhf-start-paused"></span><h4><code class="docutils literal notranslate"><span class="pre">start_paused</span></code><a class="headerlink" href="#start-paused" title="Link to this heading">#</a></h4>
+<p><em>Optional</em> - default <code class="docutils literal notranslate"><span class="pre">True</span></code></p>
+<p>Whether or not to start the binary paused. Some programs do no like being started paused, however, if you can start paused it is preferred so that all hooks are created before any code is executed, ensuring no potential detours to be run are missed.</p>
+</section>
+<section id="default-mod-save-dir">
+<span id="settings-pymhf-default-mod-save-dir"></span><h4><code class="docutils literal notranslate"><span class="pre">default_mod_save_dir</span></code><a class="headerlink" href="#default-mod-save-dir" title="Link to this heading">#</a></h4>
+<p><em>Can use magic path</em></p>
+<p>The path to the directory within which mod saves are to be placed. If this is not an absolute path and instead a “magic” path, <code class="docutils literal notranslate"><span class="pre">MOD_SAVES</span></code> will be appended to the magic path for the final path.</p>
+</section>
+<section id="internal-mod-dir">
+<span id="settings-pymhf-internal-mod-dir"></span><h4><code class="docutils literal notranslate"><span class="pre">internal_mod_dir</span></code><a class="headerlink" href="#internal-mod-dir" title="Link to this heading">#</a></h4>
+<p><em>Optional</em> - <em>Can use magic path</em> - <em>Library only</em></p>
+<p>The path to the directory which contains the mods to be run by the library.</p>
+</section>
+</section>
+<section id="pymhf-logging-section">
+<h3><code class="docutils literal notranslate"><span class="pre">pymhf.logging</span></code> section:<a class="headerlink" href="#pymhf-logging-section" title="Link to this heading">#</a></h3>
+<section id="default-log-dir">
+<span id="settings-pymhf-logging-default-log-dir"></span><h4><code class="docutils literal notranslate"><span class="pre">default_log_dir</span></code><a class="headerlink" href="#default-log-dir" title="Link to this heading">#</a></h4>
+<p><em>Can use magic path</em></p>
+<p>The path to save the logs under. If not an absolute path, a subdirectory called <code class="docutils literal notranslate"><span class="pre">LOGS</span></code> will be created under this directory.</p>
+</section>
+<section id="log-level">
+<span id="settings-pymhf-logging-log-level"></span><h4><code class="docutils literal notranslate"><span class="pre">log_level</span></code><a class="headerlink" href="#log-level" title="Link to this heading">#</a></h4>
+<p>Whether to log at the standard level (<code class="docutils literal notranslate"><span class="pre">INFO</span></code>), or more in-depth (<code class="docutils literal notranslate"><span class="pre">DEBUG</span></code>).</p>
+</section>
+<section id="window-name-override">
+<span id="settings-pymhf-logging-window-name-override"></span><h4><code class="docutils literal notranslate"><span class="pre">window_name_override</span></code><a class="headerlink" href="#window-name-override" title="Link to this heading">#</a></h4>
+<p>A string to override the default log window name. Note: This has some limitation currently such as only ascii characters being supported. This will be fixed some time in the future.</p>
+</section>
+</section>
+<section id="pymhf-gui-section">
+<h3><code class="docutils literal notranslate"><span class="pre">pymhf.gui</span></code> section:<a class="headerlink" href="#pymhf-gui-section" title="Link to this heading">#</a></h3>
+<p>This section related to properties specifically for the GUI which is auto-generated.</p>
+<section id="shown">
+<span id="settings-pymhf-gui-shown"></span><h4><code class="docutils literal notranslate"><span class="pre">shown</span></code><a class="headerlink" href="#shown" title="Link to this heading">#</a></h4>
+<p>Whether or not to show the GUI (<code class="docutils literal notranslate"><span class="pre">True</span></code> or <code class="docutils literal notranslate"><span class="pre">False</span></code>).</p>
+</section>
+<section id="scale">
+<span id="settings-pymhf-gui-scale"></span><h4><code class="docutils literal notranslate"><span class="pre">scale</span></code><a class="headerlink" href="#scale" title="Link to this heading">#</a></h4>
+<p>The scale of the GUI. For some high-resolution monitors the GUI may end up scaled down when running from within a process, so sometimes this may need to be set to 1.5 for the GUI to look correct.</p>
+</section>
+<section id="always-on-top">
+<span id="settings-pymhf-gui-always-on-top"></span><h4><code class="docutils literal notranslate"><span class="pre">always_on_top</span></code><a class="headerlink" href="#always-on-top" title="Link to this heading">#</a></h4>
+<p>Whether or not the GUI is always on top (<code class="docutils literal notranslate"><span class="pre">True</span></code> or <code class="docutils literal notranslate"><span class="pre">False</span></code>).</p>
+</section>
+</section>
+</section>
+<section id="magic-path-variables">
+<h2>Magic path variables<a class="headerlink" href="#magic-path-variables" title="Link to this heading">#</a></h2>
+<p>pyMHF has a few “magic” path variables which can be used to make setting up configs more generic and flexible.</p>
+<p>To use the “name” versions of the magic strings, they must be surrounded by braces (ie. <code class="docutils literal notranslate"><span class="pre">{EXE_DIR}</span></code>) as part of the path.</p>
+<p>These path variables get resolved as part of a path, so we can provide a path like so <code class="docutils literal notranslate"><span class="pre">{EXE_PATH}/../MyMods</span></code> to place things in a folder called <code class="docutils literal notranslate"><span class="pre">MyMods</span></code> in the parent directory of the location of the main binary.</p>
+<section id="exe-dir">
+<h3><code class="docutils literal notranslate"><span class="pre">EXE_DIR</span></code><a class="headerlink" href="#exe-dir" title="Link to this heading">#</a></h3>
+<p>This is the absolute path to directory which contains the main binary being run.</p>
+</section>
+<section id="user-dir">
+<h3><code class="docutils literal notranslate"><span class="pre">USER_DIR</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;~&quot;</span></code><a class="headerlink" href="#user-dir" title="Link to this heading">#</a></h3>
+<p>This is a directory within your user folder. This will often look something like <code class="docutils literal notranslate"><span class="pre">C:/Users/&lt;username&gt;/pymhf/&lt;plugin</span> <span class="pre">name&gt;</span></code>. For a single-file mod there is no <code class="docutils literal notranslate"><span class="pre">plugin</span> <span class="pre">name</span></code> so the folder will just be the <code class="docutils literal notranslate"><span class="pre">pymhf</span></code> folder.</p>
+</section>
+<section id="curr-dir">
+<h3><code class="docutils literal notranslate"><span class="pre">CURR_DIR</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;.&quot;</span></code><a class="headerlink" href="#curr-dir" title="Link to this heading">#</a></h3>
+<p>The current working directory, ie. the directory the single-file mod or modding library is located in. For the modding library it will be the main directory of the project which contains the <cite>pymhf.toml</cite> file.</p>
+</section>
+</section>
+<section id="local-only-variables-and-sections">
+<h2>Local-only variables and sections<a class="headerlink" href="#local-only-variables-and-sections" title="Link to this heading">#</a></h2>
+<p>The above configuration settings are the defaults as set by the library or single-file mod. However, there are some settings which will need to be configured before running any libraries since the location of mod folders will very for each user.</p>
+</section>
+<section id="pymhf-local-config-section">
+<h2><code class="docutils literal notranslate"><span class="pre">pymhf.local_config</span></code> section:<a class="headerlink" href="#pymhf-local-config-section" title="Link to this heading">#</a></h2>
+<p>These settings are set by calling <code class="docutils literal notranslate"><span class="pre">pymhf</span> <span class="pre">--config</span> <span class="pre">&lt;libraryname&gt;</span></code> or on first run of <code class="docutils literal notranslate"><span class="pre">pymhf</span> <span class="pre">&lt;libraryname&gt;</span></code>.</p>
+<ul class="simple">
+<li><p><strong>mod_dir</strong>: [Can use magic path] [Library only] The path to the directory which contains the mods to be run by the library.</p></li>
+<li><p><strong>mod_save_dir</strong>: [Can use magic path] [Overrides <code class="docutils literal notranslate"><span class="pre">default_mod_save_dir</span></code>] The path to the directory within which mod saves are to be placed. If this is not an absolute path and instead a “magic” path, <code class="docutils literal notranslate"><span class="pre">MOD_SAVES</span></code> will be appended to the magic path for the final path.</p></li>
+<li><p><strong>log_dir</strong> [Can use magic path] [Overrides <code class="docutils literal notranslate"><span class="pre">default_log_dir</span></code>] The path to save the logs under. If not an absolute path, a subdirectory called <code class="docutils literal notranslate"><span class="pre">LOGS</span></code> will be created under this directory.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Usage guide</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="writing_mods.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Writing Mods</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, monkeyman192.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+pymhf.core.hooking module
+=========================
+
+.. automodule:: pymhf.core.hooking
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+pymhf.utils.iced module
+=======================
+
+.. automodule:: pymhf.utils.iced
+   :members:
+   :undoc-members:
+   :show-inheritance:

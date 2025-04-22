@@ -1,0 +1,29 @@
+pymhf package
+=============
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   pymhf.core
+   pymhf.extensions
+   pymhf.gui
+   pymhf.utils
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   pymhf.main
+
+Module contents
+---------------
+
+.. automodule:: pymhf
+   :members:
+   :undoc-members:
+   :show-inheritance:

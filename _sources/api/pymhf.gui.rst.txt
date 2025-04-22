@@ -1,0 +1,20 @@
+pymhf.gui package
+=================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   pymhf.gui.decorators
+   pymhf.gui.gui
+   pymhf.gui.hexview
+
+Module contents
+---------------
+
+.. automodule:: pymhf.gui
+   :members:
+   :undoc-members:
+   :show-inheritance:

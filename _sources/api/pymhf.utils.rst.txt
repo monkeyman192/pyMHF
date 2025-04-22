@@ -1,0 +1,17 @@
+pymhf.utils namespace
+=====================
+
+.. py:module:: pymhf.utils
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   pymhf.utils.config
+   pymhf.utils.iced
+   pymhf.utils.imports
+   pymhf.utils.parse_toml
+   pymhf.utils.partial_struct
+   pymhf.utils.winapi

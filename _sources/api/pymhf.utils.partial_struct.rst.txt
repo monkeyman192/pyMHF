@@ -1,0 +1,7 @@
+pymhf.utils.partial\_struct module
+==================================
+
+.. automodule:: pymhf.utils.partial_struct
+   :members:
+   :undoc-members:
+   :show-inheritance:
