@@ -360,49 +360,14 @@ This tab can be used to explore the memory of the running process that pyMHF is 
 Note that the view can only access memory that the process has access to, so entering an invalid address will cause an error to display in the console, and nothing to happen in the editor.</p>
 <section id="methods">
 <h2>Methods<a class="headerlink" href="#methods" title="Link to this heading">#</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">gui</span></code> property of the mod is a <code class="docutils literal notranslate"><span class="pre">pymhf.gui.gui.GUI</span></code> instance which has the <code class="docutils literal notranslate"><span class="pre">hex_view</span></code> property.</p>
-<section id="pymhf-gui-hex-view-hexview">
-<h3><code class="docutils literal notranslate"><span class="pre">pymhf.gui.hex_view.HexView</span></code><a class="headerlink" href="#pymhf-gui-hex-view-hexview" title="Link to this heading">#</a></h3>
-<dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">add_snapshot(address:</span> <span class="pre">int,</span> <span class="pre">size:</span> <span class="pre">Optional[int]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">tag:</span> <span class="pre">Optional[str]</span> <span class="pre">=</span> <span class="pre">None)</span> <span class="pre">-&gt;</span> <span class="pre">bool:</span></code></dt><dd><p>Add a snapshot of the data at the specified address to the hex viewer. These memory snapshots will be viewable later from a drop down in the hex viewer.</p>
-</dd>
-</dl>
-<p>Parameters</p>
-<dl class="simple">
-<dt><cite>address</cite>:</dt><dd><p>The absolute memory address to take a snapshot at.
-<em>Note</em>: The start address of the region will be aligned to a 0x10 byte boundary for convenience.</p>
-</dd>
-<dt><cite>size</cite>:</dt><dd><p>The size of the region to take a snapshot of. Note that if this is larger than 0x1000 (4kb), it will be rounded down to 0x1000.
-<em>Note</em>: It is recommended to set this value just a bit larger than the expected size of the data.</p>
-</dd>
-<dt><cite>tag</cite>:</dt><dd><p>An optional tag which can be used to identify the snapshot in the selector in the GUI.
-If not provided it will default to the hex representation of the provided memory address.
-<em>Note</em>: If the tag already exists, it won’t be overwritten but will be suffixed by a number which automatically increments (this includes auto-generated tags as per above.)</p>
-</dd>
-</dl>
-<p>#### Returns</p>
-<dl class="simple">
-<dt><cite>bool</cite>:</dt><dd><p>If a memory snapshot was sucessfully taken at the provided address and size this will return True.
-If the memory at the provided address was unable to be read or captured this will return False.</p>
-</dd>
-</dl>
-<hr class="docutils" />
-<p>### load_address(address: int, size: Optional[int] = None) -&gt; bool:</p>
-<p>Load the provided address into the hex viewer.</p>
-<p>#### Parameters</p>
-<dl class="simple">
-<dt><cite>address</cite>:</dt><dd><p>The absolute memory address to take a snapshot at. Note that the start address of the region will be aligned to a 0x10 byte boundary for convenience.</p>
-</dd>
-<dt><cite>size</cite>:</dt><dd><p>The size of the region to take a snapshot of. Note that if this is larger than 0x1000 (4kb), it will be rounded down to 0x1000.</p>
-</dd>
-</dl>
-<p>#### Returns</p>
-<dl class="simple">
-<dt><cite>bool</cite>:</dt><dd><p>If a memory snapshot was sucessfully taken at the provided address and size this will return True.
-If the memory at the provided address was unable to be read or captured this will return False.</p>
-</dd>
-</dl>
-</section>
+<p>The <code class="docutils literal notranslate"><span class="pre">gui</span></code> property of the mod is a <a class="reference internal" href="../../api/pymhf.gui.gui.html#pymhf.gui.gui.GUI" title="pymhf.gui.gui.GUI"><code class="xref py py-class docutils literal notranslate"><span class="pre">GUI</span></code></a> instance which has the <code class="docutils literal notranslate"><span class="pre">hex_view</span></code> property.</p>
+<p>This <a class="reference internal" href="../../api/pymhf.gui.hexview.html#pymhf.gui.hexview.HexView" title="pymhf.gui.hexview.HexView"><code class="xref py py-class docutils literal notranslate"><span class="pre">HexView</span></code></a> instance has two methods which are useful:</p>
+<p><a class="reference internal" href="../../api/pymhf.gui.hexview.html#pymhf.gui.hexview.HexView.add_snapshot" title="pymhf.gui.hexview.HexView.add_snapshot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_snapshot(address:</span> <span class="pre">int,</span> <span class="pre">size:</span> <span class="pre">Optional[int]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">tag:</span> <span class="pre">Optional[str]</span> <span class="pre">=</span> <span class="pre">None)</span> <span class="pre">-&gt;</span> <span class="pre">bool</span></code></a></p>
+<p>and</p>
+<p><a class="reference internal" href="../../api/pymhf.gui.hexview.html#pymhf.gui.hexview.HexView.load_address" title="pymhf.gui.hexview.HexView.load_address"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_address(address:</span> <span class="pre">int,</span> <span class="pre">size:</span> <span class="pre">Optional[int]</span> <span class="pre">=</span> <span class="pre">None)</span> <span class="pre">-&gt;</span> <span class="pre">bool</span></code></a></p>
+<p>The first method is useful to snapshot a memory region when a function is hooked.
+For example, if you have a detour which takes the pointer to some class as an argument, you may want to snapshot a few 100 bytes of this class to see what it’s structure is.</p>
+<p>The second method is more likely to be used from a key binding so that the contents of the Hex View is updated with some data located at some previously determined pointer.</p>
 </section>
 </section>
 

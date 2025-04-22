@@ -450,7 +450,7 @@ To access this information, you can call a function on the detour method itself.
 <p>This address will be the address relative to the start of the binary the hook is called from.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The address returned will be one expression later than the <cite>call</cite> instruction used to call the original function. This is because to get this caller address we are looking for the value of the <cite>RSP</cite> register which is where the program will resume operation from after running the function.</p>
+<p>The address returned will be one expression later than the <code class="docutils literal notranslate"><span class="pre">call</span></code> instruction used to call the original function. This is because to get this caller address we are looking for the value of the <code class="docutils literal notranslate"><span class="pre">RSP</span></code> register which is where the program will resume operation from after running the function.</p>
 </div>
 </section>
 </section>

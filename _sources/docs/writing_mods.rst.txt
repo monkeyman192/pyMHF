@@ -126,4 +126,4 @@ To access this information, you can call a function on the detour method itself.
 This address will be the address relative to the start of the binary the hook is called from.
 
 .. note::
-    The address returned will be one expression later than the `call` instruction used to call the original function. This is because to get this caller address we are looking for the value of the `RSP` register which is where the program will resume operation from after running the function.
+    The address returned will be one expression later than the ``call`` instruction used to call the original function. This is because to get this caller address we are looking for the value of the ``RSP`` register which is where the program will resume operation from after running the function.
