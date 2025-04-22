@@ -81,6 +81,8 @@ jobs:
         with:
           name: pymhf-docs
           path: built_docs/
+      - name: Add .nojekyll
+        run: touch built_docs/.nojekyll
       - name: Deploy docs
         uses: JamesIves/github-pages-deploy-action@v4
         with:
