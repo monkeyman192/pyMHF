@@ -667,7 +667,7 @@ def get_caller(func: HookProtocol) -> CallerHookProtocol:
 
 
 def on_key_pressed(event: str):
-    """ Register the provided event as a key press handler.
+    """Register the provided event as a key press handler.
     When the key is pressed, the decorated function will be called.
 
     Parameters
@@ -675,6 +675,7 @@ def on_key_pressed(event: str):
     event:
         The string representing the key which is to trigger the event.
     """
+
     def wrapped(func: Callable[..., Any]) -> KeyPressProtocol:
         setattr(func, "_hotkey", event)
         setattr(func, "_hotkey_press", "down")
@@ -684,7 +685,7 @@ def on_key_pressed(event: str):
 
 
 def on_key_release(event: str):
-    """ Register the provided event as a key release handler.
+    """Register the provided event as a key release handler.
     When the key is released, the decorated function will be called.
 
     Parameters
@@ -692,6 +693,7 @@ def on_key_release(event: str):
     event:
         The string representing the key which is to trigger the event.
     """
+
     def wrapped(func: Callable[..., Any]) -> KeyPressProtocol:
         setattr(func, "_hotkey", event)
         setattr(func, "_hotkey_press", "up")
