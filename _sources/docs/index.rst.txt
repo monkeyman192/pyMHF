@@ -10,6 +10,6 @@ Usage guide
    inter_mod_functionality
    partial_structs
    single_file_mods
-   writing_libraries
+   libraries/index
    gui/index
    change_log

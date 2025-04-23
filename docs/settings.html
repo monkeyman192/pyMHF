@@ -282,7 +282,11 @@
 <li class="toctree-l1"><a class="reference internal" href="inter_mod_functionality.html">Inter-mod functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="partial_structs.html">Partial Structs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="single_file_mods.html">Single-file mods</a></li>
-<li class="toctree-l1"><a class="reference internal" href="writing_libraries.html">Writing Libraries</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="libraries/index.html">Creating modding API’s with pyMHF</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="libraries/writing_libraries.html">Writing Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libraries/custom_callbacks.html">Custom Callbacks</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="gui/index.html">GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="gui/gui.html">Automatic-GUI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/hex_view.html">Hex View</a></li>
@@ -353,7 +357,7 @@
 <h1>Configuring pyMHF<a class="headerlink" href="#configuring-pymhf" title="Link to this heading">#</a></h1>
 <p>pyMHF configuration is written in the <a class="reference external" href="https://toml.io/en/">toml</a> format.
 These can be provided in one of two ways, depending on whether you are providing them as part of a library, or as part of a single-file mod.</p>
-<p>For a library, the settings MUST be provided in a <code class="docutils literal notranslate"><span class="pre">pymhf.toml</span></code> file within the root directory of the library (ie. not the top level, but the named directory which contains all the files relevant to the library, cf. <a class="reference internal" href="writing_libraries.html"><span class="doc">Writing Libraries</span></a>)
+<p>For a library, the settings MUST be provided in a <code class="docutils literal notranslate"><span class="pre">pymhf.toml</span></code> file within the root directory of the library (ie. not the top level, but the named directory which contains all the files relevant to the library, cf. <span class="xref std std-doc">/docs/writing_libraries</span>)
 For a single-file mod, the settings are provided in the inline metadata (see <a class="reference internal" href="single_file_mods.html"><span class="doc">here</span></a>).</p>
 <section id="configuration-sections-and-values">
 <h2>Configuration sections and values<a class="headerlink" href="#configuration-sections-and-values" title="Link to this heading">#</a></h2>

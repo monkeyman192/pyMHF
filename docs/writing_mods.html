@@ -282,7 +282,11 @@
 <li class="toctree-l1"><a class="reference internal" href="inter_mod_functionality.html">Inter-mod functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="partial_structs.html">Partial Structs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="single_file_mods.html">Single-file mods</a></li>
-<li class="toctree-l1"><a class="reference internal" href="writing_libraries.html">Writing Libraries</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="libraries/index.html">Creating modding API’s with pyMHF</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="libraries/writing_libraries.html">Writing Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libraries/custom_callbacks.html">Custom Callbacks</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="gui/index.html">GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="gui/gui.html">Automatic-GUI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/hex_view.html">Hex View</a></li>
@@ -388,7 +392,7 @@ To hook an exported function use the <a class="reference internal" href="../api/
 <section id="normal-function-hooks">
 <h4><em>Normal function</em> hooks<a class="headerlink" href="#normal-function-hooks" title="Link to this heading">#</a></h4>
 <p>Normal functions are just functions which are provided by the binary but not exported. It is these functions that would generally require a bit of reverse engineering experience to determine the function signature of so that they can be hooked correctly.</p>
-<p>Depending on whether you are using a <a class="reference internal" href="writing_libraries.html"><span class="doc">library</span></a>, or using a <a class="reference internal" href="single_file_mods.html"><span class="doc">single-file mod</span></a> will often change which decorator you will use for normal function hooks.</p>
+<p>Depending on whether you are using a <span class="xref std std-doc">library</span>, or using a <a class="reference internal" href="single_file_mods.html"><span class="doc">single-file mod</span></a> will often change which decorator you will use for normal function hooks.</p>
 <p>If you are utilising an already written library, then the decorator should be exposed by the library and the function name will generally be the same as the name of the function you are hooking. The exact name and implementation will need to be checked based on the documentation provided by the library itself.</p>
 <p>If you are writing a single-file mod which doesn’t utilise a library, or if you just want to tinker and hook a function manually, the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.manual_hook" title="pymhf.core.hooking.manual_hook"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.core.hooking.manual_hook</span></code></a> decorator can be used.</p>
 <div class="admonition warning">

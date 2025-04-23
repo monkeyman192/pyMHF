@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>GUI &#8212; pyMHF  documentation</title>
+    <title>Writing Libraries &#8212; pyMHF  documentation</title>
   
   
   
@@ -41,11 +41,11 @@
     <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/gui/index';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/libraries/writing_libraries';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Automatic-GUI" href="gui.html" />
-    <link rel="prev" title="Custom Callbacks" href="../libraries/custom_callbacks.html" />
+    <link rel="next" title="Custom Callbacks" href="custom_callbacks.html" />
+    <link rel="prev" title="Creating modding API’s with pyMHF" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -282,14 +282,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../inter_mod_functionality.html">Inter-mod functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../partial_structs.html">Partial Structs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../single_file_mods.html">Single-file mods</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../libraries/index.html">Creating modding API’s with pyMHF</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../libraries/writing_libraries.html">Writing Libraries</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../libraries/custom_callbacks.html">Custom Callbacks</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Creating modding API’s with pyMHF</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Writing Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_callbacks.html">Custom Callbacks</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">GUI</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="gui.html">Automatic-GUI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hex_view.html">Hex View</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../gui/index.html">GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../gui/gui.html">Automatic-GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gui/hex_view.html">Hex View</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../change_log.html">Change Log</a></li>
@@ -336,7 +336,10 @@
     
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Usage guide</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">GUI</span></li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Creating modding API’s with pyMHF</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Writing Libraries</span></li>
   </ul>
 </nav>
 </div>
@@ -353,14 +356,65 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="gui">
-<h1>GUI<a class="headerlink" href="#gui" title="Link to this heading">#</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">Automatic-GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hex_view.html">Hex View</a></li>
-</ul>
+  <section id="writing-libraries">
+<h1>Writing Libraries<a class="headerlink" href="#writing-libraries" title="Link to this heading">#</a></h1>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>This page is not yet complete and some details may not be correct.</p>
 </div>
+<p>One of the most powerful features of pyMHF is to facilitate writing python libraries which can then be used to write mods.
+pyMHF provides all the tools required to make setting up a library easy, so that one only has to provide the definitions and all the hooking and mod complexity will be handled automatically.</p>
+<p>Follow the next steps to get your library project set up.</p>
+<section id="creating-the-folder-structure">
+<h2>Creating the folder structure<a class="headerlink" href="#creating-the-folder-structure" title="Link to this heading">#</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>LibraryName
+├── functions
+│   ├── __init__.py
+│   ├── call_sigs.py
+│   ├── hooks.py
+│   ├── offsets.py
+├── types
+│   ├── structs.py
+├── __init__.py
+└── pymhf.cfg
+</pre></div>
+</div>
+</section>
+<section id="pyproject-toml-contents">
+<h2><cite>pyproject.toml</cite> contents<a class="headerlink" href="#pyproject-toml-contents" title="Link to this heading">#</a></h2>
+<section id="pymhflib-entry-point">
+<h3><code class="docutils literal notranslate"><span class="pre">pymhflib</span></code> entry-point<a class="headerlink" href="#pymhflib-entry-point" title="Link to this heading">#</a></h3>
+<p>In order to register a library so that it can be run with pymhf easily, it is strongly recommended that the following is put into the project’s <cite>pyproject.toml</cite> file:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.pymhflib]</span>
+<span class="n">plugin_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;plugin_name&quot;</span>
+</pre></div>
+</div>
+<p>Where <code class="docutils literal notranslate"><span class="pre">plugin_name</span></code> is the name of the plugin you want to register it as.
+For example, the <cite>NMS.py</cite> plugin has the following:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.pymhflib]</span>
+<span class="n">nmspy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;nmspy&quot;</span>
+</pre></div>
+</div>
+<p>With this configuration, the library can be ran like <code class="docutils literal notranslate"><span class="pre">pymhf</span> <span class="pre">run</span> <span class="pre">nmspy</span></code>.</p>
+</section>
+<section id="pymhfcmd-entry-point">
+<h3><code class="docutils literal notranslate"><span class="pre">pymhfcmd</span></code> entry-point<a class="headerlink" href="#pymhfcmd-entry-point" title="Link to this heading">#</a></h3>
+<p>Libraries can also register commands which can be run so that they may provide some extra functionality in a simple way. An example might be to have some function which checks whether the patterns the library provides is correct for the current version of the game.</p>
+<p>For example, this is implemented in NMS.py as:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.pymhfcmd]</span>
+<span class="n">check</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;check&quot;</span>
+</pre></div>
+</div>
+<p>In this case the key is the name of the command to call when doing <code class="docutils literal notranslate"><span class="pre">pymhf</span> <span class="pre">cmd</span> <span class="pre">&lt;command&gt;</span> <span class="pre">&lt;library</span> <span class="pre">name&gt;</span></code>, and the value is the name of the function to be run.
+Note that this function must be importable at a top level of the library. To check this you can load python and then do <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">&lt;library</span> <span class="pre">name&gt;</span> <span class="pre">import</span> <span class="pre">&lt;function</span> <span class="pre">name&gt;</span></code>. If this imports, then the command will be able to be found.
+This function MUST take one argument which will be a list of extra commands the pymhf command line parser receives. It is then up to the library developer to parse these (generally with argparse).</p>
+<p>For the above example of checking to see if the patterns are valid, we may want to call it like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pymhf</span> <span class="n">cmd</span> <span class="n">check</span> <span class="o">--</span><span class="n">exe</span><span class="o">=</span><span class="s2">&quot;NMS.exe&quot;</span> <span class="n">nmspy</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">check</span></code> function will receive <code class="docutils literal notranslate"><span class="pre">['--exe=&quot;NMS.exe&quot;']</span></code> as an argument which we can then parse.</p>
+</section>
+</section>
 </section>
 
 
@@ -374,20 +428,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../libraries/custom_callbacks.html"
+       href="index.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Custom Callbacks</p>
+        <p class="prev-next-title">Creating modding API’s with pyMHF</p>
       </div>
     </a>
     <a class="right-next"
-       href="gui.html"
+       href="custom_callbacks.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Automatic-GUI</p>
+        <p class="prev-next-title">Custom Callbacks</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

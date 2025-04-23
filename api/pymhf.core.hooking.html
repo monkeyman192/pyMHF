@@ -469,15 +469,20 @@ original arguments.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">HookManager</span></span><a class="headerlink" href="#pymhf.core.hooking.HookManager" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
-<dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.add_custom_callbacks">
-<span class="sig-name descname"><span class="pre">add_custom_callbacks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><span class="pre">HookProtocol</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookManager.add_custom_callbacks" title="Link to this definition">#</a></dt>
-<dd><p>Add the provided function to the specified callback type.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.call_custom_callbacks">
 <span class="sig-name descname"><span class="pre">call_custom_callbacks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">detour_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DetourTime</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DetourTime.NONE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookManager.call_custom_callbacks" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Call the specified custom callback with the given detour_time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>callback_key</strong> – The key which is used to reference the custom callback.</p></li>
+<li><p><strong>detour_time</strong> – Whether to call the <code class="docutils literal notranslate"><span class="pre">before</span></code> or <code class="docutils literal notranslate"><span class="pre">after</span></code> detour.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If there is no callback registered for the key and detour_time combination nothing will happen.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.disable">
@@ -502,19 +507,6 @@ This will also enable the hooks so that they become active.</p>
 <dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.register_hook">
 <span class="sig-name descname"><span class="pre">register_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hook</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HookProtocol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookManager.register_hook" title="Link to this definition">#</a></dt>
 <dd><p>Register the provided hook.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.remove_custom_callbacks">
-<span class="sig-name descname"><span class="pre">remove_custom_callbacks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><span class="pre">HookProtocol</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookManager.remove_custom_callbacks" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.resolve_dependencies">
-<span class="sig-name descname"><span class="pre">resolve_dependencies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookManager.resolve_dependencies" title="Link to this definition">#</a></dt>
-<dd><p>Resolve dependencies of hooks.
-This will get all the functions which are to be hooked and construct
-compound hooks as required.</p>
 </dd></dl>
 
 </dd></dl>
@@ -542,9 +534,13 @@ function normally returns something otherwise the hooked program will almost cer
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>func_name</strong> – The name of the function which is to be hooked.
-Note: It is recommended that the function name is the “mangled” version.
-Ie. do not “demangle” the function name.</p></li>
+<li><p><strong>func_name</strong> – <p>The name of the function which is to be hooked.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is recommended that the function name is the “mangled” version.
+Ie. do not “demangle” the function name.</p>
+</div>
+</p></li>
 <li><p><strong>func_def</strong> – The function signature.</p></li>
 <li><p><strong>detour_time</strong> – Whether to run the detour before or after the original function.</p></li>
 </ul>
