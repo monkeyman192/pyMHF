@@ -5,7 +5,7 @@ It is designed to make it very easy to create libraries for any game or applicat
 
 ## Features
 
-*pyMHF* contains a number of important features to make creatting a modding library as easy as possible:
+*pyMHF* contains a number of important features to make creating a modding library as easy as possible:
 
 ## Using *pyMHF*
 

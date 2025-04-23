@@ -1,7 +1,6 @@
-# TODO: Move this elsewhere.
-
 import ctypes
 import os.path as op
+import sys
 from logging import getLogger
 
 import pefile
@@ -9,6 +8,9 @@ import pefile
 imports = {}
 
 logger = getLogger(__name__)
+
+
+SPHINX_AUTODOC_RUNNING = "sphinx.ext.autodoc" in sys.modules
 
 
 def get_imports(binary_path: str) -> dict[str, ctypes._CFuncPtr]:

@@ -18,12 +18,12 @@ def call_exported(name: str, func_def: FUNCDEF, *args):
 
     Parameters
     ----------
-    name
+    name:
         The name of the exported function. This will generally be the mangled name of the function as provided
         by IDA/ghidra.
-    func_def
+    func_def:
         The restype and argtypes of the function being called.
-    *args
+    args:
         The arguments to be passed to the function being called.
     """
     # TODO: Improve this so that the own_dll is cached as well as the func_def so that we only incur a slight
@@ -52,7 +52,7 @@ def call_function(
     name
         The name of the function to be called.
         For now the function signature will be looked up from the known signatures by name.
-    *args
+    args
         The args to pass to the function call.
     overload
         The overload name to be called if required.

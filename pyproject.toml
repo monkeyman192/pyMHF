@@ -41,19 +41,22 @@ gui = [
   "dearpygui~=1.11.0",
 ]
 
+[dependency-groups]
+dev = [
+  "pytest",
+  "ruff",
+  "setuptools_scm",
+  "twine",
+  "sphinx",
+  "esbonio",
+  "pydata-sphinx-theme",
+]
+
 [tool.setuptools.package-dir]
 pymhf = "pymhf"
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
-
-[tool.uv]
-dev-dependencies = [
-  "pytest",
-  "ruff",
-  "setuptools_scm",
-  "twine",
-]
 
 [tool.ruff]
 line-length = 110
@@ -61,9 +64,6 @@ line-length = 110
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 preview = true
-ignore = [
-  "D100",  # Missing docstring in public module
-]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

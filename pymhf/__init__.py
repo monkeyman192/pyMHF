@@ -14,6 +14,7 @@ from .core._types import FUNCDEF  # noqa
 from .core.hooking import FuncHook  # noqa
 from .core.mod_loader import Mod, ModState  # noqa
 from .main import load_mod_file, load_module  # noqa
+from .utils.imports import SPHINX_AUTODOC_RUNNING
 
 try:
     __version__ = version("pymhf")
@@ -59,33 +60,35 @@ def get_folder(title: str, q: questionary.Question, has_tkinter: bool, idir: Opt
         return q.ask()
 
 
-IS_STEAM_Q = questionary.confirm("Is the game run via steam?", default=True)
-START_PAUSED = questionary.confirm("Start the game paused?", default=True)
-RUN_GAME = questionary.confirm("Run game?", default=True)
-STEAM_ID_Q = questionary.text("Enter the steam game ID:", validate=_is_int)
-EXE_PATH_Q = questionary.path("Enter the absolute path to the binary:")
-MOD_DIR_Q = questionary.path("Enter the absolute path the mod directory")
-MOD_SAVE_DIR_Q = questionary.path("Enter the absolute path the mod save directory")
-LOG_DIR_Q = questionary.path("Enter the absolute path the logs directory")
-CONTINUE_CONFIGURING_Q = questionary.confirm("Would you like to configure more options?", default=True)
+# Pattern shamelessly stolen from the questionary library (which is the actual reason this code has issues in
+# the first place!)
+if not SPHINX_AUTODOC_RUNNING:
+    START_PAUSED = questionary.confirm("Start the game paused?", default=True)
+    RUN_GAME = questionary.confirm("Run game?", default=True)
+    STEAM_ID_Q = questionary.text("Enter the steam game ID:", validate=_is_int)
+    EXE_PATH_Q = questionary.path("Enter the absolute path to the binary:")
+    MOD_DIR_Q = questionary.path("Enter the absolute path the mod directory")
+    MOD_SAVE_DIR_Q = questionary.path("Enter the absolute path the mod save directory")
+    LOG_DIR_Q = questionary.path("Enter the absolute path the logs directory")
+    CONTINUE_CONFIGURING_Q = questionary.confirm("Would you like to configure more options?", default=True)
 
-CFG_OPT_BIN_PATH = "Set binary path"
-CFG_OPT_MOD_PATH = "Set mod directory"
-CFG_OPT_MOD_SAVE_PATH = "Set mod save directory"
-CFG_OPT_STEAM_ID = "Configure steam game id"
-CFG_OPT_LOG_PATH = "Set log directory"
-CFG_OPT_START_PAUSED = "Set game to start paused"
-CONFIG_SELECT_Q = questionary.select(
-    "What would you like to configure?",
-    choices=[
-        CFG_OPT_BIN_PATH,
-        CFG_OPT_MOD_PATH,
-        CFG_OPT_STEAM_ID,
-        CFG_OPT_LOG_PATH,
-        CFG_OPT_MOD_SAVE_PATH,
-        CFG_OPT_START_PAUSED,
-    ],
-)
+    CFG_OPT_BIN_PATH = "Set binary path"
+    CFG_OPT_MOD_PATH = "Set mod directory"
+    CFG_OPT_MOD_SAVE_PATH = "Set mod save directory"
+    CFG_OPT_STEAM_ID = "Configure steam game id"
+    CFG_OPT_LOG_PATH = "Set log directory"
+    CFG_OPT_START_PAUSED = "Set game to start paused"
+    CONFIG_SELECT_Q = questionary.select(
+        "What would you like to configure?",
+        choices=[
+            CFG_OPT_BIN_PATH,
+            CFG_OPT_MOD_PATH,
+            CFG_OPT_STEAM_ID,
+            CFG_OPT_LOG_PATH,
+            CFG_OPT_MOD_SAVE_PATH,
+            CFG_OPT_START_PAUSED,
+        ],
+    )
 
 # This is the name of the config file within the library.
 CFG_FILENAME = "pymhf.toml"

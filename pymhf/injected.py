@@ -1,7 +1,6 @@
 import asyncio
 import builtins
 import ctypes
-import ctypes.wintypes
 import locale
 import logging
 import logging.handlers
@@ -102,7 +101,7 @@ try:
     except ModuleNotFoundError:
         # If we can't import this, then DearPyGUI is missing, so we won't create the GUI.
         GUI = None
-    from pymhf.utils.get_imports import get_imports
+    from pymhf.utils.imports import get_imports
 
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 

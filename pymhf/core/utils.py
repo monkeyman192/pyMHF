@@ -1,9 +1,11 @@
 import logging
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from ctypes import byref, c_ulong, create_unicode_buffer, windll
 from functools import wraps
 from typing import Optional
 
+import psutil
 import pywinctl as pwc
 import win32gui
 import win32process
@@ -156,7 +158,7 @@ def saferun(func, *args, **kwargs):
     return ret
 
 
-def saferun_decorator(func):
+def saferun_decorator(func: Callable):
     """Safely run the decorated function so that any errors are caught and logged."""
 
     @wraps(func)
@@ -169,3 +171,30 @@ def saferun_decorator(func):
         return ret
 
     return inner
+
+
+# Some experimental functions. Private until they can be made to work...
+
+
+def _pause_or_resume_process(pid: int, pause: bool):
+    proc = psutil.Process(pid)
+    if pause:
+        proc.suspend()
+    else:
+        proc.resume()
+
+
+def _pause_process(pid: Optional[int] = None):
+    if not pid:
+        pid = _internal.PID
+    logger.info(f"Pausing process {pid}")
+    with ThreadPoolExecutor(max_workers=1) as exc:
+        exc.submit(_pause_or_resume_process, pid, True)
+
+
+def _resume_process(pid: Optional[int] = None):
+    if not pid:
+        pid = _internal.PID
+    logger.info(f"Resuming process {pid}")
+    with ThreadPoolExecutor(max_workers=1) as exc:
+        exc.submit(_pause_or_resume_process, pid, False)

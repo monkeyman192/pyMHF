@@ -8,3 +8,8 @@ logs
 mods
 .venv/
 /run_*.py
+
+# Generated documentation
+docs/api/*.rst
+# Explicitly keep this file as we aren't generating it automatically.
+!docs/api/index.rst
