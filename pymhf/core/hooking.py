@@ -619,8 +619,10 @@ def exported(func_name: str, func_def: FUNCDEF, detour_time: str = "after"):
     ----------
     func_name:
         The name of the function which is to be hooked.
-        Note: It is recommended that the function name is the "mangled" version.
-        Ie. do not "demangle" the function name.
+
+        .. note::
+            It is recommended that the function name is the "mangled" version.
+            Ie. do not "demangle" the function name.
     func_def:
         The function signature.
     detour_time:
@@ -711,7 +713,7 @@ class HookManager:
 
         self._get_caller_detours: set[str] = set()
 
-    def resolve_dependencies(self):
+    def _resolve_dependencies(self):
         """Resolve dependencies of hooks.
         This will get all the functions which are to be hooked and construct
         compound hooks as required.
@@ -719,7 +721,7 @@ class HookManager:
         # TODO: Make work.
         pass
 
-    def add_custom_callbacks(self, callbacks: set[HookProtocol]):
+    def _add_custom_callbacks(self, callbacks: set[HookProtocol]):
         """Add the provided function to the specified callback type."""
         for cb in callbacks:
             cb_type = cb._custom_trigger
@@ -733,7 +735,7 @@ class HookManager:
             else:
                 self.custom_callbacks[cb_type][detour_time].add(cb)
 
-    def remove_custom_callbacks(self, callbacks: set[HookProtocol]):
+    def _remove_custom_callbacks(self, callbacks: set[HookProtocol]):
         # Remove the values in the list which correspond to the data in `callbacks`
         for cb in callbacks:
             cb_type: str = cb._custom_trigger
@@ -745,6 +747,19 @@ class HookManager:
                     del self.custom_callbacks[cb_type]
 
     def call_custom_callbacks(self, callback_key: str, detour_time: DetourTime = DetourTime.NONE):
+        """Call the specified custom callback with the given detour_time.
+
+        Parameters
+        ----------
+        callback_key:
+            The key which is used to reference the custom callback.
+        detour_time:
+            Whether to call the ``before`` or ``after`` detour.
+
+        Notes
+        -----
+            If there is no callback registered for the key and detour_time combination nothing will happen.
+        """
         callbacks = self.custom_callbacks.get(callback_key, {})
         if callbacks:
             for cb in callbacks.get(detour_time, set()):

@@ -48,7 +48,7 @@ jobs:
           pymhf/log_terminal.py
       - name: Build docs
         run: |
-          uv run sphinx-build -M html $pwd/docs $pwd/build -T
+          uv run sphinx-build -M html $pwd/docs $pwd/build
       - name: Build Python ${{ matrix.py_ver.version}} wheel
         run: uv build
       - name: Lint and format code
@@ -87,6 +87,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: built_docs
+          commit-message: Deploying to gh-page for commit ${{ github.sha }}
   release:
     name: Release pyMHF wheels and source build to PyPI
     # Only run this job if the commit was tagged.

@@ -372,7 +372,7 @@ class ModManager:
         for hook in _mod.hooks:
             self.hook_manager.register_hook(hook)
         # Add any custom callbacks which may be defined by the calling library.
-        self.hook_manager.add_custom_callbacks(_mod._custom_callbacks)
+        self.hook_manager._add_custom_callbacks(_mod._custom_callbacks)
         # Finally, set up any keyboard bindings.
         for hotkey_func in _mod._hotkey_funcs:
             # Don't need to tell the hook manager, register the keyboard
@@ -430,7 +430,7 @@ class ModManager:
                         if fh.state == "closed":
                             del self.hook_manager.hooks[hook_name]
 
-                self.hook_manager.remove_custom_callbacks(mod._custom_callbacks)
+                self.hook_manager._remove_custom_callbacks(mod._custom_callbacks)
                 for hotkey_func in mod._hotkey_funcs:
                     cb = self.hotkey_callbacks.pop(
                         (hotkey_func._hotkey, hotkey_func._hotkey_press),
