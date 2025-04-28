@@ -1,17 +1,18 @@
 Change Log
 ==========
 
-Current (0.1.11-dev)
+0.1.11 (29/04/2025)
 --------------------
 
-- Added the :py:func:`pymhf.gui.decorators.gui_combobox` decorator (partial work on `#15 <https://github.com/monkeyman192/pyMHF/issues/15>`_)
+- Added the :py:func:`pymhf.gui.decorators.gui_combobox` decorator (partial work on `#15 <https://github.com/monkeyman192/pyMHF/issues/15>`_).
 - Added the ability for mods to access each others' attributes and methods. (`#5 <https://github.com/monkeyman192/pyMHF/issues/5>`_). See [this page](inter_mod_functionality.md) for more details.
 - Fixed a few issues regarding running pyMHF. Thanks to `@Foundit3923 <https://github.com/Foundit3923>`_ for helping to figure out the issues.
 - Fixed an issue where hooks of imported functions which have ``_result_`` as an argument work.
 - Added :py:func:`pymhf.core.hooking.NOOP` decorator which indicates that the original game function shouldn't be called. (`#20 <https://github.com/monkeyman192/pyMHF/issues/20>`_)
-- Added a hex editor to the pyMHF gui. This is accessible from the "Hex Viewer" tab of the gui and allows real time viewing of data, following pointer values, and capturing memory snapshots. (`#43 <https://github.com/monkeyman192/pyMHF/issues/43>`_)
+- Added a hex editor to the pyMHF gui. This is accessible from the "Hex Viewer" tab of the gui and allows real time viewing of data, following pointer values, and capturing memory snapshots. (`#43 <https://github.com/monkeyman192/pyMHF/issues/43>`_).
 - Fixed an issue with loading hooks. Thanks to `@cengelha <https://github.com/cengelha>`_ for finding the bug.
 - Added "always on top" gui setting to the config. Thanks to `@cengelha <https://github.com/cengelha>`_ for adding it.
+- Fixed an issue with the debug mode toggle in the GUI. (`#49 <https://github.com/monkeyman192/pyMHF/pull/49>`_).
 
 0.1.10 (26/02/2025)
 -------------------
