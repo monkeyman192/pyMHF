@@ -39,7 +39,6 @@ jobs:
           pymhf/core/logging.py
           pymhf/core/common.py
           pymhf/core/caching.py
-          pymhf/core/hashing.py
           pymhf/core/process.py
           pymhf/core/protocols.py
           pymhf/gui/protocols.py
