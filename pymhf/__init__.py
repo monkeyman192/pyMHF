@@ -232,6 +232,14 @@ def run():
         local = True
 
     if standalone:
+        if mode != ModeEnum.RUN:
+            print("Only the `run` command can be used with single-file mods.")
+            if mode == ModeEnum.CONFIG:
+                print(
+                    "To configure a single-file mod, change the values directly in the inline script "
+                    "metadata. See https://monkeyman192.github.io/pyMHF/docs/settings.html"
+                )
+            return
         load_mod_file(plugin_name)
         return
 

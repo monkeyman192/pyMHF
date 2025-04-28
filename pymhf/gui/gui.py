@@ -24,6 +24,7 @@ WINDOW_TITLE = "pyMHF"
 
 
 logger = logging.getLogger("GUILogger")
+rootLogger = logging.getLogger("")
 
 
 class WidgetType(Enum):
@@ -106,10 +107,17 @@ class GUI:
         #     self._shown = False
 
     def toggle_debug_mode(self, _sender, is_debug):
-        self.config.set("pymhf", "log_level", is_debug and "debug" or "info")
+        try:
+            self.config["logging"]["log_level"] = is_debug and "debug" or "info"
+        except KeyError:
+            pass
+        if is_debug:
+            rootLogger.setLevel(logging.DEBUG)
+        else:
+            rootLogger.setLevel(logging.INFO)
 
     def toggle_show_gui(self, _sender, show_gui):
-        self.config.set("gui", "shown", show_gui)
+        self.config["gui"]["shown"] = show_gui
 
     def add_hex_tab(self):
         tab = dpg.add_tab(label="Hex View", tag=HEX_NAME, parent="tabbar")

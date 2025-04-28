@@ -24,7 +24,7 @@ from packaging.version import InvalidVersion
 from packaging.version import parse as parse_version
 
 import pymhf.core._internal as _internal
-from pymhf.core._types import HookProtocol
+from pymhf.core._types import HookProtocol, KeyPressProtocol
 from pymhf.core.errors import NoSaveError
 from pymhf.core.hooking import HookManager
 from pymhf.core.importing import import_file
@@ -192,7 +192,7 @@ class Mod(ABC):
         # Find all the hooks defined for the mod.
         self.hooks: set[HookProtocol] = self.get_members(_funchook_predicate)
         self._custom_callbacks = self.get_members(_callback_predicate)
-        self._hotkey_funcs = self.get_members(_has_hotkey_predicate)
+        self._hotkey_funcs: set[KeyPressProtocol] = self.get_members(_has_hotkey_predicate)
         self._gui_buttons: dict[str, ButtonProtocol] = {
             x[1].__qualname__: x[1] for x in inspect.getmembers(self, _gui_button_predicate)
         }
