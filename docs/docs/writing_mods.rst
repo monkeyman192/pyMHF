@@ -29,44 +29,9 @@ A *before* detour is used when you want to have something occur before the origi
 
 An *after* detour is used when you want to have something occur after the original function has been run. This may be to change the return value of the function, or set the state of an internal struct/class so that some function which was calling the original function has the struct/class in a different state.
 
+Full details on how to provide the information so that pyMHF can find and hook the function can be found :doc:`here </docs/creating_hook_definitions>`.
 
-There are 3 types of hooks; *imported function* hooks, *exported function* hooks, and *normal function* hooks. Each of these is implemented as a decorator which is to be applied to a method in the `Mod` class which will act as the detour for that function.
-
-*Imported function* hooks
-"""""""""""""""""""""""""
-
-Imported function are those which belong in a dll outside of the main process being run, but which are used by it (eg. windows32 dll's to provide functionality to create files, etc).
-To hook an imported function use the :py:func:`pymhf.core.hooking.imported` decorator.
-
-*Exported function* hooks
-"""""""""""""""""""""""""
-
-Exported functions are those which belong to main running process itself. There are often not too many, but if you are lucky they may be useful.
-To hook an exported function use the :py:func:`pymhf.core.hooking.exported` decorator.
-
-.. note::
-    It is recommended that the function name is the "mangled" version. Ie. do not "demangle" the function name.
-
-*Normal function* hooks
-"""""""""""""""""""""""
-
-Normal functions are just functions which are provided by the binary but not exported. It is these functions that would generally require a bit of reverse engineering experience to determine the function signature of so that they can be hooked correctly.
-
-Depending on whether you are using a :doc:`library <writing_libraries>`, or using a :doc:`single-file mod <single_file_mods>` will often change which decorator you will use for normal function hooks.
-
-If you are utilising an already written library, then the decorator should be exposed by the library and the function name will generally be the same as the name of the function you are hooking. The exact name and implementation will need to be checked based on the documentation provided by the library itself.
-
-If you are writing a single-file mod which doesn't utilise a library, or if you just want to tinker and hook a function manually, the :py:func:`pymhf.core.hooking.manual_hook` decorator can be used.
-
-.. warning::
-    It is important that the ``func_def`` argument of the `manual_hook` decorator be correct, as this will be the main cause of crashes caused by hooking. If you find that your application is crashing upon hooking a certain function it's most likely that the arg types or return type of the function is wrong.
-
-.. warning::
-    It seems to due to how the :py:class:`ctypes.c_char_p` is implemented, using it as an arg type is not recommended as it can cause issues with the data passed to the argument which can cause program crashes.
-    Instead, use either :py:class:`ctypes.c_ulong` or :py:class:`ctypes.c_ulonglong` depending on whether you are hooking a 32 or 63 bit process respectively, then cast the pointer to a string.
-
-.. note::
-    Variadic functions are not supported by pyMHF. You may attempt to hook them with some success, but they will generally end up causing the program to crash.
+In short we use the :class:`~pymhf.core.hooking.function_hook` and :class:`~pymhf.core.hooking.static_function_hook` decorators to define functions which themselves can then be used as decorators for the detour in the Mod instance.
 
 
 Non-hooking functionality

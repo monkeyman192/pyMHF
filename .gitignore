@@ -1,13 +1,13 @@
-build/*
+build/
 *.egg-info/
 **/__pycache__/**
 **/logs/**
 **/CRITICAL_ERROR.txt
-dist/*
+dist/
 logs
 mods
 .venv/
-/run_*.py
+.vscode/
 
 # Generated documentation
 docs/api/*.rst

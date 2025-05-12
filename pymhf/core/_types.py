@@ -1,8 +1,11 @@
-from collections import namedtuple
 from enum import Enum
-from typing import Any, Optional, Protocol
+from typing import Any, NamedTuple, Optional, Protocol
 
-FUNCDEF = namedtuple("FUNCDEF", ["restype", "argtypes"])
+
+# TODO: Fully deprecate.
+class FUNCDEF(NamedTuple):
+    restype: Any
+    argtypes: list
 
 
 class DetourTime(Enum):
@@ -17,17 +20,22 @@ class KeyPressProtocol(Protocol):
 
 
 class HookProtocol(Protocol):
+    _disabled: bool
     _is_funchook: bool
     _is_manual_hook: bool
     _is_imported_func_hook: bool
     _is_exported_func_hook: bool
     _has__result_: bool
     _hook_func_name: str
+    _hook_func_def: FUNCDEF
+    _hook_offset: Optional[int]
+    _hook_pattern: Optional[str]
     _hook_time: DetourTime
     _custom_trigger: Optional[str]
     _func_overload: Optional[str]
     _get_caller: Optional[bool]
     _noop: Optional[bool]
+    _dll_name: str
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
 
@@ -41,17 +49,6 @@ class CallerHookProtocol(HookProtocol):
         ...
 
 
+# TODO: Remove once we have got the binary able to be specified for function_hook decorators.
 class ManualHookProtocol(HookProtocol):
-    _hook_offset: Optional[int]
-    _hook_pattern: Optional[str]
     _hook_binary: Optional[str]
-    _hook_func_def: FUNCDEF
-
-
-class ImportedHookProtocol(HookProtocol):
-    _dll_name: str
-    _hook_func_def: FUNCDEF
-
-
-class ExportedHookProtocol(HookProtocol):
-    _hook_func_def: FUNCDEF
