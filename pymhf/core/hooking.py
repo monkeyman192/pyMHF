@@ -5,23 +5,24 @@ import logging
 import struct
 import traceback
 from _ctypes import CFuncPtr
+from collections import defaultdict
 from collections.abc import Callable
 from ctypes import CFUNCTYPE
 from typing import Any, Optional, Type, cast
 
 import cyminhook
+from typing_extensions import Concatenate, Generic, ParamSpec, Self, TypeVar, deprecated
 
 import pymhf.core._internal as _internal
 from pymhf.core._types import (
     FUNCDEF,
     CallerHookProtocol,
     DetourTime,
-    ExportedHookProtocol,
     HookProtocol,
-    ImportedHookProtocol,
     KeyPressProtocol,
     ManualHookProtocol,
 )
+from pymhf.core.functions import FuncDef, _get_funcdef
 from pymhf.core.memutils import _get_binary_info, find_pattern_in_binary, get_addressof
 from pymhf.core.module_data import module_data
 from pymhf.utils.iced import HAS_ICED, generate_load_stack_pointer_bytes, get_first_jmp_addr
@@ -30,6 +31,9 @@ hook_logger = logging.getLogger("HookManager")
 
 
 BITS = struct.calcsize("P") * 8
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
 # Currently unused, but can maybe figure out how to utilise it.
@@ -436,6 +440,7 @@ class FuncHook(cyminhook.MinHook):
         return self.target - self._binary_base
 
 
+@deprecated("Use @function_hook(signature=...) instead", category=DeprecationWarning)
 class HookFactory:
     _name: str
     _templates: Optional[tuple[str]] = None
@@ -499,6 +504,10 @@ class HookFactory:
         return detour
 
 
+@deprecated(
+    "Use @function_hook(signature=...) or @function_hook(offset=...) instead",
+    category=DeprecationWarning,
+)
 def manual_hook(
     name: str,
     offset: Optional[int] = None,
@@ -581,6 +590,7 @@ def disable(obj):
     return obj
 
 
+@deprecated("Use @function_hook(imported_name=...) instead", category=DeprecationWarning)
 def imported(dll_name: str, func_name: str, func_def: FUNCDEF, detour_time: str = "after"):
     """Hook an imported function in `dll_name` dll.
 
@@ -596,7 +606,7 @@ def imported(dll_name: str, func_name: str, func_def: FUNCDEF, detour_time: str 
         Whether to run the detour before or after the original function.
     """
 
-    def inner(detour: Callable[..., Any]) -> ImportedHookProtocol:
+    def inner(detour: Callable[..., Any]) -> HookProtocol:
         HookFactory._set_detour_as_funchook(detour, None, func_name)
         setattr(detour, "_dll_name", dll_name)
         setattr(detour, "_is_imported_func_hook", True)
@@ -612,6 +622,7 @@ def imported(dll_name: str, func_name: str, func_def: FUNCDEF, detour_time: str 
     return inner
 
 
+@deprecated("Use @function_hook(exported_name=...) instead", category=DeprecationWarning)
 def exported(func_name: str, func_def: FUNCDEF, detour_time: str = "after"):
     """Hook an exported function.
 
@@ -629,7 +640,7 @@ def exported(func_name: str, func_def: FUNCDEF, detour_time: str = "after"):
         Whether to run the detour before or after the original function.
     """
 
-    def inner(detour: Callable[..., Any]) -> ExportedHookProtocol:
+    def inner(detour: Callable[..., Any]) -> HookProtocol:
         HookFactory._set_detour_as_funchook(detour, None, func_name)
         setattr(detour, "_is_exported_func_hook", True)
         setattr(detour, "_hook_func_def", func_def)
@@ -812,19 +823,14 @@ class HookManager:
                     binary=binary,
                 )
             elif hook._is_imported_func_hook:
-                hook = cast(ImportedHookProtocol, hook)
+                hook = cast(HookProtocol, hook)
                 dll_name = hook._dll_name.lower()
                 hook_func_name = hook._hook_func_name
                 hook_func_def = hook._hook_func_def
-                hook_logger.info(
-                    f"Trying to load imported hook: {dll_name}.{hook_func_name} with func def: "
-                    f"{hook_func_def}"
-                )
                 if (dll_func_ptrs := _internal.imports.get(dll_name)) is not None:
                     func_ptr = dll_func_ptrs.get(hook_func_name)
                     # For now, cast the func_ptr object back to the target location in memory.
                     # This is wasteful, but simple for now for testing...
-                    hook_logger.debug(func_ptr)
                     target = ctypes.cast(func_ptr, ctypes.c_void_p).value
                     self.hooks[hook_func_name] = FuncHook(
                         hook._hook_func_name,
@@ -835,13 +841,12 @@ class HookManager:
                 else:
                     hook_logger.error(f"Cannot find {dll_name} in the import list")
             elif hook._is_exported_func_hook:
-                hook = cast(ExportedHookProtocol, hook)
                 if _internal.BINARY_PATH is None:
                     hook_logger.error("Current running binary path unknown. Cannot hook exported functions")
                     return
                 # TODO: This is inefficient. We should only instantiate the "dll" once.
                 own_dll = ctypes.WinDLL(_internal.BINARY_PATH)
-                func_ptr = getattr(own_dll, hook_func_name)
+                func_ptr = getattr(own_dll, hook._hook_func_name)
                 target = ctypes.cast(func_ptr, ctypes.c_void_p).value
                 self.hooks[hook_func_name] = FuncHook(
                     hook._hook_func_name,
@@ -853,6 +858,9 @@ class HookManager:
                 # TODO: have a way to differentiate the binary here.
                 self.hooks[hook_func_name] = FuncHook(
                     hook._hook_func_name,
+                    offset=hook._hook_offset,
+                    pattern=hook._hook_pattern,
+                    func_def=hook._hook_func_def,
                     overload=getattr(hook, "_func_overload", None),
                 )
             self._uninitialized_hooks.add(hook_func_name)
@@ -954,6 +962,297 @@ class HookManager:
                 hook_logger.info("  After Detours:")
                 for func in hook._after_detours:
                     hook_logger.info(f"    {func}")
+
+
+_FunctionHook_overloads: dict = defaultdict(lambda: dict())
+
+
+class FunctionHook(Generic[P, R]):
+    def __init__(
+        self,
+        func: Callable[P, R],
+        signature: Optional[str] = None,
+        offset: Optional[int] = None,
+        exported_name: Optional[str] = None,
+        imported_name: Optional[str] = None,
+        overload_id: Optional[str] = None,
+        is_static: bool = False,
+    ):
+        self._func = func
+        self._signature = signature
+        self._offset = offset
+        self._exported_name = exported_name
+        self._imported_name = imported_name
+        self._overload_id = overload_id
+        self._is_static = is_static
+        self._bound_class: Optional[ctypes.Structure] = None
+        self._funcdef: Optional[FuncDef] = None
+
+    def _call(self, *args: P.args, **kwargs: P.kwargs) -> R:
+        """Call the actual function. This will do some work to find where the function is in memory and then
+        call it with the provided arguments.
+        """
+        try:
+            # Get the FUNCDEF. This will have named arguments with types so that we may construct a function
+            # prototype which allows kwargs.
+            if self._funcdef is None:
+                self._funcdef = _get_funcdef(self._func)
+            # Unfortunately the ctypes function prototype can only be called with kwargs if its a function
+            # which is in a remote library.
+            # We can do this for imported and exported functions, but to have the logic the same for all, it's
+            # better to just flatten the kwargs and args into a single set of args and pass into the function
+            # prototype defined by an offset.
+            _args = self._funcdef.flatten(*args, **kwargs)
+            sig = CFUNCTYPE(self._funcdef.restype, *self._funcdef.arg_types)
+            binary_base = _internal.BASE_ADDRESS
+            # Depending on what kind of function we are calling, we change how we find the offset of the func.
+            if self._offset is not None:
+                offset = binary_base + self._offset
+            elif self._signature is not None:
+                offset = binary_base + find_pattern_in_binary(self._signature, False, _internal.EXE_NAME)
+            elif self._exported_name is not None:
+                own_dll = ctypes.WinDLL(_internal.BINARY_PATH)
+                func_ptr = getattr(own_dll, self._exported_name)
+                offset = ctypes.cast(func_ptr, ctypes.c_void_p).value
+            # Finally, call the function.
+            cfunc = sig(offset)
+            val = cfunc(*_args)
+            return val
+        except Exception:
+            hook_logger.exception(f"There was an exception calling {self._func.__qualname__!r}")
+            return None
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
+        # This initial check is to check if the first argument was a function.
+        # This will only happen if the function is being used as a decorator.
+        # if this check fails, then we are calling the function under "normal" usage.
+        if args and inspect.isfunction(args[0]):
+            # In this case the decorator was used without a .before or .after -> raise error
+            raise ValueError(
+                f"Hook for detour {self._func.__qualname__!r} must be specified as either `before` or `after`"
+            )
+
+        if self._is_static:
+            # For a static method, we don't need to worry about any binding, we can just call it with the
+            # provided arguments.
+            return self._call(*args, **kwargs)
+        else:
+            # For a non-static method, we need to do more work since we need to get the instance the method is
+            # bound to, and then get the address of it and pass it in as the first argument.
+            if self._bound_class is not None:
+                this = ctypes.addressof(self._bound_class)
+                try:
+                    return self._call(this, *args, **kwargs)
+                except Exception:
+                    hook_logger.exception(f"Failed to call {self._func.__qualname__} with args {args}")
+            else:
+                raise ValueError("Not bound to anything...")
+
+    def _decorate_detour(self, detour, hook_time: Optional[DetourTime] = None) -> HookProtocol:
+        if hook_time is None:
+            raise ValueError(
+                f"Hook for detour {detour.__qualname__!r} must be specified as either `before` or `after`"
+            )
+
+        self._funcdef = _get_funcdef(self._func)
+
+        setattr(detour, "_is_funchook", True)
+        setattr(detour, "_hook_time", hook_time)
+        if self._exported_name is None:
+            setattr(detour, "_hook_func_name", self._func.__qualname__)
+        else:
+            setattr(detour, "_hook_func_name", self._exported_name)
+        if self._imported_name is not None:
+            split_name = self._imported_name.split(".", maxsplit=1)
+            if len(split_name) != 2:
+                raise ValueError(
+                    f"imported name {self._imported_name!r} is invalid. Please ensure it has the following "
+                    "structure: dll_name.dll_function"
+                )
+            dll_name, function_name = split_name
+            setattr(detour, "_dll_name", dll_name)
+            setattr(detour, "_is_imported_func_hook", True)
+            setattr(detour, "_hook_func_name", function_name)
+        else:
+            setattr(detour, "_is_imported_func_hook", False)
+            setattr(detour, "_dll_name", None)
+        setattr(detour, "_hook_func_def", self._funcdef.to_FUNCDEF())
+        setattr(detour, "_hook_offset", self._offset)
+        setattr(detour, "_hook_pattern", self._signature)
+        setattr(detour, "_is_manual_hook", False)
+        setattr(detour, "_is_exported_func_hook", self._exported_name is not None)
+        setattr(detour, "_has__result_", False)
+        setattr(detour, "_noop", False)
+        setattr(detour, "_func_overload", self._overload_id)
+        return detour
+
+    def after(self, detour: Callable) -> HookProtocol:
+        """Mark the detour as running after the original function."""
+        decorated_detour = self._decorate_detour(detour, DetourTime.AFTER)
+        if "_result_" in inspect.signature(detour).parameters.keys():
+            setattr(detour, "_has__result_", True)
+        return decorated_detour
+
+    def before(self, detour: Callable) -> HookProtocol:
+        """Mark the detour as running before the original function."""
+        decorated_detour = self._decorate_detour(detour, DetourTime.BEFORE)
+        return decorated_detour
+
+    def overload(self, overload_id: str) -> Self:
+        """Get an instance of the class which corresponds to the specified overload id.
+        This overload id should be provided as the ``overload_id`` argument for ``function_hook``"""
+        if overload_id == self._overload_id:
+            return self
+        else:
+            fh = _FunctionHook_overloads.get(self._func.__qualname__, {}).get(overload_id, None)
+            if fh is not None:
+                return fh
+            else:
+                raise ValueError(f"Unknown overload {overload_id!r} for {self._func.__qualname__}")
+
+
+class _function_hook:
+    def __init__(
+        self,
+        signature: Optional[str] = None,
+        offset: Optional[int] = None,
+        exported_name: Optional[str] = None,
+        imported_name: Optional[str] = None,
+        overload_id: Optional[str] = None,
+    ):
+        self.signature = signature
+        self.offset = offset
+        self.exported_name = exported_name
+        self.imported_name = imported_name
+        self.overload_id = overload_id
+
+
+class static_function_hook(_function_hook):
+    """Mark the decorated function as a static function hook.
+
+    .. note::
+        Only of the arguments of this function is required.
+        The order the arguments are respected is ``signature``, ``offset``, then ``exported_name``.
+
+    .. note::
+        You do not need to apply the `@staticmethod` decorator to functions if you use this decorator.
+
+    Parameters
+    ----------
+    signature:
+        A string representing the bytes which can be used to uniquely find the function within the binary.
+    offset:
+        The relative offset within the binary where the start of the function can be found.
+    exported_name:
+        The name of the exported function which is to be hooked.
+
+        .. note::
+            It is recommended that the function name is the "mangled" version.
+            Ie. do not "demangle" the function name.
+
+    imported_name:
+        The full name of the function within the imported dll to be hooked. For example, this could be
+        ``"Kernel32.ReadFile"``.
+    overload_id:
+        A unique name within each set of overloaded functions which can be used to identify the overload for
+        calling and hooking purposes.
+    """
+
+    def __call__(self, func: Callable[P, R]) -> FunctionHook[P, R]:
+        if not self.signature and not self.offset and not self.exported_name and not self.imported_name:
+            raise ValueError(
+                f"One of the `function_hook` arguments must be provided for {func.__qualname__!r}"
+            )
+        # Pass the function in directly so that we may defer the usage of inspect until the actual decorator
+        # is called.
+        # This will mean that only functions which are used are inspected which will massively reduce the
+        # amount of work required.
+        if isinstance(func, staticmethod):
+            # Unwrap the static method to get the underlying function since staticmethods aren't callable
+            # cf. https://bugs.python.org/issue20309
+            func = func.__func__
+        return FunctionHook[P, R](
+            func,
+            self.signature,
+            self.offset,
+            self.exported_name,
+            self.imported_name,
+            is_static=True,
+        )
+
+
+class function_hook(_function_hook):
+    """Mark the decorated function as a function hook.
+
+    .. note::
+        Only of the arguments of this function is required.
+        The order the arguments are respected is ``signature``, ``offset``, then ``exported_name``.
+
+    .. important::
+        This decorator must only be applied to non-static methods.
+        This means that the first two arguments MUST be `self` (the usual python one), and `this` (the c
+        one.)
+        Because of how this decorator works, the function arguments will be determined from all the
+        arguments proceeding these two mandatory ones.
+
+    .. important::
+        For this decorator to work, the class the method belongs to MUST be a
+        :class:`~pymhf.core.hooking.Structure` instead of the usual `ctypes.Structure`.
+
+    Parameters
+    ----------
+    signature:
+        A string representing the bytes which can be used to uniquely find the function within the binary.
+    offset:
+        The relative offset within the binary where the start of the function can be found.
+    exported_name:
+        The name of the exported function which is to be hooked.
+
+        .. note::
+            It is recommended that the function name is the "mangled" version.
+            Ie. do not "demangle" the function name.
+
+    imported_name:
+        The full name of the function within the imported dll to be hooked. For example, this could be
+        ``"Kernel32.ReadFile"``.
+    overload_id:
+        A unique name within each set of overloaded functions which can be used to identify the overload for
+        calling and hooking purposes.
+    """
+
+    def __call__(self, func: Callable[Concatenate[Self, Any, P], R]) -> FunctionHook[P, R]:
+        if not self.signature and not self.offset and not self.exported_name and not self.imported_name:
+            raise ValueError(
+                f"One of the `function_hook` arguments must be provided for {func.__qualname__!r}"
+            )
+        # Pass the function in directly so that we may defer the usage of inspect until the actual decorator
+        # is called.
+        # This will mean that only functions which are used are inspected which will massively reduce the
+        # amount of work required.
+        fh = FunctionHook[P, R](
+            func,
+            self.signature,
+            self.offset,
+            self.exported_name,
+            self.imported_name,
+            self.overload_id,
+            is_static=False,
+        )
+        _FunctionHook_overloads[func.__qualname__][self.overload_id] = fh
+        return fh
+
+
+class Structure(ctypes.Structure):
+    """Simple wrapper around ctypes.Structure."""
+
+    def __getattribute__(self, name: str):
+        # Hook the instance attribute lookup so that we may "bind" the instance to the returned FunctionHook
+        # instance.
+        # We need to do this because the decorator has no knowledge of the actual bound instance at run-time.
+        res = super().__getattribute__(name)
+        if isinstance(res, FunctionHook):
+            res._bound_class = self
+        return res
 
 
 hook_manager = HookManager()

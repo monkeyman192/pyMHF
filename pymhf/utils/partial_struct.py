@@ -2,6 +2,8 @@ import ctypes
 from dataclasses import dataclass
 from typing import Annotated, Optional, Type, TypeVar, cast
 
+from typing_extensions import get_type_hints
+
 StructType = TypeVar("StructType", bound=Type[ctypes.Structure])
 
 
@@ -12,9 +14,17 @@ class Field:
 
 
 def partial_struct(cls: StructType):
+    """Mark the decorated class as a partial struct.
+    This will automatically construct the ``_field_`` attribute for this class
+    """
     _fields_ = []
     curr_position = 0
-    for field_name, annotation in cls.__annotations__.items():
+    # If there are no annotations, it's just an empty ctypes.Structure class.
+    if not hasattr(cls, "__annotations__"):
+        cls._fields_ = _fields_
+        return cls
+    # If there are, loop over the annotations and extract the info we need to construct the _fields_.
+    for field_name, annotation in get_type_hints(cls, include_extras=True).items():
         if len(annotation.__metadata__) == 1:
             field_data = annotation.__metadata__[0]
         else:

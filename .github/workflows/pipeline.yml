@@ -51,9 +51,11 @@ jobs:
         run: uv build
       - name: Lint and format code
         run: |
-          uv run ruff check ./pymhf
-          uv run ruff format --check ./pymhf
+          uv run ruff check ./pymhf ./tests
+          uv run ruff format --check ./pymhf ./tests
           uv run python -m twine check ./dist/*
+      - name: Run unit tests
+        run: uv run pytest
       - name: Upload Wheels
         uses: actions/upload-artifact@v4
         with:
