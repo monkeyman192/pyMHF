@@ -33,6 +33,7 @@ dependencies = [
   "tomlkit",
   "pefile",
   "iced_x86",
+  "typing_extensions",
 ]
 dynamic = ["version"]
 
@@ -48,7 +49,7 @@ dev = [
   "setuptools_scm",
   "twine",
   "sphinx",
-  "esbonio",
+  "esbonio",  # Used to provide a local rst server for hot-reloading docs with sphinx
   "pydata-sphinx-theme",
 ]
 
@@ -72,8 +73,10 @@ convention = "numpy"
 "cpptypes.py" = ["E501"]
 
 [project.urls]
-Homepage = "https://github.com/monkeyman192/pyMHF"
-Repository = "https://github.com/monkeyman192/pyMHF.git"
+homepage = "https://github.com/monkeyman192/pyMHF"
+repository = "https://github.com/monkeyman192/pyMHF.git"
+changelog = "https://monkeyman192.github.io/pyMHF/docs/change_log.html"
+documentation = "https://monkeyman192.github.io/pyMHF/index.html"
 
 [project.scripts]
 pymhf = "pymhf:run"

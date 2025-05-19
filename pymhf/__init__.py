@@ -62,7 +62,7 @@ def get_folder(title: str, q: questionary.Question, has_tkinter: bool, idir: Opt
 
 # Pattern shamelessly stolen from the questionary library (which is the actual reason this code has issues in
 # the first place!)
-if not SPHINX_AUTODOC_RUNNING:
+if not SPHINX_AUTODOC_RUNNING and os.environ.get("PYTEST_VERSION") is None:
     START_PAUSED = questionary.confirm("Start the game paused?", default=True)
     RUN_GAME = questionary.confirm("Run game?", default=True)
     STEAM_ID_Q = questionary.text("Enter the steam game ID:", validate=_is_int)

@@ -52,6 +52,8 @@ class gui_variable:
         """Create an integer entry field which can take extra arguments.
         To see what extra arguments are available, see the DearPyGUI documentation:
         https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_input_int
+
+        Note: This decorator MUST be applied closer to the decorated function than the ``@property`` decorator
         """
 
         def inner(func: Callable[..., Any]) -> VariableProtocol:
@@ -68,6 +70,8 @@ class gui_variable:
         """Create an string entry field which can take extra arguments.
         To see what extra arguments are available, see the DearPyGUI documentation:
         https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_input_text
+
+        Note: This decorator MUST be applied closer to the decorated function than the ``@property`` decorator
         """
 
         def inner(func: Callable[..., Any]) -> VariableProtocol:
@@ -84,6 +88,8 @@ class gui_variable:
         """Create an float entry field which can take extra arguments.
         To see what extra arguments are available, see the DearPyGUI documentation:
         https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_input_double
+
+        Note: This decorator MUST be applied closer to the decorated function than the ``@property`` decorator
         """
 
         def inner(func: Callable[..., Any]) -> VariableProtocol:
@@ -100,6 +106,8 @@ class gui_variable:
         """Create an boolean entry field in the form of a checkbox which can take extra arguments.
         To see what extra arguments are available, see the DearPyGUI documentation:
         https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_checkbox
+
+        Note: This decorator MUST be applied closer to the decorated function than the ``@property`` decorator
         """
 
         def inner(func: Callable[..., Any]) -> VariableProtocol:
