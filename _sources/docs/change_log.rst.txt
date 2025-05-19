@@ -1,11 +1,16 @@
 Change Log
 ==========
 
+Current (0.1.12-dev)
+--------------------
+
+- Added a new way to specify the data required for hooking and calling functions. See :doc:`here </docs/creating_hook_definitions>` for more details. This method will completely replace the old method of using the ``__pymhf_func_offsets__`` etc. "magic" mod attributes.
+
 0.1.11 (29/04/2025)
 --------------------
 
 - Added the :py:func:`pymhf.gui.decorators.gui_combobox` decorator (partial work on `#15 <https://github.com/monkeyman192/pyMHF/issues/15>`_).
-- Added the ability for mods to access each others' attributes and methods. (`#5 <https://github.com/monkeyman192/pyMHF/issues/5>`_). See [this page](inter_mod_functionality.md) for more details.
+- Added the ability for mods to access each others' attributes and methods. (`#5 <https://github.com/monkeyman192/pyMHF/issues/5>`_). See :doc:`this page </docs/inter_mod_functionality>` for more details.
 - Fixed a few issues regarding running pyMHF. Thanks to `@Foundit3923 <https://github.com/Foundit3923>`_ for helping to figure out the issues.
 - Fixed an issue where hooks of imported functions which have ``_result_`` as an argument work.
 - Added :py:func:`pymhf.core.hooking.NOOP` decorator which indicates that the original game function shouldn't be called. (`#20 <https://github.com/monkeyman192/pyMHF/issues/20>`_)

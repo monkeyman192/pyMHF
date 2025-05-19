@@ -278,6 +278,7 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="settings.html">Configuring pyMHF</a></li>
 <li class="toctree-l1"><a class="reference internal" href="writing_mods.html">Writing Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="creating_hook_definitions.html">Creating hook definitions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mod_states.html">Mod States</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inter_mod_functionality.html">Inter-mod functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="partial_structs.html">Partial Structs</a></li>
@@ -355,11 +356,17 @@
                   
   <section id="change-log">
 <h1>Change Log<a class="headerlink" href="#change-log" title="Link to this heading">#</a></h1>
+<section id="current-0-1-12-dev">
+<h2>Current (0.1.12-dev)<a class="headerlink" href="#current-0-1-12-dev" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Added a new way to specify the data required for hooking and calling functions. See <a class="reference internal" href="creating_hook_definitions.html"><span class="doc">here</span></a> for more details. This method will completely replace the old method of using the <code class="docutils literal notranslate"><span class="pre">__pymhf_func_offsets__</span></code> etc. “magic” mod attributes.</p></li>
+</ul>
+</section>
 <section id="id1">
 <h2>0.1.11 (29/04/2025)<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Added the <a class="reference internal" href="../api/pymhf.gui.decorators.html#pymhf.gui.decorators.gui_combobox" title="pymhf.gui.decorators.gui_combobox"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.gui.decorators.gui_combobox</span></code></a> decorator (partial work on <a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/15">#15</a>).</p></li>
-<li><p>Added the ability for mods to access each others’ attributes and methods. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/5">#5</a>). See [this page](inter_mod_functionality.md) for more details.</p></li>
+<li><p>Added the ability for mods to access each others’ attributes and methods. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/5">#5</a>). See <a class="reference internal" href="inter_mod_functionality.html"><span class="doc">this page</span></a> for more details.</p></li>
 <li><p>Fixed a few issues regarding running pyMHF. Thanks to <a class="reference external" href="https://github.com/Foundit3923">&#64;Foundit3923</a> for helping to figure out the issues.</p></li>
 <li><p>Fixed an issue where hooks of imported functions which have <code class="docutils literal notranslate"><span class="pre">_result_</span></code> as an argument work.</p></li>
 <li><p>Added <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.NOOP" title="pymhf.core.hooking.NOOP"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.core.hooking.NOOP</span></code></a> decorator which indicates that the original game function shouldn’t be called. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/20">#20</a>)</p></li>

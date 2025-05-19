@@ -1,0 +1,796 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Creating hook definitions &#8212; pyMHF  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/creating_hook_definitions';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Mod States" href="mod_states.html" />
+    <link rel="prev" title="Writing Mods" href="writing_mods.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pyMHF  documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Usage guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API docs
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/monkeyman192/pyMHF" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Usage guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API docs
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/monkeyman192/pyMHF" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="settings.html">Configuring pyMHF</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writing_mods.html">Writing Mods</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Creating hook definitions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mod_states.html">Mod States</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inter_mod_functionality.html">Inter-mod functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="partial_structs.html">Partial Structs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="single_file_mods.html">Single-file mods</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="libraries/index.html">Creating modding API’s with pyMHF</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="libraries/writing_libraries.html">Writing Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="libraries/custom_callbacks.html">Custom Callbacks</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="gui/index.html">GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui/gui.html">Automatic-GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui/hex_view.html">Hex View</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="change_log.html">Change Log</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Usage guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Creating hook definitions</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="creating-hook-definitions">
+<h1>Creating hook definitions<a class="headerlink" href="#creating-hook-definitions" title="Link to this heading">#</a></h1>
+<p>Whether you are writing a library, or writing a single-file mod, pyMHF provides a convenient way of declaring the information required to hook or call any given function relating to a binary, whether it be imported, exported or a function defined within the binary.</p>
+<p>This functionality is provided by the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.function_hook" title="pymhf.core.hooking.function_hook"><code class="xref py py-class docutils literal notranslate"><span class="pre">function_hook</span></code></a> and <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.static_function_hook" title="pymhf.core.hooking.static_function_hook"><code class="xref py py-class docutils literal notranslate"><span class="pre">static_function_hook</span></code></a> functions, to decorate non-static and static methods/functions respectively.</p>
+<p>These decorators do a few things applied:</p>
+<ol class="arabic simple">
+<li><p>The decorated function/method is inspected and the argument names and type hints are collected and used to construct a <code class="docutils literal notranslate"><span class="pre">FuncDef</span></code> object which is used by pyMHF to tell minhook how to hook the required function.</p></li>
+<li><p>It also enables calling the function or method directly (more on that below).</p></li>
+<li><p>Finally, the decorators transform the function or method into a decorator which can be applied to the method in our mod which we wish to use as a detour.</p></li>
+</ol>
+<p>Because of this first point, the decorated function MUST have correct type hints. If they are not correct, then the hook will likely fail, produce incorrect results, or even cause the program to crash.</p>
+<p>The best way to see how these decorators are used is with a few code examples.</p>
+<section id="imported-function-hooks">
+<h2><em>Imported function</em> hooks<a class="headerlink" href="#imported-function-hooks" title="Link to this heading">#</a></h2>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">imported_hook_mod.py</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes.wintypes</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">wintypes</span>
+<span class="linenos"> 2</span><span class="kn">from</span><span class="w"> </span><span class="nn">logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">getLogger</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
+<span class="linenos"> 5</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">static_function_hook</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="n">logger</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">()</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span><span class="nd">@static_function_hook</span><span class="p">(</span><span class="n">imported_name</span><span class="o">=</span><span class="s2">&quot;Kernel32.ReadFile&quot;</span><span class="p">)</span>
+<span class="linenos">11</span><span class="k">def</span><span class="w"> </span><span class="nf">ReadFile</span><span class="p">(</span>
+<span class="linenos">12</span>    <span class="n">hFile</span><span class="p">:</span> <span class="n">wintypes</span><span class="o">.</span><span class="n">HANDLE</span><span class="p">,</span>
+<span class="linenos">13</span>    <span class="n">lpBuffer</span><span class="p">:</span> <span class="n">wintypes</span><span class="o">.</span><span class="n">LPVOID</span><span class="p">,</span>
+<span class="linenos">14</span>    <span class="n">nNumberOfBytesToRead</span><span class="p">:</span> <span class="n">wintypes</span><span class="o">.</span><span class="n">DWORD</span><span class="p">,</span>
+<span class="linenos">15</span>    <span class="n">lpNumberOfBytesRead</span><span class="p">:</span> <span class="n">wintypes</span><span class="o">.</span><span class="n">LPDWORD</span><span class="p">,</span>
+<span class="linenos">16</span>    <span class="n">lpOverlapped</span><span class="p">:</span> <span class="n">wintypes</span><span class="o">.</span><span class="n">LPVOID</span><span class="p">,</span>
+<span class="linenos">17</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wintypes</span><span class="o">.</span><span class="n">BOOL</span><span class="p">:</span>
+<span class="linenos">18</span>    <span class="k">pass</span>
+<span class="linenos">19</span>
+<span class="linenos">20</span>
+<span class="linenos">21</span><span class="k">class</span><span class="w"> </span><span class="nc">ReadFileMod</span><span class="p">(</span><span class="n">Mod</span><span class="p">):</span>
+<span class="linenos">22</span>    <span class="nd">@ReadFile</span><span class="o">.</span><span class="n">after</span>
+<span class="linenos">23</span>    <span class="k">def</span><span class="w"> </span><span class="nf">after_read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="linenos">24</span>        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;after readfile: </span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Here we can see that we have defined a function <code class="docutils literal notranslate"><span class="pre">ReadFile</span></code> which has the same definition as the function with the same name in the <code class="docutils literal notranslate"><span class="pre">Kernel32</span></code> windows system dll.</p>
+<p>As seen here, the <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> decorator transforms the <code class="docutils literal notranslate"><span class="pre">ReadFile</span></code> itself into a decorator which we then used to specify that the <code class="docutils literal notranslate"><span class="pre">after_read_file</span></code> method is to be used as the detour run after the <code class="docutils literal notranslate"><span class="pre">Kernel32.ReadFile</span></code> function.</p>
+</section>
+<section id="exported-function-hooks">
+<h2><em>Exported function</em> hooks<a class="headerlink" href="#exported-function-hooks" title="Link to this heading">#</a></h2>
+<p>Exported functions are those which are provided by the binary itself. There are often not many, and often less which may be useful, but if you get lucky there may be some where are useful to hook or even call.</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<span id="exported-hook-mod-code"></span><div class="code-block-caption"><span class="caption-text">exported_hook_mod.py</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
+<span class="linenos"> 5</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">static_function_hook</span>
+<span class="linenos"> 6</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_main_window_active</span>
+<span class="linenos"> 7</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.gui.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">gui_button</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span><span class="n">FUNC_NAME</span> <span class="o">=</span> <span class="s2">&quot;?PostEvent@SoundEngine@AK@@YAII_KIP6AXW4AkCallbackType@@PEAUAkCallbackInfo@@@ZPEAXIPEAUAkExternalSourceInfo@@I@Z&quot;</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span><span class="k">class</span><span class="w"> </span><span class="nc">AK</span><span class="p">():</span>
+<span class="linenos">15</span>    <span class="k">class</span><span class="w"> </span><span class="nc">SoundEngine</span><span class="p">():</span>
+<span class="linenos">16</span>    <span class="nd">@static_function_hook</span><span class="p">(</span><span class="n">exported_name</span><span class="o">=</span><span class="n">FUNC_NAME</span><span class="p">)</span>
+<span class="linenos">17</span>    <span class="k">def</span><span class="w"> </span><span class="nf">PostEvent</span><span class="p">(</span>
+<span class="linenos">18</span>        <span class="n">in_ulEventID</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">,</span>
+<span class="linenos">19</span>        <span class="n">in_GameObjID</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint64</span><span class="p">,</span>
+<span class="linenos">20</span>        <span class="n">in_uiFlags</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="linenos">21</span>        <span class="n">callback</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="linenos">22</span>        <span class="n">in_pCookie</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="linenos">23</span>        <span class="n">in_cExternals</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="linenos">24</span>        <span class="n">in_pExternalSources</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="linenos">25</span>        <span class="n">in_PlayingID</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="linenos">26</span>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint64</span><span class="p">:</span>
+<span class="linenos">27</span>        <span class="k">pass</span>
+<span class="linenos">28</span>
+<span class="linenos">29</span>
+<span class="linenos">30</span><span class="k">class</span><span class="w"> </span><span class="nc">AudioNames</span><span class="p">(</span><span class="n">Mod</span><span class="p">):</span>
+<span class="linenos">31</span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="linenos">32</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<span class="linenos">33</span>        <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos">34</span>        <span class="bp">self</span><span class="o">.</span><span class="n">obj_id</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos">35</span>
+<span class="linenos">36</span>    <span class="nd">@gui_button</span><span class="p">(</span><span class="s2">&quot;Play sound&quot;</span><span class="p">)</span>
+<span class="linenos">37</span>    <span class="k">def</span><span class="w"> </span><span class="nf">play_sound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="linenos">38</span>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj_id</span><span class="p">:</span>
+<span class="linenos">39</span>            <span class="n">set_main_window_active</span><span class="p">()</span>
+<span class="linenos">40</span>            <span class="n">AK</span><span class="o">.</span><span class="n">SoundEngine</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj_id</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="linenos">41</span>
+<span class="linenos">42</span>    <span class="nd">@AK</span><span class="o">.</span><span class="n">SoundEngine</span><span class="o">.</span><span class="n">PostEvent</span><span class="o">.</span><span class="n">after</span>
+<span class="linenos">43</span>    <span class="k">def</span><span class="w"> </span><span class="nf">play_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="linenos">44</span>        <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos">45</span>        <span class="bp">self</span><span class="o">.</span><span class="n">obj_id</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="linenos">46</span>        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>In the above example, we are hooking the <code class="docutils literal notranslate"><span class="pre">AK::SoundEngine::PostEvent</span></code> function which the No Man’s Sky binary includes as an export (as many games which use the AudioKinetic library likely also do).
+The mod will also provide a button which, when pressed will play the last played audio by the game.</p>
+<p>There are a few thihngs to note in this example:</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">exported_name</span></code> argument to <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> is the “mangled” name. This is the recommended way to provide this and it should be used over the “unmangled” version since it means there is no ambiguity or confusion when doing a lookup by name in the exe.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> decorator is applied to a method of the nested classes. For static methods this isn’t really required, however it is nice since it adds some structure to these function calls (this point is NOT true for non-static methods as you will see in the next section!).</p></li>
+<li><p>We can call the static method by caling the method directly despite there being no function body. The actual implementation of the calling is done by pyMHF itself so you don’t need to worry about it.</p></li>
+</ul>
+</section>
+<section id="normal-function-hooks">
+<h2><em>Normal function</em> hooks<a class="headerlink" href="#normal-function-hooks" title="Link to this heading">#</a></h2>
+<p>Normal functions are just functions which are provided by the binary but not exported. It is these functions that would generally require a bit of reverse engineering experience to determine the function signature of so that they can be hooked correctly.</p>
+<p>Defining functions to hook is done in much the same way as above, however, we simply provide either the relative offset within the binary, or a byte pattern known as a <em>signature</em> which can be used to uniquely find the start of the function within the binary.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>When to use <code class="docutils literal notranslate"><span class="pre">signature</span></code> or <code class="docutils literal notranslate"><span class="pre">offset</span></code>?</p>
+<p>If your binary never changes (ie. is never updated by the developers etc), then use <code class="docutils literal notranslate"><span class="pre">offset</span></code> as it’s trivial to obtain for every single function in a binary.
+If the binary receives updates, then the <code class="docutils literal notranslate"><span class="pre">signature</span></code> is the only option as <code class="docutils literal notranslate"><span class="pre">offset</span></code> values will change as the binary does.</p>
+</div>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">normal_hook_mod.py</span><a class="headerlink" href="#id3" title="Link to this code">#</a></div>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
+<span class="linenos"> 6</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">function_hook</span>
+<span class="linenos"> 7</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.memutils</span><span class="w"> </span><span class="kn">import</span> <span class="n">map_struct</span>
+<span class="linenos"> 8</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_main_window_active</span>
+<span class="linenos"> 9</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.gui.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">gui_button</span>
+<span class="linenos">10</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">partial_struct</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span><span class="nd">@partial_struct</span>
+<span class="linenos">16</span><span class="k">class</span><span class="w"> </span><span class="nc">TkAudioID</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+<span class="linenos">17</span>    <span class="n">mpacName</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">)]</span>
+<span class="linenos">18</span>    <span class="n">muID</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">)]</span>
+<span class="linenos">19</span>    <span class="n">mbValid</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">)]</span>
+<span class="linenos">20</span>
+<span class="linenos">21</span>
+<span class="linenos">22</span><span class="k">class</span><span class="w"> </span><span class="nc">cTkAudioManager</span><span class="p">(</span><span class="n">Structure</span><span class="p">):</span>
+<span class="linenos">23</span>    <span class="nd">@function_hook</span><span class="p">(</span><span class="s2">&quot;48 83 EC ? 33 C9 4C 8B D2 89 4C 24 ? 49 8B C0 48 89 4C 24 ? 45 33 C9&quot;</span><span class="p">)</span>
+<span class="linenos">24</span>    <span class="k">def</span><span class="w"> </span><span class="nf">Play</span><span class="p">(</span>
+<span class="linenos">25</span>        <span class="bp">self</span><span class="p">,</span>
+<span class="linenos">26</span>        <span class="n">this</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulonglong</span><span class="p">,</span>
+<span class="linenos">27</span>        <span class="n">event</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulonglong</span><span class="p">,</span>
+<span class="linenos">28</span>        <span class="nb">object</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int64</span><span class="p">,</span>
+<span class="linenos">29</span>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">:</span>
+<span class="linenos">30</span>        <span class="k">pass</span>
+<span class="linenos">31</span>
+<span class="linenos">32</span>
+<span class="linenos">33</span><span class="k">class</span><span class="w"> </span><span class="nc">AudioNames</span><span class="p">(</span><span class="n">Mod</span><span class="p">):</span>
+<span class="linenos">34</span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="linenos">35</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<span class="linenos">36</span>        <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">37</span>        <span class="bp">self</span><span class="o">.</span><span class="n">obj_id</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">38</span>        <span class="bp">self</span><span class="o">.</span><span class="n">audio_manager</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos">39</span>        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">40</span>
+<span class="linenos">41</span>    <span class="nd">@gui_button</span><span class="p">(</span><span class="s2">&quot;Play sound&quot;</span><span class="p">)</span>
+<span class="linenos">42</span>    <span class="k">def</span><span class="w"> </span><span class="nf">play_sound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="linenos">43</span>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj_id</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">audio_manager</span><span class="p">:</span>
+<span class="linenos">44</span>            <span class="n">set_main_window_active</span><span class="p">()</span>
+<span class="linenos">45</span>            <span class="n">audioid</span> <span class="o">=</span> <span class="n">TkAudioID</span><span class="p">()</span>
+<span class="linenos">46</span>            <span class="n">audioid</span><span class="o">.</span><span class="n">muID</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span>
+<span class="linenos">47</span>            <span class="bp">self</span><span class="o">.</span><span class="n">audio_manager</span><span class="o">.</span><span class="n">Play</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">addressof</span><span class="p">(</span><span class="n">audioid</span><span class="p">),</span> <span class="nb">object</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obj_id</span><span class="p">)</span>
+<span class="linenos">48</span>
+<span class="linenos">49</span>    <span class="nd">@cTkAudioManager</span><span class="o">.</span><span class="n">Play</span><span class="o">.</span><span class="n">after</span>
+<span class="linenos">50</span>    <span class="k">def</span><span class="w"> </span><span class="nf">after_play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">this</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">object_</span><span class="p">):</span>
+<span class="linenos">51</span>        <span class="n">audioID</span> <span class="o">=</span> <span class="n">map_struct</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">TkAudioID</span><span class="p">)</span>
+<span class="linenos">52</span>        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;After play; this: </span><span class="si">{</span><span class="n">this</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">audioID</span><span class="o">.</span><span class="n">muID</span><span class="si">}</span><span class="s2">, object: </span><span class="si">{</span><span class="n">object_</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos">53</span>        <span class="bp">self</span><span class="o">.</span><span class="n">audio_manager</span> <span class="o">=</span> <span class="n">map_struct</span><span class="p">(</span><span class="n">this</span><span class="p">,</span> <span class="n">cTkAudioManager</span><span class="p">)</span>
+<span class="linenos">54</span>        <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span> <span class="o">=</span> <span class="n">audioID</span><span class="o">.</span><span class="n">muID</span>
+<span class="linenos">55</span>        <span class="bp">self</span><span class="o">.</span><span class="n">obj_id</span> <span class="o">=</span> <span class="n">object_</span>
+</pre></div>
+</div>
+</div>
+<p>In the above we have defined the <code class="docutils literal notranslate"><span class="pre">cTkAudioManager</span></code> class with the <code class="docutils literal notranslate"><span class="pre">Play</span></code> method.
+This method uses the <code class="docutils literal notranslate"><span class="pre">function_hook</span></code> decorator, not the <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> decorator for the simple fact that this is not a static method. This means that if you want to call the method you need to call it on the <em>instance</em> of the class, not the class type (see line 47).</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">function_hook</span></code> decorator MUST be applied to methods of a <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.Structure" title="pymhf.core.hooking.Structure"><code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></a>. This class is a thin wrapper around the <code class="docutils literal notranslate"><span class="pre">ctypes.Structure</span></code> class, but we require this for the calling functionality to work correctly (check out the source code if you are curious why!)
+The <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> doesn’t have this restriction (but it is permissible)</p>
+<p>Because of this, you cannot use the <code class="docutils literal notranslate"><span class="pre">function_hook</span></code> decorator on a plain function, it MUST be used on a method!</p>
+</div>
+<p>We can see that when we call the function we can either use positional arguments or keyword arguments. This function can be called the exact same way any function would be called, and we can in fact define default values for some arguments so that we don’t need to specify the arguments when calling (see for example <a class="reference internal" href="#exported-hook-mod-code"><span class="std std-ref">exported_hook_mod.py</span></a> lines 20-25).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When calling the function we DO NOT provide the <code class="docutils literal notranslate"><span class="pre">this</span></code> argument to the function. Your IDE will only show the arguments after that argument, and the value is automatically added by pyMHF internally.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Often one of the trickiest things when writing a mod is getting a pointer to the instance of the class that you are interested in. You generally will get this from the first argument of some function that you hook (as it is the <code class="docutils literal notranslate"><span class="pre">this</span></code> argument), but sometimes other structs may contain this pointer. It is really up the binary in question.</p>
+</div>
+</section>
+<section id="overloads">
+<h2>Overloads<a class="headerlink" href="#overloads" title="Link to this heading">#</a></h2>
+<p>It is possible to define function overloads however there are two methods, each with their own pro’s and con’s.</p>
+<section id="using-the-overload-method-and-overload-id-argument">
+<h3>Using the <code class="docutils literal notranslate"><span class="pre">overload</span></code> method and <code class="docutils literal notranslate"><span class="pre">overload_id</span></code> argument<a class="headerlink" href="#using-the-overload-method-and-overload-id-argument" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> and <code class="docutils literal notranslate"><span class="pre">function_hook</span></code> decorators both have an <code class="docutils literal notranslate"><span class="pre">overload_id</span></code> argument which is used to uniquely identify the overload (this will be required later when we want to call or hook this function).
+The methods also need the <code class="docutils literal notranslate"><span class="pre">typing.overload</span></code> decorator. Note that pyMHF actually monkeypatches this decorator so that it doesn’t remove information from the original function that we need.</p>
+<p>To hook or call a function with an overload, append <code class="docutils literal notranslate"><span class="pre">.overload(overload_id:</span> <span class="pre">str)</span></code> to the original function. This will refer to the overloaded function.</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">overloaded_mod.py</span><a class="headerlink" href="#id4" title="Link to this code">#</a></div>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">overload</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="kn">import</span><span class="w"> </span><span class="nn">pymhf.core._internal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_internal</span>
+<span class="linenos"> 6</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
+<span class="linenos"> 7</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">function_hook</span>
+<span class="linenos"> 8</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.memutils</span><span class="w"> </span><span class="kn">import</span> <span class="n">map_struct</span>
+<span class="linenos"> 9</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_main_window_active</span>
+<span class="linenos">10</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.gui.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">gui_button</span>
+<span class="linenos">11</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">partial_struct</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span>
+<span class="linenos">16</span><span class="nd">@partial_struct</span>
+<span class="linenos">17</span><span class="k">class</span><span class="w"> </span><span class="nc">TkAudioID</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+<span class="linenos">18</span>    <span class="n">mpacName</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">)]</span>
+<span class="linenos">19</span>    <span class="n">muID</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">)]</span>
+<span class="linenos">20</span>    <span class="n">mbValid</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">)]</span>
+<span class="linenos">21</span>
+<span class="linenos">22</span>
+<span class="linenos">23</span><span class="nd">@partial_struct</span>
+<span class="linenos">24</span><span class="k">class</span><span class="w"> </span><span class="nc">cTkAudioManager</span><span class="p">(</span><span class="n">Structure</span><span class="p">):</span>
+<span class="linenos">25</span>    <span class="nd">@function_hook</span><span class="p">(</span><span class="s2">&quot;48 89 5C 24 ? 48 89 6C 24 ? 56 48 83 EC ? 48 8B F1 48 8B C2&quot;</span><span class="p">,</span> <span class="n">overload_id</span><span class="o">=</span><span class="s2">&quot;attenuated&quot;</span><span class="p">)</span>
+<span class="linenos">26</span>    <span class="nd">@overload</span>
+<span class="linenos">27</span>    <span class="k">def</span><span class="w"> </span><span class="nf">Play</span><span class="p">(</span>
+<span class="linenos">28</span>        <span class="bp">self</span><span class="p">,</span>
+<span class="linenos">29</span>        <span class="n">this</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulonglong</span><span class="p">,</span>
+<span class="linenos">30</span>        <span class="n">event</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulonglong</span><span class="p">,</span>
+<span class="linenos">31</span>        <span class="n">position</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulonglong</span><span class="p">,</span>
+<span class="linenos">32</span>        <span class="nb">object</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int64</span><span class="p">,</span>
+<span class="linenos">33</span>        <span class="n">attenuationScale</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span>
+<span class="linenos">34</span>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">:</span>
+<span class="linenos">35</span>        <span class="k">pass</span>
+<span class="linenos">36</span>
+<span class="linenos">37</span>    <span class="nd">@function_hook</span><span class="p">(</span><span class="s2">&quot;48 83 EC ? 33 C9 4C 8B D2 89 4C 24 ? 49 8B C0 48 89 4C 24 ? 45 33 C9&quot;</span><span class="p">,</span> <span class="n">overload_id</span><span class="o">=</span><span class="s2">&quot;normal&quot;</span><span class="p">)</span>
+<span class="linenos">38</span>    <span class="nd">@overload</span>
+<span class="linenos">39</span>    <span class="k">def</span><span class="w"> </span><span class="nf">Play</span><span class="p">(</span>
+<span class="linenos">40</span>        <span class="bp">self</span><span class="p">,</span>
+<span class="linenos">41</span>        <span class="n">this</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulonglong</span><span class="p">,</span>
+<span class="linenos">42</span>        <span class="n">event</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulonglong</span><span class="p">,</span>
+<span class="linenos">43</span>        <span class="nb">object</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int64</span><span class="p">,</span>
+<span class="linenos">44</span>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">:</span>
+<span class="linenos">45</span>        <span class="k">pass</span>
+<span class="linenos">46</span>
+<span class="linenos">47</span>
+<span class="linenos">48</span><span class="k">class</span><span class="w"> </span><span class="nc">AudioNames</span><span class="p">(</span><span class="n">Mod</span><span class="p">):</span>
+<span class="linenos">49</span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="linenos">50</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<span class="linenos">51</span>        <span class="bp">self</span><span class="o">.</span><span class="n">audio_manager</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos">52</span>        <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos">53</span>        <span class="bp">self</span><span class="o">.</span><span class="n">obj_id</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos">54</span>
+<span class="linenos">55</span>    <span class="nd">@gui_button</span><span class="p">(</span><span class="s2">&quot;Play sound&quot;</span><span class="p">)</span>
+<span class="linenos">56</span>    <span class="k">def</span><span class="w"> </span><span class="nf">play_sound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="linenos">57</span>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj_id</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">audio_manager</span><span class="p">:</span>
+<span class="linenos">58</span>            <span class="n">set_main_window_active</span><span class="p">()</span>
+<span class="linenos">59</span>            <span class="n">audioid</span> <span class="o">=</span> <span class="n">TkAudioID</span><span class="p">()</span>
+<span class="linenos">60</span>            <span class="n">audioid</span><span class="o">.</span><span class="n">muID</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span>
+<span class="linenos">61</span>            <span class="bp">self</span><span class="o">.</span><span class="n">audio_manager</span><span class="o">.</span><span class="n">Play</span><span class="o">.</span><span class="n">overload</span><span class="p">(</span><span class="s2">&quot;normal&quot;</span><span class="p">)(</span><span class="n">event</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">addressof</span><span class="p">(</span><span class="n">audioid</span><span class="p">),</span> <span class="nb">object</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obj_id</span><span class="p">)</span>
+<span class="linenos">62</span>
+<span class="linenos">63</span>    <span class="nd">@cTkAudioManager</span><span class="o">.</span><span class="n">Play</span><span class="o">.</span><span class="n">overload</span><span class="p">(</span><span class="s2">&quot;normal&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">after</span>
+<span class="linenos">64</span>    <span class="k">def</span><span class="w"> </span><span class="nf">after_play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">this</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">object_</span><span class="p">):</span>
+<span class="linenos">65</span>        <span class="n">audioID</span> <span class="o">=</span> <span class="n">map_struct</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">TkAudioID</span><span class="p">)</span>
+<span class="linenos">66</span>        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;After play; this: </span><span class="si">{</span><span class="n">this</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">audioID</span><span class="o">.</span><span class="n">muID</span><span class="si">}</span><span class="s2">, object: </span><span class="si">{</span><span class="n">object_</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos">67</span>        <span class="bp">self</span><span class="o">.</span><span class="n">audio_manager</span> <span class="o">=</span> <span class="n">map_struct</span><span class="p">(</span><span class="n">this</span><span class="p">,</span> <span class="n">cTkAudioManager</span><span class="p">)</span>
+<span class="linenos">68</span>        <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span> <span class="o">=</span> <span class="n">audioID</span><span class="o">.</span><span class="n">muID</span>
+<span class="linenos">69</span>        <span class="bp">self</span><span class="o">.</span><span class="n">obj_id</span> <span class="o">=</span> <span class="n">object_</span>
+<span class="linenos">70</span>
+<span class="linenos">71</span>    <span class="nd">@cTkAudioManager</span><span class="o">.</span><span class="n">Play</span><span class="o">.</span><span class="n">overload</span><span class="p">(</span><span class="s2">&quot;attenuated&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">after</span>
+<span class="linenos">72</span>    <span class="k">def</span><span class="w"> </span><span class="nf">after_play_attenuated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="linenos">73</span>        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Just played an attenuated sound: </span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<dl class="simple">
+<dt>Pros:</dt><dd><ul class="simple">
+<li><p>It provides a nice clean way to reference the overloaded functions.</p></li>
+</ul>
+</dd>
+<dt>Cons:</dt><dd><ul class="simple">
+<li><p>Type hinting is lost when doing function calls.</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="name-overloaded-functions-differently">
+<h3>Name overloaded functions differently<a class="headerlink" href="#name-overloaded-functions-differently" title="Link to this heading">#</a></h3>
+<p>The other option for overloaded functions is to simply give them different names. So for example if you had two functions <code class="docutils literal notranslate"><span class="pre">play_song(id:</span> <span class="pre">int,</span> <span class="pre">volume:</span> <span class="pre">float)</span></code> and <code class="docutils literal notranslate"><span class="pre">play_song(id:</span> <span class="pre">int,</span> <span class="pre">volume:</span> <span class="pre">float,</span> <span class="pre">position:</span> <span class="pre">vector3)</span></code>, you might call one <code class="docutils literal notranslate"><span class="pre">play_song</span></code>, and then call the other <code class="docutils literal notranslate"><span class="pre">play_song_at_pos</span></code>.</p>
+<dl class="simple">
+<dt>Pro’s:</dt><dd><ul class="simple">
+<li><p>No need to use the <code class="docutils literal notranslate"><span class="pre">.overload</span></code> method or <code class="docutils literal notranslate"><span class="pre">overload_id</span></code>.</p></li>
+<li><p>Function calls are type hinted.</p></li>
+</ul>
+</dd>
+<dt>Con’s:</dt><dd><ul class="simple">
+<li><p>Doesn’t stay accurate to actual function names (if known).</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+</section>
+<section id="tips-and-hints">
+<h2>Tips and hints<a class="headerlink" href="#tips-and-hints" title="Link to this heading">#</a></h2>
+<p>The above can see a bit daunting at first, but once you get a handle on it it can be very easy to create new functions, and this can even potentially be automated to some degree with scripts for IDA or ghidra.</p>
+<p>There are a few useful things to consider or keep in mind however:</p>
+<section id="when-to-use-static-function-hook-or-function-hook">
+<h3>When to use <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> or <code class="docutils literal notranslate"><span class="pre">function_hook</span></code>?<a class="headerlink" href="#when-to-use-static-function-hook-or-function-hook" title="Link to this heading">#</a></h3>
+<p>Often when you start to reverse engineer a program, you will not know whether or not some function is just a function, or a method to some class. Because of this you will often start out with a collection of plain functions with the <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> decorator.
+Once you start to realise that the functions are actually methods, you will likely start to structure these methods so that they belong to a class which may have some known fields.
+To this end, using the <code class="docutils literal notranslate"><span class="pre">&#64;partial_struct</span></code> decorator like seen above makes this a lot easier.</p>
+</section>
+<section id="using-before-and-after-methods">
+<h3>Using <code class="docutils literal notranslate"><span class="pre">before</span></code> and <code class="docutils literal notranslate"><span class="pre">after</span></code> methods<a class="headerlink" href="#using-before-and-after-methods" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">.before</span></code> and <code class="docutils literal notranslate"><span class="pre">.after</span></code> method of the functions decorated by the <code class="docutils literal notranslate"><span class="pre">function_hook</span></code> or <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> is required to be used when using this as a decorator to tell pyMHF whether to run the detour before or after the original function. If this is not included then an error will be raised.</p>
+</section>
+<section id="function-type-hints">
+<h3>Function type hints<a class="headerlink" href="#function-type-hints" title="Link to this heading">#</a></h3>
+<p>As mentioned at the start of this document, it is critical that the functions which are decorated with these two decorators have correct and complete type hints.
+These types MUST be either a ctypes plain type (eg. <code class="docutils literal notranslate"><span class="pre">ctypes.c_uint32</span></code>), a ctypes pointer to some type, or a class which inherits from <code class="docutils literal notranslate"><span class="pre">ctypes.Structure</span></code>. Note that the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.Structure" title="pymhf.core.hooking.Structure"><code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></a> inherits from this so a type inheriting from this type is also permissible.
+Further, you will have seen above that none of these functions have any actual body. This is because even when we call this function, we don’t actually execute the code contained within it.
+Because of this it’s recommended that you simply add <code class="docutils literal notranslate"><span class="pre">pass</span></code> to the body of the function as above.
+Any docstrings which are included as part of the body will be shown in your IDE of choice, so if you are writing a library it’s recommended that you add docstrings if convenient so that users may know what the function does.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>It seems to due to how the <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.c_char_p" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ctypes.c_char_p</span></code></a> is implemented, using it as an arg type is not recommended as it can cause issues with the data passed to the argument which can cause program crashes.
+Instead, use either <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.c_ulong" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ctypes.c_ulong</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.c_ulonglong" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ctypes.c_ulonglong</span></code></a> depending on whether you are hooking a 32 or 64 bit process respectively, then do <code class="docutils literal notranslate"><span class="pre">arg_value</span> <span class="pre">=</span> <span class="pre">ctypes.c_char_p(addr).value</span></code>. This will get the value as a <code class="docutils literal notranslate"><span class="pre">bytes</span></code> object.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Variadic functions are not supported by pyMHF. You may attempt to hook them with some success, but they will generally end up causing the program to crash.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Python has issues with correctly type hinting ctypes pointers. The correct way to specify a pointer of some type is to use <code class="docutils literal notranslate"><span class="pre">ctypes.POINTER(type)</span></code>, however static typing tools won’t accept this as a correct type even though this returns a type. To get around this the recommended way to type pointers is to use <code class="docutils literal notranslate"><span class="pre">ctypes._Pointer[type]</span></code>, and include <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">__future__</span> <span class="pre">import</span> <span class="pre">annotations</span></code> on the first line of your script.
+Internally pyMHF does fix this issue so if this line isn’t included your code should still run.</p>
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="writing_mods.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Writing Mods</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="mod_states.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Mod States</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, monkeyman192.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

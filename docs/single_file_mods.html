@@ -278,6 +278,7 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="settings.html">Configuring pyMHF</a></li>
 <li class="toctree-l1"><a class="reference internal" href="writing_mods.html">Writing Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="creating_hook_definitions.html">Creating hook definitions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mod_states.html">Mod States</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inter_mod_functionality.html">Inter-mod functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="partial_structs.html">Partial Structs</a></li>
@@ -357,18 +358,8 @@
 <h1>Single-file mods<a class="headerlink" href="#single-file-mods" title="Link to this heading">#</a></h1>
 <p>While pyMHF is designed to be used to create libraries upon which mods can be made, for smaller scale projects or small tests, this is not convenient.
 To accomodate this, pyMHF can run a single file containing a mod.</p>
-<p>This file <strong>MAY</strong> have the following attributes defined in it to simplify the defintions:</p>
-<dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">__pymhf_func_binary__</span></code> (<code class="docutils literal notranslate"><span class="pre">str</span></code>)</dt><dd><p>The name of the binary all the function offsets/patterns are to be found relative to/in. If provided this will be the default for all functions, however any <code class="docutils literal notranslate"><span class="pre">manual_hook</span></code> with a different value provided will supersede this value.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">__pymhf_func_offsets__</span></code> (<code class="docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">Union[int,</span> <span class="pre">dict[str,</span> <span class="pre">int]]]</span></code>)</dt><dd><p>A lookup containing the function names and offsets. Generally the keys will be the function names that you want to call the function by, and the values will simply be the offset relative to the start of the binary. For overloads the value can be another dictionary with keys being some identifier for the overload (eg. the argument types), and the values being the offsets.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">__pymhf_func_call_sigs__</span></code> (<code class="docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">Union[FUNCDEF,</span> <span class="pre">dict[str,</span> <span class="pre">FUNCDEF]]]</span></code>)</dt><dd><p>A lookup containing the function names and function call signatures. The keys will be the function names that you want to call the function by, and the values will either be the <code class="docutils literal notranslate"><span class="pre">FUNCDEF</span></code> itself, or a dictionary similar to the <code class="docutils literal notranslate"><span class="pre">__pymhf_func_offsets__</span></code> mapping.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">__pymhf_func_patterns__</span></code> (<code class="docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">Union[str,</span> <span class="pre">dict[str,</span> <span class="pre">str]]]</span></code>)</dt><dd><p>A lookup containing the function names and byte patterns to find the functions at. The keys will be the function names that you want to call the function by, and the values will be either a string containing the pattern, or a dictionary similar to the <code class="docutils literal notranslate"><span class="pre">__pymhf_func_offsets__</span></code> mapping.</p>
-</dd>
-</dl>
-<p>Note that none of these are mandatory, however they do simplify the code in the file a decent amount and keep the file more easy to maintain.</p>
+<p>This document will be more focused on the aspects required specifically for a single-file mod.</p>
+<p>For more general information regarding providing the data required for a mod see <a class="reference internal" href="creating_hook_definitions.html"><span class="doc">here</span></a>.</p>
 <p>Below is an example single-file mod for the game No Man’s Sky:</p>
 <div class="literal-block-wrapper docutils container" id="id1">
 <div class="code-block-caption"><span class="caption-text">example_mod.py</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
@@ -414,6 +405,12 @@ uv<span class="w"> </span>run<span class="w"> </span>script.py
 </div>
 <p>In the above ensure that the <code class="docutils literal notranslate"><span class="pre">python</span></code> command runs a python version between 3.9 and 3.11 INCLUSIVE.
 Replace <cite>script.py</cite> with the name of the script as it was saved.</p>
+<p>Note that the line <code class="docutils literal notranslate"><span class="pre">load_mod_file(__file__)</span></code> in the above script is what tells python to run the script with pyMHF.</p>
+<p>Another way to run the script is</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>pymhf<span class="w"> </span>run<span class="w"> </span>script.py
+</pre></div>
+</div>
+<p>This doesn’t require the final line and is the recommended way since it also allows you to run a folder of mods by passing in a directory instead of a specific file.</p>
 <p>To modify the above script, the only values that really need to be changed are the <a class="reference internal" href="settings.html#settings-pymhf-steam-guid"><span class="std std-ref">steam_guid</span></a> and <a class="reference internal" href="settings.html#settings-pymhf-exe"><span class="std std-ref">exe</span></a> values.</p>
 <p>If the game is being ran via steam, replace <code class="docutils literal notranslate"><span class="pre">steam_gameid</span></code> with the value found in steam, and set <code class="docutils literal notranslate"><span class="pre">exe</span></code> to be the name of the game binary.
 If the game or program is not run through steam, remove the <code class="docutils literal notranslate"><span class="pre">steam_gameid</span></code> value and instead set <code class="docutils literal notranslate"><span class="pre">exe</span></code> and the absolute path to the binary.</p>

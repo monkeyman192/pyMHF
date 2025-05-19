@@ -44,7 +44,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/writing_mods';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Mod States" href="mod_states.html" />
+    <link rel="next" title="Creating hook definitions" href="creating_hook_definitions.html" />
     <link rel="prev" title="Configuring pyMHF" href="settings.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -278,6 +278,7 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="settings.html">Configuring pyMHF</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Writing Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="creating_hook_definitions.html">Creating hook definitions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mod_states.html">Mod States</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inter_mod_functionality.html">Inter-mod functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="partial_structs.html">Partial Structs</a></li>
@@ -373,41 +374,8 @@ pyMHF provides functionality to allow these detours to be run <em>before</em> or
 <section id="after-detours">
 <h4><em>After</em> detours<a class="headerlink" href="#after-detours" title="Link to this heading">#</a></h4>
 <p>An <em>after</em> detour is used when you want to have something occur after the original function has been run. This may be to change the return value of the function, or set the state of an internal struct/class so that some function which was calling the original function has the struct/class in a different state.</p>
-<p>There are 3 types of hooks; <em>imported function</em> hooks, <em>exported function</em> hooks, and <em>normal function</em> hooks. Each of these is implemented as a decorator which is to be applied to a method in the <cite>Mod</cite> class which will act as the detour for that function.</p>
-</section>
-<section id="imported-function-hooks">
-<h4><em>Imported function</em> hooks<a class="headerlink" href="#imported-function-hooks" title="Link to this heading">#</a></h4>
-<p>Imported function are those which belong in a dll outside of the main process being run, but which are used by it (eg. windows32 dll’s to provide functionality to create files, etc).
-To hook an imported function use the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.imported" title="pymhf.core.hooking.imported"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.core.hooking.imported</span></code></a> decorator.</p>
-</section>
-<section id="exported-function-hooks">
-<h4><em>Exported function</em> hooks<a class="headerlink" href="#exported-function-hooks" title="Link to this heading">#</a></h4>
-<p>Exported functions are those which belong to main running process itself. There are often not too many, but if you are lucky they may be useful.
-To hook an exported function use the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.exported" title="pymhf.core.hooking.exported"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.core.hooking.exported</span></code></a> decorator.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It is recommended that the function name is the “mangled” version. Ie. do not “demangle” the function name.</p>
-</div>
-</section>
-<section id="normal-function-hooks">
-<h4><em>Normal function</em> hooks<a class="headerlink" href="#normal-function-hooks" title="Link to this heading">#</a></h4>
-<p>Normal functions are just functions which are provided by the binary but not exported. It is these functions that would generally require a bit of reverse engineering experience to determine the function signature of so that they can be hooked correctly.</p>
-<p>Depending on whether you are using a <span class="xref std std-doc">library</span>, or using a <a class="reference internal" href="single_file_mods.html"><span class="doc">single-file mod</span></a> will often change which decorator you will use for normal function hooks.</p>
-<p>If you are utilising an already written library, then the decorator should be exposed by the library and the function name will generally be the same as the name of the function you are hooking. The exact name and implementation will need to be checked based on the documentation provided by the library itself.</p>
-<p>If you are writing a single-file mod which doesn’t utilise a library, or if you just want to tinker and hook a function manually, the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.manual_hook" title="pymhf.core.hooking.manual_hook"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.core.hooking.manual_hook</span></code></a> decorator can be used.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>It is important that the <code class="docutils literal notranslate"><span class="pre">func_def</span></code> argument of the <cite>manual_hook</cite> decorator be correct, as this will be the main cause of crashes caused by hooking. If you find that your application is crashing upon hooking a certain function it’s most likely that the arg types or return type of the function is wrong.</p>
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>It seems to due to how the <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.c_char_p" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ctypes.c_char_p</span></code></a> is implemented, using it as an arg type is not recommended as it can cause issues with the data passed to the argument which can cause program crashes.
-Instead, use either <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.c_ulong" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ctypes.c_ulong</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.c_ulonglong" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ctypes.c_ulonglong</span></code></a> depending on whether you are hooking a 32 or 63 bit process respectively, then cast the pointer to a string.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Variadic functions are not supported by pyMHF. You may attempt to hook them with some success, but they will generally end up causing the program to crash.</p>
-</div>
+<p>Full details on how to provide the information so that pyMHF can find and hook the function can be found <a class="reference internal" href="creating_hook_definitions.html"><span class="doc">here</span></a>.</p>
+<p>In short we use the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.function_hook" title="pymhf.core.hooking.function_hook"><code class="xref py py-class docutils literal notranslate"><span class="pre">function_hook</span></code></a> and <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.static_function_hook" title="pymhf.core.hooking.static_function_hook"><code class="xref py py-class docutils literal notranslate"><span class="pre">static_function_hook</span></code></a> decorators to define functions which themselves can then be used as decorators for the detour in the Mod instance.</p>
 </section>
 </section>
 <section id="non-hooking-functionality">
@@ -481,11 +449,11 @@ To access this information, you can call a function on the detour method itself.
       </div>
     </a>
     <a class="right-next"
-       href="mod_states.html"
+       href="creating_hook_definitions.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Mod States</p>
+        <p class="prev-next-title">Creating hook definitions</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

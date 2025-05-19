@@ -45,7 +45,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="pymhf.core.importing module" href="pymhf.core.importing.html" />
-    <link rel="prev" title="pymhf.core.errors module" href="pymhf.core.errors.html" />
+    <link rel="prev" title="pymhf.core.functions module" href="pymhf.core.functions.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -280,6 +280,7 @@
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="pymhf.core.html">pymhf.core package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.calling.html">pymhf.core.calling module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.errors.html">pymhf.core.errors module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.core.functions.html">pymhf.core.functions module</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">pymhf.core.hooking module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.importing.html">pymhf.core.importing module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.memutils.html">pymhf.core.memutils module</a></li>
@@ -437,8 +438,33 @@
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FunctionHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">FunctionHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">P</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">R</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exported_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imported_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overload_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_static</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.FunctionHook" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">P</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">R</span></code>]</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FunctionHook.after">
+<span class="sig-name descname"><span class="pre">after</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">HookProtocol</span></span></span><a class="headerlink" href="#pymhf.core.hooking.FunctionHook.after" title="Link to this definition">#</a></dt>
+<dd><p>Mark the detour as running after the original function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FunctionHook.before">
+<span class="sig-name descname"><span class="pre">before</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">HookProtocol</span></span></span><a class="headerlink" href="#pymhf.core.hooking.FunctionHook.before" title="Link to this definition">#</a></dt>
+<dd><p>Mark the detour as running before the original function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.FunctionHook.overload">
+<span class="sig-name descname"><span class="pre">overload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overload_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="headerlink" href="#pymhf.core.hooking.FunctionHook.overload" title="Link to this definition">#</a></dt>
+<dd><p>Get an instance of the class which corresponds to the specified overload id.
+This overload id should be provided as the <code class="docutils literal notranslate"><span class="pre">overload_id</span></code> argument for <code class="docutils literal notranslate"><span class="pre">function_hook</span></code></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="pymhf.core.hooking.HookFactory">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">HookFactory</span></span><a class="headerlink" href="#pymhf.core.hooking.HookFactory" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">HookFactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookFactory" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.core.hooking.HookFactory.after">
@@ -521,6 +547,13 @@ The decorated function MUST return something of the same type as the original fu
 function normally returns something otherwise the hooked program will almost certainly crash.</p>
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.core.hooking.Structure">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">Structure</span></span><a class="headerlink" href="#pymhf.core.hooking.Structure" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></p>
+<p>Simple wrapper around ctypes.Structure.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="pymhf.core.hooking.disable">
 <span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">disable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.disable" title="Link to this definition">#</a></dt>
@@ -543,6 +576,50 @@ Ie. do not “demangle” the function name.</p>
 </p></li>
 <li><p><strong>func_def</strong> – The function signature.</p></li>
 <li><p><strong>detour_time</strong> – Whether to run the detour before or after the original function.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.core.hooking.function_hook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">function_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exported_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imported_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overload_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.function_hook" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_function_hook</span></code></p>
+<p>Mark the decorated function as a function hook.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only of the arguments of this function is required.
+The order the arguments are respected is <code class="docutils literal notranslate"><span class="pre">signature</span></code>, <code class="docutils literal notranslate"><span class="pre">offset</span></code>, then <code class="docutils literal notranslate"><span class="pre">exported_name</span></code>.</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>This decorator must only be applied to non-static methods.
+This means that the first two arguments MUST be <cite>self</cite> (the usual python one), and <cite>this</cite> (the c
+one.)
+Because of how this decorator works, the function arguments will be determined from all the
+arguments proceeding these two mandatory ones.</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>For this decorator to work, the class the method belongs to MUST be a
+<a class="reference internal" href="#pymhf.core.hooking.Structure" title="pymhf.core.hooking.Structure"><code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></a> instead of the usual <cite>ctypes.Structure</cite>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signature</strong> – A string representing the bytes which can be used to uniquely find the function within the binary.</p></li>
+<li><p><strong>offset</strong> – The relative offset within the binary where the start of the function can be found.</p></li>
+<li><p><strong>exported_name</strong> – <p>The name of the exported function which is to be hooked.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is recommended that the function name is the “mangled” version.
+Ie. do not “demangle” the function name.</p>
+</div>
+</p></li>
+<li><p><strong>imported_name</strong> – The full name of the function within the imported dll to be hooked. For example, this could be
+<code class="docutils literal notranslate"><span class="pre">&quot;Kernel32.ReadFile&quot;</span></code>.</p></li>
+<li><p><strong>overload_id</strong> – A unique name within each set of overloaded functions which can be used to identify the overload for
+calling and hooking purposes.</p></li>
 </ul>
 </dd>
 </dl>
@@ -635,6 +712,41 @@ When the key is released, the decorated function will be called.</p>
 <dd><p>Run this detour once only.</p>
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.core.hooking.static_function_hook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">static_function_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exported_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imported_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overload_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.static_function_hook" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_function_hook</span></code></p>
+<p>Mark the decorated function as a static function hook.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only of the arguments of this function is required.
+The order the arguments are respected is <code class="docutils literal notranslate"><span class="pre">signature</span></code>, <code class="docutils literal notranslate"><span class="pre">offset</span></code>, then <code class="docutils literal notranslate"><span class="pre">exported_name</span></code>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You do not need to apply the <cite>&#64;staticmethod</cite> decorator to functions if you use this decorator.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signature</strong> – A string representing the bytes which can be used to uniquely find the function within the binary.</p></li>
+<li><p><strong>offset</strong> – The relative offset within the binary where the start of the function can be found.</p></li>
+<li><p><strong>exported_name</strong> – <p>The name of the exported function which is to be hooked.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is recommended that the function name is the “mangled” version.
+Ie. do not “demangle” the function name.</p>
+</div>
+</p></li>
+<li><p><strong>imported_name</strong> – The full name of the function within the imported dll to be hooked. For example, this could be
+<code class="docutils literal notranslate"><span class="pre">&quot;Kernel32.ReadFile&quot;</span></code>.</p></li>
+<li><p><strong>overload_id</strong> – A unique name within each set of overloaded functions which can be used to identify the overload for
+calling and hooking purposes.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -648,12 +760,12 @@ When the key is released, the decorated function will be called.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="pymhf.core.errors.html"
+       href="pymhf.core.functions.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">pymhf.core.errors module</p>
+        <p class="prev-next-title">pymhf.core.functions module</p>
       </div>
     </a>
     <a class="right-next"
