@@ -377,6 +377,7 @@ def run():
                 "Please ensure it has been installed and try again"
             )
             return
+        folder_mode = FolderModeEnum.LIBRARY
 
         module_dir = op.dirname(required_lib.load().__file__)
 

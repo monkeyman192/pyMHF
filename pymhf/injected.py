@@ -4,7 +4,6 @@ import ctypes
 import locale
 import logging
 import logging.handlers
-import os
 import os.path as op
 import time
 import traceback
@@ -30,7 +29,6 @@ try:
     socket_logger_loaded = True
 
     import pymhf.core._internal as _internal
-    from pymhf.core.importing import import_file
     from pymhf.utils.config import canonicalize_setting
 
     log_level = _internal.CONFIG.get("logging", {}).get("log_level", "info")
@@ -46,38 +44,13 @@ try:
 
     internal_mod_folder = _internal.CONFIG.get("internal_mod_dir")
     internal_mod_folder = canonicalize_setting(internal_mod_folder, "pymhf", _module_path, _binary_dir)
-    mod_folder = _internal.CONFIG.get("mod_dir")
 
+    mod_folder = _internal.CONFIG.get("mod_dir")
     mod_folder = canonicalize_setting(mod_folder, "pymhf", _module_path, _binary_dir)
 
     debug_mode = log_level.lower() == "debug"
     if debug_mode:
         rootLogger.setLevel(logging.DEBUG)
-
-    from pymhf.core.module_data import module_data
-
-    if _internal.LOAD_TYPE == _internal.LoadTypeEnum.MOD_FOLDER:
-        for fname in os.listdir(_internal.MODULE_PATH):
-            if fname.endswith(".py"):
-                module = import_file(op.join(_internal.MODULE_PATH, fname))
-                module_data.FUNC_OFFSETS.update(getattr(module, "__pymhf_func_offsets__", {}))
-                module_data.FUNC_PATTERNS.update(getattr(module, "__pymhf_func_patterns__", {}))
-                module_data.FUNC_CALL_SIGS.update(getattr(module, "__pymhf_func_call_sigs__", {}))
-    else:
-        module = import_file(_internal.MODULE_PATH)
-
-        _pymhf_functions_ = getattr(module, "__pymhf_functions__", None)
-        if _pymhf_functions_ is not None:
-            module_data.FUNC_OFFSETS = getattr(module.__pymhf_functions__, "FUNC_OFFSETS", {})
-            module_data.FUNC_PATTERNS = getattr(module.__pymhf_functions__, "FUNC_PATTERNS", {})
-            module_data.FUNC_CALL_SIGS = getattr(module.__pymhf_functions__, "FUNC_CALL_SIGS", {})
-        else:
-            # Can also try and see if there are any other "magic" attributes assigned, otherwise fallback to
-            # empty dicts
-            module_data.FUNC_BINARY = getattr(module, "__pymhf_func_binary__", None)
-            module_data.FUNC_OFFSETS = getattr(module, "__pymhf_func_offsets__", {})
-            module_data.FUNC_PATTERNS = getattr(module, "__pymhf_func_patterns__", {})
-            module_data.FUNC_CALL_SIGS = getattr(module, "__pymhf_func_call_sigs__", {})
 
     import keyboard._winkeyboard as kwk
 

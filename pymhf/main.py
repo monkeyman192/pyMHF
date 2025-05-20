@@ -137,7 +137,6 @@ def load_module(plugin_name: str, module_path: str):
     module_cfg_file = op.join(module_path, "pymhf.toml")
     module_cfg = read_pymhf_settings(module_cfg_file)
     module_cfg.update(local_cfg)
-
     _run_module(module_path, module_cfg, plugin_name, config_dir)
 
 
@@ -147,7 +146,12 @@ def _required_config_val(config: dict[str, str], key: str) -> Any:
     raise ValueError(f"[tool.pymhf] missing config value: {key}")
 
 
-def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[str], config_dir: str):
+def _run_module(
+    module_path: str,
+    config: dict[str, str],
+    plugin_name: Optional[str] = None,
+    config_dir: Optional[str] = None,
+):
     """Run the module provided.
 
     Parameters
@@ -156,12 +160,18 @@ def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[
         The path to the module or single-file mod to be run.
     config
         A mapping of the associated pymhf config.
+    plugin_name
+        The name of the plugin. This will only be provided if we are running a library.
+    config_dir
+        The local config directory. This will only be provided if we are running a library.
     """
-    load_type = LoadTypeEnum.LIBRARY
-    if op.isfile(module_path):
-        load_type = LoadTypeEnum.SINGLE_FILE
-    if op.exists(op.join(module_path, "pymhf.toml")):
-        load_type = LoadTypeEnum.MOD_FOLDER
+    if plugin_name is None:
+        if op.isfile(module_path):
+            load_type = LoadTypeEnum.SINGLE_FILE
+        if op.exists(op.join(module_path, "pymhf.toml")):
+            load_type = LoadTypeEnum.MOD_FOLDER
+    else:
+        load_type = LoadTypeEnum.LIBRARY
 
     binary_path = None
     binary_exe = _required_config_val(config, "exe")
@@ -225,6 +235,7 @@ def _run_module(module_path: str, config: dict[str, str], plugin_name: Optional[
 
     print(f"Found PID: {pm_binary.process_id}")
 
+    log_pid = None
     logging_config = config.get("logging", {})
     log_window_name_override = logging_config.get("window_name_override", "pymhf console")
     log_dir = logging_config.get("log_dir", "{CURR_DIR}")
@@ -441,10 +452,11 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
             print("Forcibly shutting down process")
             time.sleep(1)
             for _pid in {pm_binary.process_id, log_pid}:
-                try:
-                    os.kill(_pid, SIGTERM)
-                    print(f"Just killed process {_pid}")
-                except Exception:
-                    # If we can't kill it, it's probably already dead. Just continue.
-                    print(f"Failed to kill process {_pid}. It was likely already dead...")
-                    pass
+                if _pid:
+                    try:
+                        os.kill(_pid, SIGTERM)
+                        print(f"Just killed process {_pid}")
+                    except Exception:
+                        # If we can't kill it, it's probably already dead. Just continue.
+                        print(f"Failed to kill process {_pid}. It was likely already dead...")
+                        pass
