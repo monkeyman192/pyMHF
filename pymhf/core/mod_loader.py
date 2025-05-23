@@ -466,18 +466,21 @@ class ModManager:
                                             # re-instantiate it so that we can get any potential changes to
                                             # it.
                                             member_req_reinst[member] = member_type
-                                            logging.info(f"{member}: {_module}")
-                            logging.info(
+                                            mod_logger.debug(f"{member}: {_module}")
+                            mod_logger.debug(
                                 f"Reinstantiating the following members: {list(member_req_reinst.keys())}"
                             )
-                            for name, type_ in member_req_reinst.items():
+                            deleted_types = set()
+                            for _name, type_ in member_req_reinst.items():
                                 data_offset = get_addressof(type_)
                                 new_obj_type_name = type_.__class__.__name__
-                                mod_logger.info(f"{name} is of type {new_obj_type_name}")
+                                mod_logger.debug(f"{_name} is of type {new_obj_type_name}")
                                 new_obj_type = getattr(new_module, new_obj_type_name)
                                 new_obj = map_struct(data_offset, new_obj_type)
-                                setattr(state, name, new_obj)
-                                del member_type
+                                setattr(state, _name, new_obj)
+                                if new_obj_type_name not in deleted_types:
+                                    del type_
+                                    deleted_types.add(new_obj_type_name)
                             setattr(mod, field, state)
 
                     # Check also to see if the file had any module-level __pymhf attributes which we might
