@@ -144,7 +144,9 @@ class FuncHook(cyminhook.MinHook):
                 self.target = self._binary_base + offset
                 hook_logger.debug(f"Found {self._pattern} at 0x{offset:X}")
             else:
-                hook_logger.error(f"Could not find pattern {self._pattern}... Hook won't be added")
+                hook_logger.error(
+                    f"Could not find pattern {self._pattern}... Hook {self._name!r} won't be added"
+                )
                 self._invalid = True
                 return
 
