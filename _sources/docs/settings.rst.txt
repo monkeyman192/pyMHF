@@ -69,6 +69,17 @@ The path to the directory within which mod saves are to be placed. If this is no
 
 The path to the directory which contains the mods to be run by the library.
 
+.. _settings-pymhf.start_exe:
+
+``start_exe``
+"""""""""""""
+
+*Optional*
+
+By default pyMHF will start the configured binary so that it may attach itself and start hooking functions as soon as possible.
+This can sometimes have issues, or you may want to only attach at some later time.
+By setting this value to `false`, pyMHF will not attempt to start the binary and will instead find the process based on the :ref:`settings-pymhf.exe` value.
+
 ``pymhf.logging`` section:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 

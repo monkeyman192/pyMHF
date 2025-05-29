@@ -395,6 +395,13 @@ For a single-file mod, the settings are provided in the inline metadata (see <a 
 <p><em>Optional</em> - <em>Can use magic path</em> - <em>Library only</em></p>
 <p>The path to the directory which contains the mods to be run by the library.</p>
 </section>
+<section id="start-exe">
+<span id="settings-pymhf-start-exe"></span><h4><code class="docutils literal notranslate"><span class="pre">start_exe</span></code><a class="headerlink" href="#start-exe" title="Link to this heading">#</a></h4>
+<p><em>Optional</em></p>
+<p>By default pyMHF will start the configured binary so that it may attach itself and start hooking functions as soon as possible.
+This can sometimes have issues, or you may want to only attach at some later time.
+By setting this value to <cite>false</cite>, pyMHF will not attempt to start the binary and will instead find the process based on the <a class="reference internal" href="#settings-pymhf-exe"><span class="std std-ref">exe</span></a> value.</p>
+</section>
 </section>
 <section id="pymhf-logging-section">
 <h3><code class="docutils literal notranslate"><span class="pre">pymhf.logging</span></code> section:<a class="headerlink" href="#pymhf-logging-section" title="Link to this heading">#</a></h3>

@@ -381,6 +381,19 @@ If the <code class="docutils literal notranslate"><span class="pre">offset</span
     <span class="n">b</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">,</span> <span class="mh">0x10</span><span class="p">)]</span>
 </pre></div>
 </div>
+<p>It is also possible to specify the total size of the struct in bytes by assigning the <code class="docutils literal notranslate"><span class="pre">_total_size</span></code> attribute to the class like so:</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial_struct</span><span class="p">,</span> <span class="n">Field</span>
+
+<span class="nd">@partial_struct</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Test</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+    <span class="n">_total_size</span> <span class="o">=</span> <span class="mh">0x20</span>
+    <span class="n">a</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">)]</span>
+    <span class="n">b</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">,</span> <span class="mh">0x10</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>This adds any extra padding bytes to the end of the definition so that if the struct appears in an array for example it will be deserialized correctly.</p>
 </section>
 <section id="advantages">
 <h2>Advantages<a class="headerlink" href="#advantages" title="Link to this heading">#</a></h2>
