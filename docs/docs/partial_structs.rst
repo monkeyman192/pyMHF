@@ -34,6 +34,22 @@ Below is an example of a struct which we have mapped out that we know has a 32 b
         a: Annotated[int, Field(ctypes.c_uint32)]
         b: Annotated[int, Field(ctypes.c_uint32, 0x10)]
 
+It is also possible to specify the total size of the struct in bytes by assigning the ``_total_size`` attribute to the class like so:
+
+.. code-block:: py
+
+    import ctypes
+    from typing import Annotated
+    from pymhf.utils.partial_struct import partial_struct, Field
+    
+    @partial_struct
+    class Test(ctypes.Structure):
+        _total_size = 0x20
+        a: Annotated[int, Field(ctypes.c_uint32)]
+        b: Annotated[int, Field(ctypes.c_uint32, 0x10)]
+
+This adds any extra padding bytes to the end of the definition so that if the struct appears in an array for example it will be deserialized correctly.
+
 Advantages
 ----------
 

@@ -342,8 +342,16 @@ def _run_module(
             _path = sys.path
             _path.insert(0, PYMHF_DIR)
 
+            # Inject the folder the mod is in (or the folder being run) if it's not already in the sys.path
+            if load_type == LoadTypeEnum.SINGLE_FILE:
+                _mod_dir = op.dirname(module_path)
+                if _mod_dir not in _path:
+                    _path.insert(0, _mod_dir)
+            if load_type == LoadTypeEnum.MOD_FOLDER:
+                if module_path not in _path:
+                    _path.insert(0, module_path)
+
             saved_path = [x.replace("\\", "\\\\") for x in _path]
-            # TODO: This can fail sometimes.... Figure out why??
             pm_binary.inject_python_shellcode(
                 f"""
 import sys

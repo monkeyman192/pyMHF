@@ -5,7 +5,6 @@
 
 import ctypes
 import importlib
-import importlib.util
 import inspect
 import json
 import logging
@@ -17,7 +16,7 @@ from abc import ABC
 from dataclasses import fields
 from functools import partial
 from types import ModuleType
-from typing import TYPE_CHECKING, Any, Optional, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Optional, Type, TypeVar, Union, overload
 
 import keyboard
 from packaging.version import InvalidVersion
@@ -219,6 +218,18 @@ class Mod(ABC):
 T = TypeVar("T", bound=Mod)
 
 
+class _Proxy:
+    """A dummy class which is just used for mocking calls to a mod which hasn't been loaded."""
+
+    def __init__(self, class_name):
+        self.mod_class_name = class_name
+
+    def __getattr__(self, name):
+        return lambda *args, **kwargs: mod_logger.warning(
+            f"Called {self.mod_class_name}.{name} with args: {args} and kwargs: {kwargs}"
+        )
+
+
 class ModManager:
     def __init__(self):
         # Internal mapping of mods.
@@ -233,10 +244,22 @@ class ModManager:
         # Keep a mapping of the hotkey callbacks
         self.hotkey_callbacks: dict[tuple[str, str], Any] = {}
 
-    def __getitem__(self, key: Type[T]) -> T:
+    @overload
+    def __getitem__(self, key: str) -> _Proxy: ...
+
+    @overload
+    def __getitem__(self, key: Type[T]) -> T: ...
+
+    def __getitem__(self, key):
+        # If the key is a string then we are using it as a placeholder in the case of wanting to run a mod
+        # which has dependencies, without the dependencies.
+        # In this case we'll return a fake object which will just log what was called on it.
+        if isinstance(key, str):
+            return _Proxy(key)
         if not issubclass(key, Mod):
             raise TypeError("The lookup object must be the class type")
-        return self.mods.get(key.__name__)
+        # Set the fallback return object to be a proxy in the case of the mod not having been loaded by pyMHF.
+        return self.mods.get(key.__name__, _Proxy(key.__name__))
 
     def _load_module(self, module: ModuleType) -> bool:
         """Load a mod from the provided module.
@@ -412,7 +435,12 @@ class ModManager:
             if dependencies := getattr(mod, "__dependencies__", []):
                 module = self._mod_paths[_mod_name]
                 for dependency in dependencies:
-                    setattr(module, dependency, self.mods[dependency].__class__)
+                    if dependency in self.mods:
+                        setattr(module, dependency, self.mods[dependency].__class__)
+                    else:
+                        mod_logger.warning(
+                            f"Dependency {dependency!r} is unsatisfied. There may be issues when running."
+                        )
 
     def reload(self, name: str, gui: "GUI"):
         """Reload a mod with the given name."""
