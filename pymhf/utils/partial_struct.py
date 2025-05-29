@@ -19,6 +19,7 @@ def partial_struct(cls: StructType):
     """
     _fields_ = []
     curr_position = 0
+    total_size = getattr(cls, "_total_size", 0)
     # If there are no annotations, it's just an empty ctypes.Structure class.
     if not hasattr(cls, "__annotations__"):
         cls._fields_ = _fields_
@@ -38,6 +39,9 @@ def partial_struct(cls: StructType):
             curr_position += padding_bytes
         _fields_.append((field_name, field_type))
         curr_position += ctypes.sizeof(field_type)
+    if total_size and curr_position < total_size:
+        padding_bytes = total_size - curr_position
+        _fields_.append((f"_padding_{curr_position:X}", ctypes.c_ubyte * padding_bytes))
     cls._fields_ = _fields_
     return cls
 
@@ -46,11 +50,14 @@ if __name__ == "__main__":
 
     @partial_struct
     class Test(ctypes.Structure):
+        _total_size = 24
         a: Annotated[int, Field(ctypes.c_uint32)]
         b: Annotated[int, Field(ctypes.c_uint32, 0x10)]
 
     print(Test._fields_)
-    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00")
+    data = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x00\x00\x00\x00"
+    )
     t = Test.from_buffer(data)
     print(t.a)
     print(t.b)
