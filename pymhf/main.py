@@ -282,7 +282,7 @@ def _run_module(
         # Have a small nap just to give it some time.
         time.sleep(0.5)
         print(f"Opened the console log with PID: {log_pid}")
-        if binary_path is not None:
+        if binary_path:
             with open(binary_path, "rb") as f:
                 binary_hash = hash_bytes(f)
             print(f"Exe hash is: {binary_hash}")
