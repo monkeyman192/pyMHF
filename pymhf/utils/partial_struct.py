@@ -19,7 +19,7 @@ def partial_struct(cls: StructType):
     """
     _fields_ = []
     curr_position = 0
-    total_size = getattr(cls, "_total_size", 0)
+    total_size = getattr(cls, "_total_size_", 0)
     # If there are no annotations, it's just an empty ctypes.Structure class.
     if not hasattr(cls, "__annotations__"):
         cls._fields_ = _fields_
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     @partial_struct
     class Test(ctypes.Structure):
-        _total_size = 24
+        _total_size_ = 24
         a: Annotated[int, Field(ctypes.c_uint32)]
         b: Annotated[int, Field(ctypes.c_uint32, 0x10)]
 

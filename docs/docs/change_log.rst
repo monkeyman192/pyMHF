@@ -4,6 +4,9 @@ Change Log
 Current (0.1.12-dev)
 --------------------
 
+- Identified and fixed partially by config changes and partially by documentation issues with pyMHF being run with uv. Thanks to `@Foundit3923 <https://github.com/Foundit3923>`_ for helping to figure out the issues.
+- Improved inter-mod communication.
+- Added the ability to specify the total size of a partial struct using the ``_total_size_`` attribute. This will be utilised more in some upcoming changes which should simplify initialization of structs from memory using hooked functions.
 - Added a new way to specify the data required for hooking and calling functions. See :doc:`here </docs/creating_hook_definitions>` for more details. This method will completely replace the old method of using the ``__pymhf_func_offsets__`` etc. "magic" mod attributes.
 
 0.1.11 (29/04/2025)

@@ -105,6 +105,10 @@ def get_process_when_ready(
                             break
             except KeyboardInterrupt:
                 raise
+            except psutil.NoSuchProcess:
+                # Race-condition case where steam creates some short-lived process which dies before psutil
+                # can handle it properly.
+                pass
     else:
         creationflags = 0x4 if start_paused else 0
         process_handle, thread_handle, pid, tid = start_process(  # noqa
@@ -219,15 +223,28 @@ def _run_module(
             raise ValueError("[tool.pymhf].exe must be a full path if no steam_gameid is provided.")
 
     if start_exe:
-        pm_binary, proc = get_process_when_ready(cmd, binary_exe, required_assemblies, is_steam, start_paused)
+        # Check to see fi the binary is already running... Just in case.
+        # If it is, we use it, otherwise start it.
+        try:
+            pm_binary = pymem.Pymem(binary_exe)
+            print(f"Found an already running instance of {binary_exe!r}")
+            pm_binary.inject_python_interpreter()
+            print("Python injected")
+            proc = None
+        except pymem.exception.ProcessNotFound:
+            pm_binary, proc = get_process_when_ready(
+                cmd,
+                binary_exe,
+                required_assemblies,
+                is_steam,
+                start_paused,
+            )
     else:
         # If we aren't starting the exe then by the time we have run we expect the process to already exist,
         # so just find it with pymem.
         pm_binary = pymem.Pymem(binary_exe)
         pm_binary.inject_python_interpreter()
         print("Python injected")
-        if binary_path is None:
-            binary_path = get_exe_path_from_pid(pm_binary)
         proc = None
 
     if not pm_binary and not proc:
@@ -235,16 +252,8 @@ def _run_module(
         print("FATAL ERROR: Cannot start process!")
         return
 
-    # When we start from steam, the binary path will be None, so retreive it from from the psutils Process
-    # object.
-    if binary_path is None and proc is not None:
-        try:
-            binary_path = proc.proc.exe()
-        except psutil.NoSuchProcess:
-            # In this case it failed to find the process. Let's try find it again
-            proc = _wait_until_process_running(binary_exe)
-            if proc is not None:
-                binary_path = proc.proc.exe()
+    if binary_path is None:
+        binary_path = get_exe_path_from_pid(pm_binary)
 
     binary_dir = None
     if binary_path is not None:
@@ -384,7 +393,9 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
                 """
             )
         except Exception as e:
+            import traceback
             print(e)
+            print(traceback.format_exc())
         # Inject the script
         with open(op.join(CWD, "injected.py"), "r") as f:
             shellcode = f.read()
@@ -452,7 +463,9 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
         pass
     except Exception as e:
         # Any other exception we want to actually know about.
+        import traceback
         print(e)
+        print(traceback.format_exc())
         raise
     finally:
         loop.close()
