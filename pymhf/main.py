@@ -394,6 +394,7 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
             )
         except Exception as e:
             import traceback
+
             print(e)
             print(traceback.format_exc())
         # Inject the script
@@ -464,6 +465,7 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
     except Exception as e:
         # Any other exception we want to actually know about.
         import traceback
+
         print(e)
         print(traceback.format_exc())
         raise
