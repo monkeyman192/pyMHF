@@ -5,7 +5,7 @@ Whether you are writing a library, or writing a single-file mod, pyMHF provides 
 
 This functionality is provided by the :class:`~pymhf.core.hooking.function_hook` and :class:`~pymhf.core.hooking.static_function_hook` functions, to decorate non-static and static methods/functions respectively.
 
-These decorators do a few things applied:
+These decorators do a few things when applied:
 
 1. The decorated function/method is inspected and the argument names and type hints are collected and used to construct a ``FuncDef`` object which is used by pyMHF to tell minhook how to hook the required function.
 2. It also enables calling the function or method directly (more on that below).
@@ -195,6 +195,8 @@ Defining functions to hook is done in much the same way as above, however, we si
 In the above we have defined the ``cTkAudioManager`` class with the ``Play`` method.
 This method uses the ``function_hook`` decorator, not the ``static_function_hook`` decorator for the simple fact that this is not a static method. This means that if you want to call the method you need to call it on the *instance* of the class, not the class type (see line 47).
 
+One implication of the above is that the first argument of the method decorated with the ``function_hook`` decorator should always be ``this`` (generally typed as ``ctypes.c_uint64`` for a 64 bit process, or ``ctypes.c_uint32`` for a 32 bit process). On the other hand, any function decorated with ``static_function_hook`` will not have ``this`` as an argument.
+
 .. important::
     The ``function_hook`` decorator MUST be applied to methods of a :class:`~pymhf.core.hooking.Structure`. This class is a thin wrapper around the ``ctypes.Structure`` class, but we require this for the calling functionality to work correctly (check out the source code if you are curious why!)
     The ``static_function_hook`` doesn't have this restriction (but it is permissible)
@@ -204,7 +206,7 @@ This method uses the ``function_hook`` decorator, not the ``static_function_hook
 We can see that when we call the function we can either use positional arguments or keyword arguments. This function can be called the exact same way any function would be called, and we can in fact define default values for some arguments so that we don't need to specify the arguments when calling (see for example :ref:`exported_hook_mod_code` lines 20-25).
 
 .. note::
-    When calling the function we DO NOT provide the ``this`` argument to the function. Your IDE will only show the arguments after that argument, and the value is automatically added by pyMHF internally.
+    When calling functions we DO NOT provide the ``this`` argument to non-static functions. Your IDE will only show the arguments after that argument, and the value is automatically added by pyMHF internally.
 
 .. note::
     Often one of the trickiest things when writing a mod is getting a pointer to the instance of the class that you are interested in. You generally will get this from the first argument of some function that you hook (as it is the ``this`` argument), but sometimes other structs may contain this pointer. It is really up the binary in question.
@@ -331,9 +333,8 @@ There are a few useful things to consider or keep in mind however:
 When to use ``static_function_hook`` or ``function_hook``?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Often when you start to reverse engineer a program, you will not know whether or not some function is just a function, or a method to some class. Because of this you will often start out with a collection of plain functions with the ``static_function_hook`` decorator.
-Once you start to realise that the functions are actually methods, you will likely start to structure these methods so that they belong to a class which may have some known fields.
-To this end, using the ``@partial_struct`` decorator like seen above makes this a lot easier.
+Often when you start to reverse engineer a program, you will not know whether or not some function is just a function, or a method bound to some class. Because of this you will often start out with a collection of plain functions with the ``static_function_hook`` decorator.
+Once you start to realise that the functions are actually associated with some class, you will likely start to structure these methods so that they belong to this class which may have some known fields.
 
 Using ``before`` and ``after`` methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

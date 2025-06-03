@@ -2,7 +2,7 @@
 name = "pyMHF"
 description = "python Modding and Hooking Framework"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.9, <3.12"
 license = {file = "LICENSE.md"}
 keywords = ["hooking", "games", "hacking", "modding"]
 authors = [
@@ -52,6 +52,9 @@ dev = [
   "esbonio",  # Used to provide a local rst server for hot-reloading docs with sphinx
   "pydata-sphinx-theme",
 ]
+
+[tool.uv]
+python-preference = "only-system"
 
 [tool.setuptools.package-dir]
 pymhf = "pymhf"
