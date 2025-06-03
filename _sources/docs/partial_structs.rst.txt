@@ -34,7 +34,7 @@ Below is an example of a struct which we have mapped out that we know has a 32 b
         a: Annotated[int, Field(ctypes.c_uint32)]
         b: Annotated[int, Field(ctypes.c_uint32, 0x10)]
 
-It is also possible to specify the total size of the struct in bytes by assigning the ``_total_size`` attribute to the class like so:
+It is also possible to specify the total size of the struct in bytes by assigning the ``_total_size_`` attribute to the class like so:
 
 .. code-block:: py
 
@@ -44,7 +44,7 @@ It is also possible to specify the total size of the struct in bytes by assignin
     
     @partial_struct
     class Test(ctypes.Structure):
-        _total_size = 0x20
+        _total_size_ = 0x20
         a: Annotated[int, Field(ctypes.c_uint32)]
         b: Annotated[int, Field(ctypes.c_uint32, 0x10)]
 

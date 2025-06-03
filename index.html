@@ -304,6 +304,11 @@
 <p>pyMHF is a python Modding and Hooking Framework.
 It is designed to make it very easy to create libraries for any game or application which can then be used to make mods.
 pyMHF is also able to run single python files as a mod <a class="reference external" href="https://docs.astral.sh/uv/">uv</a> recommended. See <a class="reference external" href="single_file_mods">here</a> for more details</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>When using uv as a package manager, it’s very important that you DO NOT let uv use its managed python installs with pyMHF. These python builds do not seem to like being injected and will cause the target process to crash.
+It is recommended that you have a python version between 3.9 and 3.11 inclusive installed from the official python source, and you can potentially even set the <code class="docutils literal notranslate"><span class="pre">UV_NO_MANAGED_PYTHON</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">false</span></code> on your system to force uv to use the system installs.</p>
+</div>
 <section id="features">
 <h2>Features<a class="headerlink" href="#features" title="Link to this heading">#</a></h2>
 <section id="pure-python-hooking">

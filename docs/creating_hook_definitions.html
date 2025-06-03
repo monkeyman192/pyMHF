@@ -358,7 +358,7 @@
 <h1>Creating hook definitions<a class="headerlink" href="#creating-hook-definitions" title="Link to this heading">#</a></h1>
 <p>Whether you are writing a library, or writing a single-file mod, pyMHF provides a convenient way of declaring the information required to hook or call any given function relating to a binary, whether it be imported, exported or a function defined within the binary.</p>
 <p>This functionality is provided by the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.function_hook" title="pymhf.core.hooking.function_hook"><code class="xref py py-class docutils literal notranslate"><span class="pre">function_hook</span></code></a> and <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.static_function_hook" title="pymhf.core.hooking.static_function_hook"><code class="xref py py-class docutils literal notranslate"><span class="pre">static_function_hook</span></code></a> functions, to decorate non-static and static methods/functions respectively.</p>
-<p>These decorators do a few things applied:</p>
+<p>These decorators do a few things when applied:</p>
 <ol class="arabic simple">
 <li><p>The decorated function/method is inspected and the argument names and type hints are collected and used to construct a <code class="docutils literal notranslate"><span class="pre">FuncDef</span></code> object which is used by pyMHF to tell minhook how to hook the required function.</p></li>
 <li><p>It also enables calling the function or method directly (more on that below).</p></li>
@@ -535,6 +535,7 @@ If the binary receives updates, then the <code class="docutils literal notransla
 </div>
 <p>In the above we have defined the <code class="docutils literal notranslate"><span class="pre">cTkAudioManager</span></code> class with the <code class="docutils literal notranslate"><span class="pre">Play</span></code> method.
 This method uses the <code class="docutils literal notranslate"><span class="pre">function_hook</span></code> decorator, not the <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> decorator for the simple fact that this is not a static method. This means that if you want to call the method you need to call it on the <em>instance</em> of the class, not the class type (see line 47).</p>
+<p>One implication of the above is that the first argument of the method decorated with the <code class="docutils literal notranslate"><span class="pre">function_hook</span></code> decorator should always be <code class="docutils literal notranslate"><span class="pre">this</span></code> (generally typed as <code class="docutils literal notranslate"><span class="pre">ctypes.c_uint64</span></code> for a 64 bit process, or <code class="docutils literal notranslate"><span class="pre">ctypes.c_uint32</span></code> for a 32 bit process). On the other hand, any function decorated with <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> will not have <code class="docutils literal notranslate"><span class="pre">this</span></code> as an argument.</p>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">function_hook</span></code> decorator MUST be applied to methods of a <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.Structure" title="pymhf.core.hooking.Structure"><code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></a>. This class is a thin wrapper around the <code class="docutils literal notranslate"><span class="pre">ctypes.Structure</span></code> class, but we require this for the calling functionality to work correctly (check out the source code if you are curious why!)
@@ -544,7 +545,7 @@ The <code class="docutils literal notranslate"><span class="pre">static_function
 <p>We can see that when we call the function we can either use positional arguments or keyword arguments. This function can be called the exact same way any function would be called, and we can in fact define default values for some arguments so that we don’t need to specify the arguments when calling (see for example <a class="reference internal" href="#exported-hook-mod-code"><span class="std std-ref">exported_hook_mod.py</span></a> lines 20-25).</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>When calling the function we DO NOT provide the <code class="docutils literal notranslate"><span class="pre">this</span></code> argument to the function. Your IDE will only show the arguments after that argument, and the value is automatically added by pyMHF internally.</p>
+<p>When calling functions we DO NOT provide the <code class="docutils literal notranslate"><span class="pre">this</span></code> argument to non-static functions. Your IDE will only show the arguments after that argument, and the value is automatically added by pyMHF internally.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -670,9 +671,8 @@ The methods also need the <code class="docutils literal notranslate"><span class
 <p>There are a few useful things to consider or keep in mind however:</p>
 <section id="when-to-use-static-function-hook-or-function-hook">
 <h3>When to use <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> or <code class="docutils literal notranslate"><span class="pre">function_hook</span></code>?<a class="headerlink" href="#when-to-use-static-function-hook-or-function-hook" title="Link to this heading">#</a></h3>
-<p>Often when you start to reverse engineer a program, you will not know whether or not some function is just a function, or a method to some class. Because of this you will often start out with a collection of plain functions with the <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> decorator.
-Once you start to realise that the functions are actually methods, you will likely start to structure these methods so that they belong to a class which may have some known fields.
-To this end, using the <code class="docutils literal notranslate"><span class="pre">&#64;partial_struct</span></code> decorator like seen above makes this a lot easier.</p>
+<p>Often when you start to reverse engineer a program, you will not know whether or not some function is just a function, or a method bound to some class. Because of this you will often start out with a collection of plain functions with the <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> decorator.
+Once you start to realise that the functions are actually associated with some class, you will likely start to structure these methods so that they belong to this class which may have some known fields.</p>
 </section>
 <section id="using-before-and-after-methods">
 <h3>Using <code class="docutils literal notranslate"><span class="pre">before</span></code> and <code class="docutils literal notranslate"><span class="pre">after</span></code> methods<a class="headerlink" href="#using-before-and-after-methods" title="Link to this heading">#</a></h3>
