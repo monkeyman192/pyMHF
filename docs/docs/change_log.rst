@@ -8,6 +8,7 @@ Current (0.1.12-dev)
 - Improved inter-mod communication.
 - Added the ability to specify the total size of a partial struct using the ``_total_size_`` attribute. This will be utilised more in some upcoming changes which should simplify initialization of structs from memory using hooked functions.
 - Added a new way to specify the data required for hooking and calling functions. See :doc:`here </docs/creating_hook_definitions>` for more details. This method will completely replace the old method of using the ``__pymhf_func_offsets__`` etc. "magic" mod attributes.
+- Added a :py:func:`~pymhf.extensions.ctypes.c_enum32` type which can be used to construct enums as fields.
 
 0.1.11 (29/04/2025)
 --------------------

@@ -45,6 +45,7 @@ gui = [
 [dependency-groups]
 dev = [
   "pytest",
+  "pytest-benchmark",
   "ruff",
   "setuptools_scm",
   "twine",

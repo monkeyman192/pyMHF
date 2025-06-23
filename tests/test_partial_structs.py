@@ -1,0 +1,274 @@
+import ctypes
+import re
+from enum import IntEnum
+from typing import Annotated
+
+import pytest
+
+from pymhf.extensions.ctypes import c_enum32
+from pymhf.utils.partial_struct import Field, partial_struct
+
+
+def test_simple_structure():
+    @partial_struct
+    class Test(ctypes.Structure):
+        a: Annotated[ctypes.c_uint32, 0x0]
+        b: Annotated[ctypes.c_uint32, 0x10]
+
+    assert Test._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("_padding_4", ctypes.c_ubyte * 0xC),
+        ("b", ctypes.c_uint32),
+    ]
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00")
+    t = Test.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 5
+    assert bytes(t) == bytes(data)
+
+    # Also test modifying a value.
+    t.a = 42
+    assert bytes(t) == b"\x2a\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00"
+
+
+def test_simple_structure_with_enum():
+    class Alphabet(IntEnum):
+        A = 0
+        B = 1
+        C = 2
+        D = 3
+        E = 4
+
+    @partial_struct
+    class Test(ctypes.Structure):
+        a: Annotated[c_enum32[Alphabet], 0x0]
+        b: Annotated[ctypes.c_uint32, 0x10]
+
+    assert Test._fields_ == [
+        ("a", c_enum32[Alphabet]),
+        ("_padding_4", ctypes.c_ubyte * 0xC),
+        ("b", ctypes.c_uint32),
+    ]
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00")
+    t = Test.from_buffer(data)
+    assert t.a == 1
+    assert t.a == Alphabet.B
+    assert t.b == 5
+    assert bytes(t) == bytes(data)
+
+    # Test modifying the enum value
+    t.a = Alphabet.D
+    assert bytes(t) == b"\x03\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00"
+
+
+def test_simple_structure_with_total_size():
+    # Test case for the partial struct having a _total_size_ attribute.
+    @partial_struct
+    class Test(ctypes.Structure):
+        _total_size_ = 0x18
+        a: Annotated[int, Field(ctypes.c_uint32)]
+        b: Annotated[int, Field(ctypes.c_uint32, 0x10)]
+
+    assert Test._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("_padding_4", ctypes.c_ubyte * 0xC),
+        ("b", ctypes.c_uint32),
+        ("_padding_14", ctypes.c_ubyte * 0x4),
+    ]
+
+    data = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x00\x00\x00\x00"
+    )
+    t = Test.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 5
+    assert bytes(t) == bytes(data)
+
+
+def test_nested_structs():
+    # Test for one of the fields being a struct nested within the currently defined one.
+    @partial_struct
+    class Test(ctypes.Structure):
+        class Sub(ctypes.Structure):
+            _fields_ = [
+                ("sub_a", ctypes.c_uint16),
+                ("sub_b", ctypes.c_uint16),
+            ]
+
+        _total_size_ = 24
+        a: ctypes.c_uint32
+        b_sub: Sub
+        c: Annotated[ctypes.c_uint32, 0x8]
+        d: Annotated[int, Field(ctypes.c_uint32, 0x10)]
+
+    assert Test._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("b_sub", Test.Sub),
+        ("c", ctypes.c_uint32),
+        ("_padding_C", ctypes.c_ubyte * 0x4),
+        ("d", ctypes.c_uint32),
+        ("_padding_14", ctypes.c_ubyte * 0x4),
+    ]
+
+    data = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x00\x00\x00\x00"
+    )
+    t = Test.from_buffer(data)
+    assert t.a == 1
+    assert t.b_sub.sub_a == 2
+    assert t.b_sub.sub_b == 0
+    assert t.c == 3
+    assert t.d == 5
+
+    assert bytes(t) == bytes(data)
+
+
+def test_annotated_struct():
+    # Test the case of the type being an annotation.
+
+    class Sub(ctypes.Structure):
+        _fields_ = [
+            ("sub_a", ctypes.c_uint16),
+            ("sub_b", ctypes.c_uint16),
+        ]
+
+    @partial_struct
+    class Test(ctypes.Structure):
+        _total_size_ = 24
+        a: ctypes.c_uint32
+        b_sub: "Sub"
+        c: Annotated["Sub", 0x8]
+        d: Annotated[int, Field(ctypes.c_uint32, 0x10)]
+
+    assert Test._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("b_sub", Sub),
+        ("c", Sub),
+        ("_padding_C", ctypes.c_ubyte * 0x4),
+        ("d", ctypes.c_uint32),
+        ("_padding_14", ctypes.c_ubyte * 0x4),
+    ]
+
+    data = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x00\x00\x00\x00"
+    )
+    t = Test.from_buffer(data)
+    assert t.a == 1
+    assert t.b_sub.sub_a == 2
+    assert t.b_sub.sub_b == 0
+    assert t.c.sub_a == 3
+    assert t.c.sub_b == 0
+    assert t.d == 5
+
+    assert bytes(t) == bytes(data)
+
+
+def test_structure_with_pointer():
+    # Test a struct which has a pointer in it.
+    # Also implicitly test the case of putting an "invalid" offset.
+    # In this case we put the pointer at 0xC, but because we're 64 bit it has to be aligned to 0x8 byte
+    # boundary.
+    @partial_struct
+    class Test(ctypes.Structure):
+        a: Annotated[ctypes.c_uint32, 0x0]
+        a_bool: Annotated[ctypes.c_bool, 0xA]
+        b: Annotated[ctypes._Pointer[ctypes.c_uint32], 0xB]
+        c: Annotated[ctypes.c_uint32, 0x18]
+
+    assert Test._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("_padding_4", ctypes.c_ubyte * 0x6),
+        ("a_bool", ctypes.c_bool),
+        ("b", ctypes.POINTER(ctypes.c_uint32)),
+        ("c", ctypes.c_uint32),
+    ]
+
+    assert ctypes.sizeof(Test) == 0x20  # 4 extra bytes at the end since the whole struct will be 0x8 aligned.
+
+    # Check all of our offsets are also correct in the type.
+    assert Test.a.offset == 0
+    assert Test.a_bool.offset == 0xA
+    assert Test.b.offset == 0x10
+    assert Test.c.offset == 0x18
+
+    data = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x07\x00\x00\x00\x00\x00\x00\x00"
+    )
+    t = Test.from_buffer(data)
+    assert t.a == 1
+    with pytest.raises(ValueError, match="NULL pointer access"):
+        t.b.contents
+    assert t.c == 7
+    assert bytes(t) == bytes(data)
+
+
+def test_structure_with_annotated_pointer():
+    # Test a struct which has an annotated pointer in it.
+    class Sub(ctypes.Structure):
+        _fields_ = [
+            ("sub_a", ctypes.c_uint16),
+            ("sub_b", ctypes.c_uint16),
+        ]
+
+    @partial_struct
+    class Test(ctypes.Structure):
+        a: ctypes._Pointer[Sub]
+        b: "ctypes._Pointer[Sub]"
+
+    assert Test._fields_ == [("a", ctypes.POINTER(Sub)), ("b", ctypes.POINTER(Sub))]
+
+    assert ctypes.sizeof(Test) == 0x10
+
+    # Check all of our offsets are also correct in the type.
+    assert Test.a.offset == 0
+    assert Test.b.offset == 0x8
+
+    data = bytearray(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+    t = Test.from_buffer(data)
+    with pytest.raises(ValueError, match="NULL pointer access"):
+        t.a.contents
+    with pytest.raises(ValueError, match="NULL pointer access"):
+        t.b.contents
+    assert bytes(t) == bytes(data)
+
+
+def test_invalid_cases():
+    # Invalid type type
+    with pytest.raises(ValueError, match=re.escape("The field 'a' has an invalid type: <class 'int'>")):
+
+        @partial_struct
+        class Test(ctypes.Structure):
+            a: int
+
+    with pytest.raises(ValueError, match=re.escape("The field 'a' has an invalid type: <class 'int'>")):
+
+        @partial_struct
+        class Test(ctypes.Structure):
+            a: Annotated[int, int]
+
+    # Invalid annotation
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The field 'a' has an invalid annotation: typing.Annotated[int, <class 'str'>, <class 'float'>]"
+        ),
+    ):
+
+        @partial_struct
+        class Test(ctypes.Structure):
+            a: Annotated[int, str, float]
+
+    # Invalid offset
+    with pytest.raises(ValueError, match=re.escape("The field 'a' has an invalid offset: 'hi'")):
+
+        @partial_struct
+        class Test(ctypes.Structure):
+            a: Annotated[ctypes.c_int32, "hi"]
+
+
+def test_invalid_c_enum32_cases():
+    with pytest.raises(TypeError):
+        c_enum32[22]
