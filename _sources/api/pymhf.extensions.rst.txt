@@ -10,3 +10,4 @@ Submodules
    :maxdepth: 1
 
    pymhf.extensions.cpptypes
+   pymhf.extensions.ctypes

@@ -24,6 +24,11 @@ pyMHF provides functionality to allow these detours to be run *before* or *after
 
 A *before* detour is used when you want to have something occur before the original function has been run. This may be to change the value in some internal struct/class so that when the original function runs it is run on some different value, or it may be to pass in different arguments to the original function.
 
+You can indicate to pyMHF that you want to change the arguments the original function is called with by simply returning the new values you want.
+
+.. note::
+    The values passed must be a complete set of arguments. So if a function has 3 arguments, but you only want to modify 1 of them, you still need to return all 3 arguments (with the one replaced with the value required) in their original order.
+
 *After* detours
 """""""""""""""
 

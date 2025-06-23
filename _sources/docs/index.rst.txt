@@ -11,6 +11,7 @@ Usage guide
    inter_mod_functionality
    partial_structs
    single_file_mods
+   extension_types
    libraries/index
    gui/index
    change_log

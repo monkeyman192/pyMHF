@@ -283,6 +283,7 @@
 <li class="toctree-l1"><a class="reference internal" href="inter_mod_functionality.html">Inter-mod functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="partial_structs.html">Partial Structs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="single_file_mods.html">Single-file mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension_types.html">Extension types</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="libraries/index.html">Creating modding API’s with pyMHF</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="libraries/writing_libraries.html">Writing Libraries</a></li>
 <li class="toctree-l2"><a class="reference internal" href="libraries/custom_callbacks.html">Custom Callbacks</a></li>
@@ -363,6 +364,7 @@
 <li><p>Improved inter-mod communication.</p></li>
 <li><p>Added the ability to specify the total size of a partial struct using the <code class="docutils literal notranslate"><span class="pre">_total_size_</span></code> attribute. This will be utilised more in some upcoming changes which should simplify initialization of structs from memory using hooked functions.</p></li>
 <li><p>Added a new way to specify the data required for hooking and calling functions. See <a class="reference internal" href="creating_hook_definitions.html"><span class="doc">here</span></a> for more details. This method will completely replace the old method of using the <code class="docutils literal notranslate"><span class="pre">__pymhf_func_offsets__</span></code> etc. “magic” mod attributes.</p></li>
+<li><p>Added a <a class="reference internal" href="../api/pymhf.extensions.ctypes.html#pymhf.extensions.ctypes.c_enum32" title="pymhf.extensions.ctypes.c_enum32"><code class="xref py py-func docutils literal notranslate"><span class="pre">c_enum32</span></code></a> type which can be used to construct enums as fields.</p></li>
 </ul>
 </section>
 <section id="id1">
