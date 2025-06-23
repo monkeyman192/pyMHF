@@ -1,13 +1,15 @@
 import ctypes
 import typing
+from ctypes import _Pointer
 
 from ._types import DetourTime  # noqa
 
 # Monkeypatch typed _Pointer from typeshed into ctypes.
 # c/o https://github.com/python/mypy/issues/7540#issuecomment-845741357
 if not typing.TYPE_CHECKING:
+    ctypes._Pointer_orig = _Pointer
 
-    class _Pointer:
+    class _Pointer(ctypes._Pointer):
         def __class_getitem__(cls, item):
             return ctypes.POINTER(item)
 
