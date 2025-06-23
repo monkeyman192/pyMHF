@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Current (0.1.12-dev)
+0.1.12 (23/06/2025)
 --------------------
 
 - Identified and fixed partially by config changes and partially by documentation issues with pyMHF being run with uv. Thanks to `@Foundit3923 <https://github.com/Foundit3923>`_ for helping to figure out the issues.
