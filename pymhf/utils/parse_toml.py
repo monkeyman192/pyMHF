@@ -25,7 +25,7 @@ def read_inline_metadata(script: str) -> Optional[tomlkit.TOMLDocument]:
         return None
 
 
-def _parse_toml(fpath: str, standalone: bool = False) -> dict:
+def _parse_toml(fpath: str, standalone: bool = False) -> Optional[dict]:
     settings = {}
     with open(fpath, "r") as f:
         if standalone:

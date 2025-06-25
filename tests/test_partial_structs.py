@@ -235,6 +235,44 @@ def test_structure_with_annotated_pointer():
     assert bytes(t) == bytes(data)
 
 
+def test_annotated_arrays():
+    # Test the case of an array of some other type.
+
+    class Sub(ctypes.Structure):
+        _fields_ = [
+            ("sub_a", ctypes.c_uint16),
+            ("sub_b", ctypes.c_uint16),
+        ]
+
+    @partial_struct
+    class Test(ctypes.Structure):
+        _total_size_ = 24
+        a: ctypes.c_uint32
+        b: "Sub * 2"
+        c: Annotated[list[Sub], Field(Sub * 3)]
+
+    assert Test._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("b", Sub * 2),
+        ("c", Sub * 3),
+    ]
+
+    data = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x06\x00\x00\x00"
+    )
+    t = Test.from_buffer(data)
+    assert t.a == 1
+    assert t.b[0].sub_a == 2
+    assert t.b[0].sub_b == 0
+    assert t.b[1].sub_a == 3
+    assert t.b[1].sub_b == 0
+    assert len(t.c) == 3
+    assert t.c[0].sub_a == 4
+    assert t.c[0].sub_b == 0
+
+    assert bytes(t) == bytes(data)
+
+
 def test_invalid_cases():
     # Invalid type type
     with pytest.raises(ValueError, match=re.escape("The field 'a' has an invalid type: <class 'int'>")):
