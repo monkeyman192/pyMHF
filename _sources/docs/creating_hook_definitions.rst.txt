@@ -142,7 +142,6 @@ Defining functions to hook is done in much the same way as above, however, we si
 
     from pymhf import Mod
     from pymhf.core.hooking import Structure, function_hook
-    from pymhf.core.memutils import map_struct
     from pymhf.core.utils import set_main_window_active
     from pymhf.gui.decorators import gui_button
     from pymhf.utils.partial_struct import Field, partial_struct
@@ -161,8 +160,8 @@ Defining functions to hook is done in much the same way as above, however, we si
         @function_hook("48 83 EC ? 33 C9 4C 8B D2 89 4C 24 ? 49 8B C0 48 89 4C 24 ? 45 33 C9")
         def Play(
             self,
-            this: ctypes.c_ulonglong,
-            event: ctypes.c_ulonglong,
+            this: "ctypes._Pointer[cTkAudioManager]",
+            event: ctypes._Pointer[TkAudioID],
             object: ctypes.c_int64,
         ) -> ctypes.c_bool:
             pass
@@ -185,17 +184,22 @@ Defining functions to hook is done in much the same way as above, however, we si
                 self.audio_manager.Play(event=ctypes.addressof(audioid), object=self.obj_id)
 
         @cTkAudioManager.Play.after
-        def after_play(self, this, event, object_):
-            audioID = map_struct(event, TkAudioID)
+        def after_play(
+            self,
+            this: ctypes._Pointer[cTkAudioManager],
+            event: ctypes._Pointer[TkAudioID],
+            object_,
+        ):
+            audioID = event.contents
             logger.info(f"After play; this: {this}, {audioID.muID}, object: {object_}")
-            self.audio_manager = map_struct(this, cTkAudioManager)
+            self.audio_manager = this.contents
             self.event_id = audioID.muID
             self.obj_id = object_
 
 In the above we have defined the ``cTkAudioManager`` class with the ``Play`` method.
 This method uses the ``function_hook`` decorator, not the ``static_function_hook`` decorator for the simple fact that this is not a static method. This means that if you want to call the method you need to call it on the *instance* of the class, not the class type (see line 47).
 
-One implication of the above is that the first argument of the method decorated with the ``function_hook`` decorator should always be ``this`` (generally typed as ``ctypes.c_uint64`` for a 64 bit process, or ``ctypes.c_uint32`` for a 32 bit process). On the other hand, any function decorated with ``static_function_hook`` will not have ``this`` as an argument.
+One implication of the above is that the first argument of the method decorated with the ``function_hook`` decorator should always be ``this`` (generally typed as ``ctypes._Pointer[<class type>]``. For more details see :ref:`here <hint_specify_this_type>`). On the other hand, any function decorated with ``static_function_hook`` will not have ``this`` as an argument.
 
 .. important::
     The ``function_hook`` decorator MUST be applied to methods of a :class:`~pymhf.core.hooking.Structure`. This class is a thin wrapper around the ``ctypes.Structure`` class, but we require this for the calling functionality to work correctly (check out the source code if you are curious why!)
@@ -236,7 +240,6 @@ To hook or call a function with an overload, append ``.overload(overload_id: str
     import pymhf.core._internal as _internal
     from pymhf import Mod
     from pymhf.core.hooking import Structure, function_hook
-    from pymhf.core.memutils import map_struct
     from pymhf.core.utils import set_main_window_active
     from pymhf.gui.decorators import gui_button
     from pymhf.utils.partial_struct import Field, partial_struct
@@ -257,9 +260,9 @@ To hook or call a function with an overload, append ``.overload(overload_id: str
         @overload
         def Play(
             self,
-            this: ctypes.c_ulonglong,
-            event: ctypes.c_ulonglong,
-            position: ctypes.c_ulonglong,
+            this: "ctypes._Pointer[cTkAudioManager]",
+            event: ctypes._Pointer[TkAudioID],
+            position: ctypes.c_uint64,
             object: ctypes.c_int64,
             attenuationScale: ctypes.c_float,
         ) -> ctypes.c_bool:
@@ -269,8 +272,8 @@ To hook or call a function with an overload, append ``.overload(overload_id: str
         @overload
         def Play(
             self,
-            this: ctypes.c_ulonglong,
-            event: ctypes.c_ulonglong,
+            this: "ctypes._Pointer[cTkAudioManager]",
+            event: ctypes._Pointer[TkAudioID],
             object: ctypes.c_int64,
         ) -> ctypes.c_bool:
             pass
@@ -292,10 +295,15 @@ To hook or call a function with an overload, append ``.overload(overload_id: str
                 self.audio_manager.Play.overload("normal")(event=ctypes.addressof(audioid), object=self.obj_id)
 
         @cTkAudioManager.Play.overload("normal").after
-        def after_play(self, this, event, object_):
-            audioID = map_struct(event, TkAudioID)
+        def after_play(
+            self,
+            this: ctypes._Pointer[cTkAudioManager],
+            event: ctypes._Pointer[TkAudioID],
+            object_,
+        ):
+            audioID = event.contents
             logger.info(f"After play; this: {this}, {audioID.muID}, object: {object_}")
-            self.audio_manager = map_struct(this, cTkAudioManager)
+            self.audio_manager = this.contents
             self.event_id = audioID.muID
             self.obj_id = object_
 
@@ -330,16 +338,30 @@ The above can see a bit daunting at first, but once you get a handle on it it ca
 
 There are a few useful things to consider or keep in mind however:
 
+.. _hint_specify_this_type:
+
+How to specify the type for ``this``?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is recommended for extra ease of use that the ``this`` parameter be typed as ``"ctypes._Pointer[<class type>]"``. This has the benefit that it's easier to see the type of the parameter without having to know what type to map it to, and it also simplifies the code required to get the actual object (``obj = this.contents`` compared to ``obj = map_struct(this, <type>)``).
+Typing ``this`` as an integer should be considered "bad-practice" however it is supported as it can be useful in some cases.
+
+If you specify the type as a pointer, the :func:`~pymhf.core.memutils.get_addressof` can be used to get the address pointed to: ``addr = get_addressof(this)``.
+
+.. note::
+    You will notice that the type of ``this`` is a string. This is not a mistake! At runtime python doesn't have access the type of the class the method is defined in (in a type-checking sense at least). To get around this issue the type is "annotated", ie. written as a string (cf. `PEP 484 <https://peps.python.org/pep-0484/#forward-references>`_).
+
 When to use ``static_function_hook`` or ``function_hook``?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Often when you start to reverse engineer a program, you will not know whether or not some function is just a function, or a method bound to some class. Because of this you will often start out with a collection of plain functions with the ``static_function_hook`` decorator.
-Once you start to realise that the functions are actually associated with some class, you will likely start to structure these methods so that they belong to this class which may have some known fields.
+Once you start to realise that the functions are actually associated with some class, you will likely start to structure these methods so that they belong to this class which may have some known fields (as seen in the code examples above).
 
 Using ``before`` and ``after`` methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``.before`` and ``.after`` method of the functions decorated by the ``function_hook`` or ``static_function_hook`` is required to be used when using this as a decorator to tell pyMHF whether to run the detour before or after the original function. If this is not included then an error will be raised.
+Depending on whether you mark the hooks as ``before`` or ``after`` hook you may get some functionality. See :ref:`here <writing_mods_hooking_functionality>` for more details.
 
 Function type hints
 ^^^^^^^^^^^^^^^^^^^
