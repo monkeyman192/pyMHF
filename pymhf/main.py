@@ -13,6 +13,7 @@ import psutil
 import pymem
 import pymem.exception
 import pymem.process
+import pymem.ressources.kernel32
 
 from pymhf.core._internal import LoadTypeEnum
 from pymhf.core.caching import hash_bytes
@@ -99,7 +100,7 @@ def get_process_when_ready(
                 else:
                     binary = pymem.Pymem(target)
                     modules = list(pymem.process.enum_process_module(binary.process_handle))
-                    if len(modules) > 0:
+                    if len(modules) > 0 and required_assemblies is not None:
                         if set(required_assemblies) <= set(x.name for x in modules):
                             run = False
                             break
@@ -155,7 +156,7 @@ def load_module(plugin_name: str, module_path: str):
     _run_module(module_path, module_cfg, plugin_name, config_dir)
 
 
-def _required_config_val(config: dict[str, str], key: str) -> Any:
+def _required_config_val(config: dict[str, Any], key: str) -> Any:
     if (val := config.get(key)) is not None:
         return val
     raise ValueError(f"[tool.pymhf] missing config value: {key}")
@@ -163,7 +164,7 @@ def _required_config_val(config: dict[str, str], key: str) -> Any:
 
 def _run_module(
     module_path: str,
-    config: dict[str, str],
+    config: dict[str, Any],
     plugin_name: Optional[str] = None,
     config_dir: Optional[str] = None,
 ):
@@ -247,7 +248,7 @@ def _run_module(
         print("Python injected")
         proc = None
 
-    if not pm_binary and not proc:
+    if pm_binary is None or proc is None:
         # TODO: Raise better error messages/reason why it couldn't load.
         print("FATAL ERROR: Cannot start process!")
         return
@@ -359,6 +360,11 @@ def _run_module(
             if load_type == LoadTypeEnum.MOD_FOLDER:
                 if module_path not in _path:
                     _path.insert(0, module_path)
+            if load_type == LoadTypeEnum.LIBRARY:
+                # For libraries, the module_path will be the directory where the pymhf.toml file is located
+                # which is one path deeper than we want to inject into the path.
+                if (mp := op.dirname(module_path)) not in _path:
+                    _path.insert(0, mp)
 
             saved_path = [x.replace("\\", "\\\\") for x in _path]
             pm_binary.inject_python_shellcode(

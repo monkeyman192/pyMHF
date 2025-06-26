@@ -10,9 +10,9 @@ def canonicalize_setting(
     value: Optional[str],
     plugin_name: Optional[str],
     module_dir: str,
-    exe_dir: str,
+    exe_dir: Optional[str] = None,
     suffix: Optional[str] = None,
-) -> str:
+) -> Optional[str]:
     """Convert the "magic" names into real values.
 
     Possible keys:
@@ -39,7 +39,7 @@ def canonicalize_setting(
         elif value == "~":
             tag = "USER_DIR"
         elif not op.exists(value):
-            raise ValueError(f"Invalid path: {value}")
+            raise ValueError(f"Path doesn't exist: {value}")
 
     # If the path provided already exists, simply return it.
     if tag is None and op.exists(value):

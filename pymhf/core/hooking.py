@@ -4,11 +4,10 @@ import inspect
 import logging
 import struct
 import traceback
-from _ctypes import CFuncPtr
 from collections import defaultdict
 from collections.abc import Callable
 from ctypes import CFUNCTYPE
-from typing import Any, Optional, Type, cast
+from typing import Any, Optional, Type, Union, cast
 
 import cyminhook
 from typing_extensions import Concatenate, Generic, ParamSpec, Self, TypeVar, deprecated
@@ -32,9 +31,6 @@ hook_logger = logging.getLogger("HookManager")
 
 BITS = struct.calcsize("P") * 8
 
-P = ParamSpec("P")
-R = TypeVar("R")
-
 
 # Currently unused, but can maybe figure out how to utilise it.
 # It currently doesn't work I think because we subclass from the cyminhook class
@@ -51,15 +47,16 @@ def _detour_is_valid(f):
 # A VERY rudimentary cache untill we implement gh-2.
 pattern_cache: dict[str, int] = {}
 
+_FunctionHook_overloads: dict = defaultdict(lambda: dict())
+
 
 # TODO: Move to a different file with `Mod` from mod_loader.py
 class FuncHook(cyminhook.MinHook):
     original: Callable[..., Any]
     target: int
     detour: Callable[..., Any]
-    signature: CFuncPtr
+    signature: Callable[..., Any]
     _name: str
-    _should_enable: bool
     _invalid: bool = False
     _func_def: Optional[FUNCDEF]
     _offset_is_absolute: bool
@@ -69,14 +66,14 @@ class FuncHook(cyminhook.MinHook):
         detour_name: str,
         *,
         offset: Optional[int] = None,
-        pattern: Optional[int] = None,
+        pattern: Optional[str] = None,
         func_def: Optional[FUNCDEF] = None,
         overload: Optional[str] = None,
         binary: Optional[str] = None,
         offset_is_absolute: bool = False,
     ):
         self._offset_is_absolute = offset_is_absolute
-        if self._offset_is_absolute:
+        if self._offset_is_absolute and offset is not None:
             self.target = offset
             self._offset = None
         else:
@@ -675,8 +672,8 @@ def get_caller(func: HookProtocol) -> CallerHookProtocol:
         def something(self, *args):
             logger.info(f"'test_function' called with {args} from 0x{self.something.caller_address():X}")
     """
-    setattr(func, "_get_caller", True)
-    return func
+    func._get_caller = True
+    return func  # type: ignore
 
 
 def on_key_pressed(event: str):
@@ -692,7 +689,7 @@ def on_key_pressed(event: str):
     def wrapped(func: Callable[..., Any]) -> KeyPressProtocol:
         setattr(func, "_hotkey", event)
         setattr(func, "_hotkey_press", "down")
-        return func
+        return func  # type: ignore
 
     return wrapped
 
@@ -710,7 +707,7 @@ def on_key_release(event: str):
     def wrapped(func: Callable[..., Any]) -> KeyPressProtocol:
         setattr(func, "_hotkey", event)
         setattr(func, "_hotkey_press", "up")
-        return func
+        return func  # type: ignore
 
     return wrapped
 
@@ -739,7 +736,8 @@ class HookManager:
     def _add_custom_callbacks(self, callbacks: set[HookProtocol]):
         """Add the provided function to the specified callback type."""
         for cb in callbacks:
-            cb_type = cb._custom_trigger
+            if (cb_type := cb._custom_trigger) is None:
+                continue
             if cb_type not in self.custom_callbacks:
                 self.custom_callbacks[cb_type] = {}
             detour_time = getattr(cb, "_hook_time", DetourTime.NONE)
@@ -753,7 +751,8 @@ class HookManager:
     def _remove_custom_callbacks(self, callbacks: set[HookProtocol]):
         # Remove the values in the list which correspond to the data in `callbacks`
         for cb in callbacks:
-            cb_type: str = cb._custom_trigger
+            if (cb_type := cb._custom_trigger) is None:
+                continue
             if cb_type in self.custom_callbacks:
                 # Remove the functions from the set and then check whether it's
                 # empty.
@@ -966,13 +965,38 @@ class HookManager:
                     hook_logger.info(f"    {func}")
 
 
-_FunctionHook_overloads: dict = defaultdict(lambda: dict())
+class Structure(ctypes.Structure):
+    """Simple wrapper around ctypes.Structure."""
+
+    def __getattribute__(self, name: str):
+        # Hook the instance attribute lookup so that we may "bind" the instance to the returned FunctionHook
+        # instance.
+        # We need to do this because the decorator has no knowledge of the actual bound instance at run-time.
+        res = super().__getattribute__(name)
+        if isinstance(res, FunctionHook):
+            res._bound_class = self
+        return res
+
+
+P = ParamSpec("P")
+R = TypeVar("R")
+S = TypeVar("S", bound=Structure)
+THIS = TypeVar(
+    "THIS",
+    bound=Union[
+        ctypes.c_uint32,  # 32 bit "pointer" types.
+        ctypes.c_ulong,
+        ctypes.c_uint64,  # 64 bit "pointer" types.
+        ctypes.c_ulonglong,
+        ctypes._Pointer,  # Actual pointer type.
+    ],
+)
 
 
 class FunctionHook(Generic[P, R]):
     def __init__(
         self,
-        func: Callable[P, R],
+        func: Union[Callable[P, R], Callable[Concatenate[S, THIS, P], R]],
         signature: Optional[str] = None,
         offset: Optional[int] = None,
         exported_name: Optional[str] = None,
@@ -987,10 +1011,21 @@ class FunctionHook(Generic[P, R]):
         self._imported_name = imported_name
         self._overload_id = overload_id
         self._is_static = is_static
+        self._this_is_pointer: Optional[bool] = None
         self._bound_class: Optional[ctypes.Structure] = None
         self._funcdef: Optional[FuncDef] = None
 
-    def _call(self, *args: P.args, **kwargs: P.kwargs) -> R:
+    @property
+    def this_is_pointer(self):
+        """Only valid for bound methods. Returns True if the first argument is a pointer type."""
+        if self._this_is_pointer is not None:
+            return self._this_is_pointer
+        if self._funcdef is None:
+            self._funcdef = _get_funcdef(self._func)
+        self._this_is_pointer = issubclass(self._funcdef.arg_types[0], ctypes._Pointer)
+        return self._this_is_pointer
+
+    def _call(self, *args, **kwargs) -> Optional[R]:
         """Call the actual function. This will do some work to find where the function is in memory and then
         call it with the provided arguments.
         """
@@ -1008,23 +1043,29 @@ class FunctionHook(Generic[P, R]):
             sig = CFUNCTYPE(self._funcdef.restype, *self._funcdef.arg_types)
             binary_base = _internal.BASE_ADDRESS
             # Depending on what kind of function we are calling, we change how we find the offset of the func.
+            offset = None
             if self._offset is not None:
                 offset = binary_base + self._offset
             elif self._signature is not None:
-                offset = binary_base + find_pattern_in_binary(self._signature, False, _internal.EXE_NAME)
+                rel_offset = find_pattern_in_binary(self._signature, False, _internal.EXE_NAME)
+                if rel_offset is not None and isinstance(rel_offset, int):
+                    offset = binary_base + rel_offset
             elif self._exported_name is not None:
                 own_dll = ctypes.WinDLL(_internal.BINARY_PATH)
                 func_ptr = getattr(own_dll, self._exported_name)
                 offset = ctypes.cast(func_ptr, ctypes.c_void_p).value
             # Finally, call the function.
-            cfunc = sig(offset)
-            val = cfunc(*_args)
-            return val
+            if offset is not None:
+                cfunc = sig(offset)
+                val = cfunc(*_args)
+                return val
+            else:
+                hook_logger.error(f"Unable to call {self._func.__qualname__!r} - Cannot find function.")
         except Exception:
             hook_logger.exception(f"There was an exception calling {self._func.__qualname__!r}")
             return None
 
-    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> Optional[R]:
         # This initial check is to check if the first argument was a function.
         # This will only happen if the function is being used as a decorator.
         # if this check fails, then we are calling the function under "normal" usage.
@@ -1042,9 +1083,12 @@ class FunctionHook(Generic[P, R]):
             # For a non-static method, we need to do more work since we need to get the instance the method is
             # bound to, and then get the address of it and pass it in as the first argument.
             if self._bound_class is not None:
-                this = ctypes.addressof(self._bound_class)
                 try:
-                    return self._call(this, *args, **kwargs)
+                    if self._this_is_pointer:
+                        return self._call(ctypes.byref(self._bound_class), *args, **kwargs)
+                    else:
+                        # If it's not a pointer, then we'll assume it's an int and pass the address...
+                        return self._call(ctypes.addressof(self._bound_class), *args, **kwargs)
                 except Exception:
                     hook_logger.exception(f"Failed to call {self._func.__qualname__} with args {args}")
             else:
@@ -1137,7 +1181,9 @@ class static_function_hook(_function_hook):
         The order the arguments are respected is ``signature``, ``offset``, then ``exported_name``.
 
     .. note::
-        You do not need to apply the `@staticmethod` decorator to functions if you use this decorator.
+        You do not need to apply the ``@staticmethod`` decorator to functions if you use this decorator,
+        however your static type checker may complain, so this decorator is safe to apply on top of the
+        ``@staticmethod`` decorator.
 
     Parameters
     ----------
@@ -1222,7 +1268,7 @@ class function_hook(_function_hook):
         calling and hooking purposes.
     """
 
-    def __call__(self, func: Callable[Concatenate[Self, Any, P], R]) -> FunctionHook[P, R]:
+    def __call__(self, func: Callable[Concatenate[S, THIS, P], R]) -> FunctionHook[P, R]:
         if not self.signature and not self.offset and not self.exported_name and not self.imported_name:
             raise ValueError(
                 f"One of the `function_hook` arguments must be provided for {func.__qualname__!r}"
@@ -1242,19 +1288,6 @@ class function_hook(_function_hook):
         )
         _FunctionHook_overloads[func.__qualname__][self.overload_id] = fh
         return fh
-
-
-class Structure(ctypes.Structure):
-    """Simple wrapper around ctypes.Structure."""
-
-    def __getattribute__(self, name: str):
-        # Hook the instance attribute lookup so that we may "bind" the instance to the returned FunctionHook
-        # instance.
-        # We need to do this because the decorator has no knowledge of the actual bound instance at run-time.
-        res = super().__getattribute__(name)
-        if isinstance(res, FunctionHook):
-            res._bound_class = self
-        return res
 
 
 hook_manager = HookManager()

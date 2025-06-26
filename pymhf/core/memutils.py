@@ -155,8 +155,9 @@ def get_field_info(obj, logger=None, indent: int = 0, as_hex: bool = True, max_d
                     yield _msg
 
 
-def get_addressof(obj) -> int:
-    """Get the address in memory of some object."""
+def get_addressof(obj: CTYPES) -> int:
+    """Get the address in memory of some object.
+    If obj is a pointer, this will return the address pointed to."""
     try:
         # If it's a pointer, this is the branch that is used.
         return ctypes.cast(obj, ctypes.c_void_p).value

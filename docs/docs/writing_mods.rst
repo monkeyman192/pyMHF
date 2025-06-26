@@ -13,6 +13,8 @@ The main body of the mod file is the :class:`pymhf.core.mod_loader.Mod` class wh
 Without any hooks or functions defined, this mod won't do very much, so the first thing to do is determine what the contents of the mod should be.
 We can break this up into two categories; hooking functionality and non-hooking functionality.
 
+.. _writing_mods_hooking_functionality:
+
 Hooking Functionality
 ^^^^^^^^^^^^^^^^^^^^^
 

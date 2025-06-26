@@ -22,7 +22,7 @@ CTYPES = Union[
 
 @dataclass
 class Field:
-    datatype: ctypes.Structure
+    datatype: CTYPES
     offset: Optional[int] = None
 
 
