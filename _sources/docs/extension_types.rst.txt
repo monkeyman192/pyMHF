@@ -33,3 +33,5 @@ For example, consider the following code:
     class Test(ctypes.Structure):
         a: Annotated[c_enum32[States], 0x0]
         b: Annotated[ctypes.c_uint32, 0x10]
+
+In the above we have cretated an enum which is mapped to a ``ctypes.c_uint32`` variable. We can assign the value of ``a`` to an enum member after the struct has been instantiated with data, as well as being able to "see" the value of the int as an enum member instead.
