@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+0.1.13 (26/06/2025)
+-------------------
+
+- Fixed an issue where function definitions defined with a pointer as their ``this`` argument weren't able to be called correctly.
+- Fixed an issue where calling a library directly with ``pymhf run <library path>`` wouldn't be able to import the library.
+- Improved front-facing type hinting.
+
 0.1.12 (23/06/2025)
 --------------------
 
