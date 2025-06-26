@@ -21,7 +21,7 @@ class c_enum32(ctypes.c_int32, Generic[T]):
         return self._enum_type(self.value)
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._enum_value.name
 
     def __str__(self):
