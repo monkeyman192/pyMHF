@@ -273,6 +273,101 @@ def test_annotated_arrays():
     assert bytes(t) == bytes(data)
 
 
+def test_inheritence():
+    # Test the case of a one partial struct inheriting from another.
+    @partial_struct
+    class Base(ctypes.Structure):
+        a: Annotated[ctypes.c_uint32, 0x0]
+        b: Annotated[ctypes.c_bool, 0x8]
+
+    @partial_struct
+    class Parent(Base):
+        c: Annotated[ctypes.c_uint32, 0x10]
+        d: ctypes.c_uint32
+
+    @partial_struct
+    class GrandParent(Parent):
+        e: ctypes.c_bool
+
+    data_base = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00")
+    data_parent = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x06\x00\x00\x00"
+    )
+    data_grandparent = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x06\x00\x00\x00"
+        b"\x01\x00\x00\x00"
+    )
+
+    base = Base.from_buffer(data_base)
+    assert base.a == 1
+    assert base.b is True
+
+    assert Base.a.offset == 0x0
+    assert Base.b.offset == 0x8
+
+    assert Parent.a.offset == 0x0
+    assert Parent.b.offset == 0x8
+    assert Parent.c.offset == 0x10
+    assert Parent.d.offset == 0x14
+
+    assert GrandParent.e.offset == 0x18
+
+    parent = Parent.from_buffer(data_parent)
+    assert parent.a == 1
+    assert parent.b is True
+    assert parent.c == 5
+    assert parent.d == 6
+
+    grandparent = GrandParent.from_buffer(data_grandparent)
+    assert grandparent.a == 1
+    assert grandparent.b is True
+    assert grandparent.c == 5
+    assert grandparent.d == 6
+    assert grandparent.e is True
+
+
+def test_inheritence2():
+    # Test the case of a one partial struct inheriting from another. In this case the base class will not be
+    # a partial class but a concrete ctypes.Structure.
+    class Base(ctypes.Structure):
+        _fields_ = [
+            ("a", ctypes.c_uint32),
+            ("_padding0x4", ctypes.c_ubyte * 0x4),
+            ("b", ctypes.c_bool),
+        ]
+        a: ctypes.c_uint32
+        b: ctypes.c_bool
+
+    @partial_struct
+    class Parent(Base):
+        c: Annotated[ctypes.c_uint32, 0x10]
+        d: ctypes.c_uint32
+
+    @partial_struct
+    class GrandParent(Parent):
+        e: ctypes.c_bool
+
+    data_base = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00")
+    data_parent = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x06\x00\x00\x00"
+    )
+
+    base = Base.from_buffer(data_base)
+    assert base.a == 1
+    assert base.b is True
+
+    assert Parent.a.offset == 0x0
+    assert Parent.b.offset == 0x8
+    assert Parent.c.offset == 0x10
+    assert Parent.d.offset == 0x14
+
+    parent = Parent.from_buffer(data_parent)
+    assert parent.a == 1
+    assert parent.b is True
+    assert parent.c == 5
+    assert parent.d == 6
+
+
 def test_invalid_cases():
     # Invalid type type
     with pytest.raises(ValueError, match=re.escape("The field 'a' has an invalid type: <class 'int'>")):

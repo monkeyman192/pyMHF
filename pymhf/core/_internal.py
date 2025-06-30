@@ -28,22 +28,4 @@ INCLUDED_ASSEMBLIES: dict[str, str] = {}
 
 _executor: ThreadPoolExecutor = None  # type: ignore
 
-
-class _GameState:
-    def __init__(self):
-        self._game_loaded = False
-
-    @property
-    def game_loaded(self):
-        return self._game_loaded
-
-    @game_loaded.setter
-    def game_loaded(self, val: bool):
-        # The game can become loaded, but it can't become unloaded...
-        if val is True:
-            self._game_loaded = val
-
-
-GameState: _GameState = _GameState()
-
 imports: dict[str, dict[str, ctypes._CFuncPtr]] = {}
