@@ -356,7 +356,7 @@ class ModManager:
 
         return loaded_mods, bound_hooks
 
-    def load_mod_folder(self, folder: str, bind: bool = True) -> tuple[int, int]:
+    def load_mod_folder(self, folder: str, bind: bool = True, deep_search: bool = False) -> tuple[int, int]:
         """Load the mod folder.
 
         Params
@@ -370,10 +370,18 @@ class ModManager:
             necessary.
             If this function is called with False, then it MUST be called again with True before the hooks
             are enabled.
+        deep_search
+            Whether to search down into sub-folders.
         """
         for file in os.listdir(folder):
+            fullpath = op.join(folder, file)
             if file.endswith(".py"):
-                self.load_mod(op.join(folder, file))
+                self.load_mod(fullpath)
+            elif deep_search:
+                # Search down one more layer for mods and then stop.
+                # Don't bind any since we'll always call bind later.
+                if op.isdir(fullpath):
+                    self.load_mod_folder(fullpath, False, False)
         # Once all the mods in the folder have been loaded, then parse the mod
         # for function hooks and register then with the hook loader.
         loaded_mods = len(self._preloaded_mods)

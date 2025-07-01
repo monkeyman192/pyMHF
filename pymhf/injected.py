@@ -212,10 +212,10 @@ try:
             # For a single file mod, we just load that file.
             _loaded_mods, _loaded_hooks = mod_manager.load_single_mod(_internal.MODULE_PATH)
         elif _internal.LOAD_TYPE == _internal.LoadTypeEnum.MOD_FOLDER:
-            _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(_internal.MODULE_PATH)
+            _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(_internal.MODULE_PATH, deep_search=True)
         else:
             if mod_folder is not None:
-                _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(mod_folder)
+                _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(mod_folder, deep_search=True)
             else:
                 logging.warning(
                     """You have not configured the `mod_dir` variable in the pymhf.toml file.
