@@ -16,10 +16,10 @@ import pymem.process
 import pymem.ressources.kernel32
 
 from pymhf.core._internal import LoadTypeEnum
-from pymhf.core.caching import hash_bytes
 from pymhf.core.logging import open_log_console
 from pymhf.core.process import start_process
 from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol
+from pymhf.core.utils import hash_bytes
 from pymhf.utils.config import canonicalize_setting
 from pymhf.utils.parse_toml import read_pymhf_settings
 from pymhf.utils.winapi import get_exe_path_from_pid

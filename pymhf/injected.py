@@ -183,6 +183,10 @@ try:
     for fpath in _internal.INCLUDED_ASSEMBLIES.values():
         _internal.imports.update(get_imports(fpath))
 
+    # Load the offset cache.
+    if not cache.offset_cache.loaded:
+        cache.offset_cache.load()
+
     mod_manager.hook_manager = hook_manager
     # First, load our internal mod before anything else.
     if internal_mod_folder is not None:

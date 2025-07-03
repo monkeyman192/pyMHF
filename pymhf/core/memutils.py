@@ -3,11 +3,10 @@ import logging
 import sys
 from gc import get_referents
 from types import FunctionType, ModuleType
-from typing import Iterable, Optional, Type, TypeVar, Union
+from typing import Iterable, Literal, Optional, Type, TypeVar, Union, overload
 
 import pymem
 import pymem.pattern
-import pymem.process
 from pymem.ressources.structure import MODULEINFO
 
 import pymhf.core._internal as _internal
@@ -39,12 +38,6 @@ ctypes.pythonapi.PyMemoryView_FromMemory.restype = ctypes.py_object
 # be the same as the input type.
 CTYPES = Union[ctypes._SimpleCData, ctypes.Structure, ctypes._Pointer]
 Struct = TypeVar("Struct", bound=CTYPES)
-
-# Temporary solution to avoid having to get the handles and suche every time we need to do a look up.
-# "handle-module" cache
-hm_cache: dict[str, tuple[int, MODULEINFO]] = {}
-# Temporary solution to create a mapping of pattern/binary pairs to the offset within the binary.
-offset_cache = {}
 
 
 def getsize(obj):
@@ -128,10 +121,10 @@ def get_field_info(obj, logger=None, indent: int = 0, as_hex: bool = True, max_d
                 cls_obj = obj._type_
                 has_values = False
             else:
-                raise TypeError(f"obj {obj} must be an instance of a ctypes.Structure or a subclass.")
+                raise TypeError(f"{obj} must be an instance of a ctypes.Structure or a subclass.")
         except TypeError as e:
             yield obj.__mro__
-            raise TypeError(f"!!! obj {obj} must be an instance of a ctypes.Structure or a subclass.") from e
+            raise TypeError(f"{obj} must be an instance of a ctypes.Structure or a subclass.") from e
     for field, field_type in cls_obj._fields_:
         if has_values:
             val = getattr(obj, field)
@@ -240,18 +233,34 @@ def pattern_to_bytes(patt: str) -> bytes:
 
 
 def _get_binary_info(binary: str) -> Optional[tuple[int, MODULEINFO]]:
-    if binary not in hm_cache:
+    if binary not in cache.hm_cache:
         try:
             pm_process = pymem.Pymem(_internal.EXE_NAME)
             handle = pm_process.process_handle
-            if (module := cache.module_map.get(binary)) is None:
+            if ((module := cache.module_map.get(binary)) is None) or (handle is None):
                 return None
-            hm_cache[binary] = (handle, module)
+            cache.hm_cache[binary] = (handle, module)
             return (handle, module)
         except TypeError:
             return None
     else:
-        return hm_cache[binary]
+        return cache.hm_cache[binary]
+
+
+@overload
+def find_pattern_in_binary(
+    pattern: str,
+    return_multiple: Literal[False],
+    binary: Optional[str] = None,
+) -> Optional[int]: ...
+
+
+@overload
+def find_pattern_in_binary(
+    pattern: str,
+    return_multiple: Literal[True],
+    binary: Optional[str] = None,
+) -> Optional[list[int]]: ...
 
 
 def find_pattern_in_binary(
@@ -264,21 +273,24 @@ def find_pattern_in_binary(
     pattern_scan_module function so that we can just call this with a module name (often the name of the
     binary we ran, but it could be some other dll under the same process.)
     """
+    if (_cached_offset := cache.offset_cache.get(pattern, binary)) is not None:
+        mem_logger.debug(
+            f"Using cached offset 0x{_cached_offset:X} for pattern {pattern}"
+            f" and binary {binary or _internal.EXE_NAME}"
+        )
+        return _cached_offset
     if binary is None:
         binary = _internal.EXE_NAME
     hm = _get_binary_info(binary)
     if not hm:
         return None
     handle, module = hm
-    # Create a key which is the original pattern and the binary so that we may cache the result.
-    key = (pattern, binary)
-    if (_offset := offset_cache.get(key)) is not None:
-        return _offset
     patt = pattern_to_bytes(pattern)
     _offset = pymem.pattern.pattern_scan_module(handle, module, patt, return_multiple=return_multiple)
     if _offset:
         _offset = _offset - module.lpBaseOfDll
     # Cache even if there is no result (so we don't repeatedly look for it when it's not there in case there
     # is an issue.)
-    offset_cache[key] = _offset
+    mem_logger.debug(f"Found {pattern} at 0x{_offset:X} for binary {binary}")
+    cache.offset_cache.set(pattern, _offset, binary, True)
     return _offset

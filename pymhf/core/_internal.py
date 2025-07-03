@@ -25,6 +25,7 @@ BINARY_PATH: str = ""
 LOAD_TYPE: LoadTypeEnum = LoadTypeEnum.INVALID
 MOD_SAVE_DIR: str = ""
 INCLUDED_ASSEMBLIES: dict[str, str] = {}
+CACHE_DIR: str = ""
 
 _executor: ThreadPoolExecutor = None  # type: ignore
 
