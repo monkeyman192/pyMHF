@@ -1,8 +1,10 @@
+import hashlib
 import logging
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from ctypes import byref, c_ulong, create_unicode_buffer, windll
 from functools import wraps
+from io import BufferedReader
 from typing import Optional
 
 import psutil
@@ -65,6 +67,7 @@ def set_main_window_active(callback: Optional[Callable[[], None]] = None):
         _internal.MAIN_HWND = get_main_window_handle()
         if not _internal.MAIN_HWND:
             logger.error("Cannot set main window active as we can't find it...")
+            return
     if not is_main_window_foreground():
         if main_window := get_window_by_handle(_internal.MAIN_HWND):
             main_window.activate()
@@ -76,9 +79,10 @@ def is_main_window_foreground() -> bool:
     return win32gui.GetForegroundWindow() == _internal.MAIN_HWND
 
 
-def get_main_window():
-    main_window = get_window_by_handle(_internal.MAIN_HWND)
-    return main_window
+def get_main_window() -> Optional[pwc.Window]:
+    if _internal.MAIN_HWND is not None:
+        main_window = get_window_by_handle(_internal.MAIN_HWND)
+        return main_window
 
 
 # def dump_resource(res, fname):
@@ -118,6 +122,20 @@ def get_foreground_pid():
 
 def does_pid_have_focus(pid: int) -> bool:
     return pid == get_foreground_pid()
+
+
+def hash_bytes(fileobj: BufferedReader, _bufsize: int = 2**18) -> str:
+    # Essentially implement hashlib.file_digest since it's python 3.11+
+    # cf. https://github.com/python/cpython/blob/main/Lib/hashlib.py#L195
+    digestobj = hashlib.sha1()
+    buf = bytearray(_bufsize)  # Reusable buffer to reduce allocations.
+    view = memoryview(buf)
+    while True:
+        size = fileobj.readinto(buf)
+        if size == 0:
+            break  # EOF
+        digestobj.update(view[:size])
+    return digestobj.hexdigest()
 
 
 # TODO: Do something about this...

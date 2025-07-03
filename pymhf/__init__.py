@@ -328,15 +328,6 @@ def run():
     cfg_folder = op.join(appdata_data, "pymhf", plugin_name)
     os.makedirs(cfg_folder, exist_ok=True)
 
-    # PROCESS:
-    """
-    1. Check that the config file is in the correct location. If not, prompt the user to configure it.
-    2. if no `--config` argument passed, then we just run the program as intented.
-    3. If `--config` is provided, then we don't run the program and instead configure it.
-    4. The arguments for config are the keys (this will need to be documented extensively) followed by values
-        and separated by an `=`.
-    """
-
     initial_config = False
 
     if not local:

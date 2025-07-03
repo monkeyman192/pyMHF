@@ -7,7 +7,7 @@ import traceback
 from collections import defaultdict
 from collections.abc import Callable
 from ctypes import CFUNCTYPE
-from typing import Any, Optional, Type, Union, cast
+from typing import Any, NamedTuple, Optional, Type, Union, cast
 
 import cyminhook
 from typing_extensions import Concatenate, Generic, ParamSpec, Self, TypeVar, deprecated
@@ -32,6 +32,11 @@ hook_logger = logging.getLogger("HookManager")
 BITS = struct.calcsize("P") * 8
 
 
+class FunctionIdentifier(NamedTuple):
+    name: str
+    offset: int
+
+
 # Currently unused, but can maybe figure out how to utilise it.
 # It currently doesn't work I think because we subclass from the cyminhook class
 # which is cdef'd, and I guess ast falls over trying to get the actual source...
@@ -43,9 +48,6 @@ def _detour_is_valid(f):
             return True
     return False
 
-
-# A VERY rudimentary cache untill we implement gh-2.
-pattern_cache: dict[str, int] = {}
 
 _FunctionHook_overloads: dict = defaultdict(lambda: dict())
 
@@ -101,7 +103,7 @@ class FuncHook(cyminhook.MinHook):
         # @disable decorator, as well as hooks which are one-shots and have been
         # run.
         self._disabled_detours: set[HookProtocol] = set()
-        self._oneshot_detours: dict[HookProtocol, HookProtocol] = {}
+        self._oneshot_detours: dict[HookProtocol, Callable] = {}
         self.overload = overload
         self.state = None
         self._name = detour_name
@@ -132,14 +134,10 @@ class FuncHook(cyminhook.MinHook):
         # 2. If there is no offset provided, check to see if a pattern is provided. If so use this to find
         #    the offset.
         elif self._pattern is not None:
-            # Lookup the pattern in the pattern cache. If that fails find it in the binary.
-            if (offset := pattern_cache.get(self._pattern)) is None:
-                offset = find_pattern_in_binary(self._pattern, False, self._binary)
+            offset = find_pattern_in_binary(self._pattern, False, self._binary)
             if offset is not None:
                 self._offset = offset
-                pattern_cache[self._pattern] = offset
                 self.target = self._binary_base + offset
-                hook_logger.debug(f"Found {self._pattern} at 0x{offset:X}")
             else:
                 hook_logger.error(
                     f"Could not find pattern {self._pattern}... Hook {self._name!r} won't be added"
@@ -150,15 +148,11 @@ class FuncHook(cyminhook.MinHook):
         # 3. If there is still no offset, look up the pattern in the module_data to get offset
         elif (_pattern := module_data.FUNC_PATTERNS.get(self._name)) is not None:
             if isinstance(_pattern, str):
-                if (offset := pattern_cache.get(_pattern)) is None:
-                    offset = find_pattern_in_binary(_pattern, False, self._binary)
+                offset = find_pattern_in_binary(_pattern, False, self._binary)
             else:
                 if (overload_pattern := _pattern.get(self.overload)) is not None:
                     _pattern = overload_pattern
-                    if overload_pattern in pattern_cache:
-                        offset = pattern_cache[overload_pattern]
-                    else:
-                        offset = find_pattern_in_binary(overload_pattern, False, self._binary)
+                    offset = find_pattern_in_binary(overload_pattern, False, self._binary)
                 else:
                     first = list(_pattern.items())[0]
                     _pattern = first
@@ -167,9 +161,7 @@ class FuncHook(cyminhook.MinHook):
                     offset = find_pattern_in_binary(first[1], False, self._binary)
             if offset is not None:
                 self._offset = offset
-                pattern_cache[_pattern] = offset
                 self.target = self._binary_base + offset
-                hook_logger.debug(f"Found {self.name} with pattern {_pattern!r} at 0x{offset:X}")
 
         # 4. If there is still no offset, look up the offset in the module_data.
         # Note: If this is created by passing in an absolute offset, then the above 3 conditions will fail,
@@ -357,12 +349,9 @@ class FuncHook(cyminhook.MinHook):
             super().__init__(signature=self.signature, target=self.target)
         except cyminhook._cyminhook.Error as e:  # type: ignore
             if e.status == cyminhook._cyminhook.Status.MH_ERROR_ALREADY_CREATED:
-                hook_logger.info(
-                    "Hook is already created. This shouldn't be possible. Please raise an issue on github..."
-                )
+                hook_logger.error("Hook is already created")
             hook_logger.error(f"Failed to initialize hook {self._name} at 0x{self.target:X}")
-            hook_logger.error(e)
-            hook_logger.error(e.status.name[3:].replace("_", " "))
+            hook_logger.error(e.status.name[3:].replace("_", " ") + f" ({e})")
             self.state = "failed"
             return False
         self.state = "initialized"
@@ -791,38 +780,11 @@ class HookManager:
         if hook_func_name not in self.hooks:
             # Check to see if it's a manual hook. If so, we initialize the FuncHook object differently.
             if hook._is_manual_hook:
-                hook = cast(ManualHookProtocol, hook)
-                funcdef = hook._hook_func_def
-                if funcdef is None:
-                    # If no funcdef is explicitly provided, look and see if we have one defined in the module
-                    # data for this function name.
-                    funcdef = module_data.FUNC_CALL_SIGS.get(hook_func_name)
-                if funcdef is None:
-                    raise SyntaxError(
-                        "When creating a manual hook, the first detour for any given name MUST have a "
-                        "func_def argument."
-                    )
-                # Handle hook offsets and patterns.
-                hook_offset = hook._hook_offset
-                if hook_offset is None:
-                    hook_offset = module_data.FUNC_OFFSETS.get(hook_func_name)
-                hook_pattern = hook._hook_pattern
-                if hook_pattern is None:
-                    hook_pattern = module_data.FUNC_PATTERNS.get(hook_func_name)
-                if hook_offset is None and hook_pattern is None:
-                    hook_logger.error(
-                        f"The manual hook for {hook_func_name} was defined with no offset or pattern. One of "
-                        "these is required to register a hook. The hook will not be registered."
-                    )
-                    return
-                binary = hook._hook_binary or module_data.FUNC_BINARY
-                self.hooks[hook_func_name] = FuncHook(
-                    hook._hook_func_name,
-                    offset=hook_offset,
-                    pattern=hook_pattern,
-                    func_def=funcdef,
-                    binary=binary,
+                hook_logger.warning(
+                    "Manual hooks are no longer supported. This functionality will be removed completely in "
+                    "pyMHF 0.2. Use the @function_hook decorator instead."
                 )
+                return
             elif hook._is_imported_func_hook:
                 hook = cast(HookProtocol, hook)
                 dll_name = hook._dll_name.lower()

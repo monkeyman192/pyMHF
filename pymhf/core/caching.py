@@ -1,83 +1,68 @@
-# A collection of functions which will hash and cache things.
+# A collection of functions which will cache things.
 
-import hashlib
 import json
 import os
 import os.path as op
-from io import BufferedReader
+from logging import getLogger
 from typing import Optional
 
 from pymem.ressources.structure import MODULEINFO
 
 import pymhf.core._internal as _internal
 
-CACHE_DIR = ".cache"
+logger = getLogger(__name__)
 
 
-def hash_bytes(fileobj: BufferedReader, _bufsize: int = 2**18) -> str:
-    # Essentially implement hashlib.file_digest since it's python 3.11+
-    # cf. https://github.com/python/cpython/blob/main/Lib/hashlib.py#L195
-    digestobj = hashlib.sha1()
-    buf = bytearray(_bufsize)  # Reusable buffer to reduce allocations.
-    view = memoryview(buf)
-    while True:
-        size = fileobj.readinto(buf)
-        if size == 0:
-            break  # EOF
-        digestobj.update(view[:size])
-    return digestobj.hexdigest()
+# "handle-module" cache to avoid having to get the handles and such every time we need to do a look up.
+hm_cache: dict[str, tuple[int, MODULEINFO]] = {}
 
 
 class OffsetCache:
-    def __init__(self, path: str):
-        self._path = path
-        self._binary_hash: Optional[str] = None
-        self._lookup: dict[str, int] = {}
+    """A simple cache to store offsets once they have been found within a particular binary.
+    This cached data is only correct for a specific exe unique by the hash."""
+
+    def __init__(self):
+        self._lookup: dict[str, dict[str, int]] = {}
+        self.loaded = False
 
     @property
     def path(self) -> str:
-        return op.join(_internal.CWD, CACHE_DIR, f"{self._binary_hash}_{self._path}.json")
+        return op.join(_internal.CACHE_DIR, f"{_internal.BINARY_HASH}.json")
 
-    def load(self, binary_hash: str):
+    def load(self):
         """Load the data."""
-        self._binary_hash = binary_hash
+        logger.debug(f"loading cache {self.path}")
         if op.exists(self.path):
             with open(self.path, "r") as f:
                 self._lookup = json.load(f)
+                self.loaded = True
 
     def save(self):
         """Persist the cache to disk."""
+        if not op.exists(op.dirname(self.path)):
+            os.makedirs(op.dirname(self.path), exist_ok=True)
         with open(self.path, "w") as f:
-            json.dump(self._lookup, f)
+            json.dump(self._lookup, f, indent=1)
 
-    def get(self, name: str) -> Optional[int]:
-        """Get the offset based on the key provided."""
-        return self._lookup.get(name)
+    def get(self, pattern: str, binary: Optional[str] = None) -> Optional[int]:
+        """Get the offset based on the pattern provided."""
+        return self._lookup.get(binary or _internal.EXE_NAME, {}).get(pattern)
 
-    def set(self, key: str, value: int, save: bool = True):
-        """Set the key with the given value and optionally save."""
-        self._lookup[key] = value
+    def set(self, pattern: str, offset: int, binary: Optional[str] = None, save: bool = True):
+        """Set the pattern with the given value and optionally save."""
+        _binary = binary
+        if _binary is None:
+            _binary = _internal.EXE_NAME
+        if _binary not in self._lookup:
+            self._lookup[_binary] = {}
+        self._lookup[_binary][pattern] = offset
         if save:
             self.save()
 
-    def items(self):
-        for key, value in self._lookup.items():
-            yield key, value
-
-
-function_cache = OffsetCache("function_cache")
-pattern_cache = OffsetCache("pattern_cache")
-globals_cache = OffsetCache("globals_cache")
-builtins_cache = OffsetCache("builtins_cache")
-
-
-def load_caches(binary_hash: str):
-    if not op.exists(op.join(_internal.CWD, CACHE_DIR)):
-        os.makedirs(op.join(_internal.CWD, CACHE_DIR))
-    function_cache.load(binary_hash)
-    pattern_cache.load(binary_hash)
-    globals_cache.load(binary_hash)
-    builtins_cache.load(binary_hash)
+    def items(self, binary: Optional[str] = None):
+        for pattern, offset in self._lookup.get(binary or _internal.EXE_NAME, {}).items():
+            yield pattern, offset
 
 
 module_map: dict[str, MODULEINFO] = {}
+offset_cache = OffsetCache()
