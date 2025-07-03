@@ -5,6 +5,7 @@ Current (0.1.14.dev)
 
 - Added the ability for partial classes to subclass from another partial struct or ``ctypes.Structure``.
 - Change mod folder loading so that it will load from sub-folders as well. (`#64 <https://github.com/monkeyman192/pyMHF/issues/64>`_)
+- Implement a offset cache - This will reduce start up times after the initial load for any pattern which has already been found for the same binary. (`#2 <https://github.com/monkeyman192/pyMHF/issues/2>`_)
 
 0.1.13 (26/06/2025)
 -------------------
