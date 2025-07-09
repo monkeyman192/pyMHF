@@ -7,7 +7,7 @@ import traceback
 from collections import defaultdict
 from collections.abc import Callable
 from ctypes import CFUNCTYPE
-from typing import Any, NamedTuple, Optional, Type, Union, cast
+from typing import Any, Optional, Type, Union, cast
 
 import cyminhook
 from typing_extensions import Concatenate, Generic, ParamSpec, Self, TypeVar, deprecated
@@ -17,24 +17,19 @@ from pymhf.core._types import (
     FUNCDEF,
     CallerHookProtocol,
     DetourTime,
+    FunctionIdentifier,
     HookProtocol,
     KeyPressProtocol,
     ManualHookProtocol,
 )
 from pymhf.core.functions import FuncDef, _get_funcdef
 from pymhf.core.memutils import _get_binary_info, find_pattern_in_binary, get_addressof
-from pymhf.core.module_data import module_data
 from pymhf.utils.iced import HAS_ICED, generate_load_stack_pointer_bytes, get_first_jmp_addr
 
 hook_logger = logging.getLogger("HookManager")
 
 
 BITS = struct.calcsize("P") * 8
-
-
-class FunctionIdentifier(NamedTuple):
-    name: str
-    offset: int
 
 
 # Currently unused, but can maybe figure out how to utilise it.
@@ -66,34 +61,43 @@ class FuncHook(cyminhook.MinHook):
     def __init__(
         self,
         detour_name: str,
-        *,
-        offset: Optional[int] = None,
-        pattern: Optional[str] = None,
-        func_def: Optional[FUNCDEF] = None,
+        offset: int,
+        func_def: FUNCDEF,
         overload: Optional[str] = None,
         binary: Optional[str] = None,
         offset_is_absolute: bool = False,
     ):
-        self._offset_is_absolute = offset_is_absolute
-        if self._offset_is_absolute and offset is not None:
-            self.target = offset
-            self._offset = None
+        # First, handle the binary so we can know what our base is.
+        if binary is not None:
+            if (hm := _get_binary_info(binary)) is not None:
+                _, module = hm
+                self._binary_base = module.lpBaseOfDll
+                self._binary = binary
+            else:
+                self._binary = _internal.EXE_NAME
+                self._binary_base = _internal.BASE_ADDRESS
         else:
+            self._binary = _internal.EXE_NAME
+            self._binary_base = _internal.BASE_ADDRESS
+
+        # Next, handle determining the absolute offset in memory.
+        self._offset_is_absolute = offset_is_absolute
+        if self._offset_is_absolute:
+            self.target = offset
+            self._offset = offset - self._binary_base
+        else:
+            self.target = self._binary_base + offset
             self._offset = offset
-        self._pattern = pattern
         self._func_def = func_def
         self._binary = binary
+
+        # Depending on the bitness, create the variable to hold the return address.
         if BITS == 64:
             self._rsp_addr = ctypes.c_ulonglong(0)
         else:
             self._rsp_addr = ctypes.c_ulong(0)
-        if self._binary is not None:
-            if (hm := _get_binary_info(self._binary)) is not None:
-                _, module = hm
-                self._binary_base = module.lpBaseOfDll
-        else:
-            self._binary = _internal.EXE_NAME
-            self._binary_base = _internal.BASE_ADDRESS
+
+        self.signature = CFUNCTYPE(self._func_def.restype, *self._func_def.argtypes)
 
         self._has_noop = False
         self._before_detours: list[HookProtocol] = []
@@ -107,7 +111,6 @@ class FuncHook(cyminhook.MinHook):
         self.overload = overload
         self.state = None
         self._name = detour_name
-        self._initialised = False
 
     @property
     def caller_address(self):
@@ -121,108 +124,6 @@ class FuncHook(cyminhook.MinHook):
             return f"{self._name}({self.overload})"
         else:
             return self._name
-
-    def _init(self):
-        """Actually initialise all the data. This is defined separately so that any function which is marked
-        with @disable doesn't get initialised.
-        """
-        offset = None
-        # 1. Check to see if an offset is provided. If so, use this as the offset to find the address at.
-        if self._offset is not None:
-            self.target = self._binary_base + self._offset
-
-        # 2. If there is no offset provided, check to see if a pattern is provided. If so use this to find
-        #    the offset.
-        elif self._pattern is not None:
-            offset = find_pattern_in_binary(self._pattern, False, self._binary)
-            if offset is not None:
-                self._offset = offset
-                self.target = self._binary_base + offset
-            else:
-                hook_logger.error(
-                    f"Could not find pattern {self._pattern}... Hook {self._name!r} won't be added"
-                )
-                self._invalid = True
-                return
-
-        # 3. If there is still no offset, look up the pattern in the module_data to get offset
-        elif (_pattern := module_data.FUNC_PATTERNS.get(self._name)) is not None:
-            if isinstance(_pattern, str):
-                offset = find_pattern_in_binary(_pattern, False, self._binary)
-            else:
-                if (overload_pattern := _pattern.get(self.overload)) is not None:
-                    _pattern = overload_pattern
-                    offset = find_pattern_in_binary(overload_pattern, False, self._binary)
-                else:
-                    first = list(_pattern.items())[0]
-                    _pattern = first
-                    hook_logger.warning(f"No overload was provided for {self._name}. ")
-                    hook_logger.warning(f"Falling back to the first overload ({first[0]})")
-                    offset = find_pattern_in_binary(first[1], False, self._binary)
-            if offset is not None:
-                self._offset = offset
-                self.target = self._binary_base + offset
-
-        # 4. If there is still no offset, look up the offset in the module_data.
-        # Note: If this is created by passing in an absolute offset, then the above 3 conditions will fail,
-        # but this one will not as self.target will have already been assigned.
-        if not self.target:
-            _offset = module_data.FUNC_OFFSETS.get(self._name)
-            if _offset is not None:
-                if isinstance(_offset, int):
-                    self.target = self._binary_base + _offset
-                else:
-                    # This is an overload
-                    if (overload_offset := _offset.get(self.overload)) is not None:
-                        self.target = self._binary_base + overload_offset
-                    else:
-                        # Need to fallback on something. Raise a warning that no
-                        # overload was defined and that it will fallback to the
-                        # first entry in the dict.
-                        first = list(_offset.items())[0]
-                        hook_logger.warning(f"No overload was provided for {self._name}. ")
-                        hook_logger.warning(f"Falling back to the first overload ({first[0]})")
-                        self.target = self._binary_base + first[1]
-            else:
-                hook_logger.error(f"Cannot find the function {self._name} in {_internal.EXE_NAME}")
-                self._invalid = True
-                return
-
-        # 5. if func_sig is provided, use it, otherwise look it up.
-        if self._func_def is not None:
-            self.signature = CFUNCTYPE(self._func_def.restype, *self._func_def.argtypes)
-        else:
-            if (sig := module_data.FUNC_CALL_SIGS.get(self._name)) is not None:
-                if isinstance(sig, FUNCDEF):
-                    self.signature = CFUNCTYPE(sig.restype, *sig.argtypes)
-                    hook_logger.debug(
-                        f"Function {self._name} return type: {sig.restype} args: {sig.argtypes}"
-                    )
-                    if self.overload is not None:
-                        hook_logger.warning(
-                            f"An overload was provided for {self._name} but no overloaded"
-                            " function definitions exist. This function may fail."
-                        )
-                else:
-                    # Look up the overload:
-                    if (osig := sig.get(self.overload)) is not None:  # type: ignore
-                        self.signature = CFUNCTYPE(osig.restype, *osig.argtypes)
-                        hook_logger.debug(
-                            f"Function {self._name} return type: {osig.restype} args: {osig.argtypes}"
-                        )
-                    else:
-                        # Need to fallback on something. Raise a warning that no overload was defined and that
-                        # it will fallback to the first entry in the dict.
-                        first = list(sig.items())[0]
-                        hook_logger.warning(f"No function arguments overload was provided for {self._name}. ")
-                        hook_logger.warning(f"Falling back to the first overload ({first[0]})")
-                        self.signature = CFUNCTYPE(first[1].restype, *first[1].argtypes)
-            else:
-                hook_logger.error(f"{self._name} has no known call signature")
-                self._invalid = True
-                return
-
-        self._initialised = True
 
     def _determine_detour_list(self, detour: HookProtocol) -> Optional[list[HookProtocol]]:
         # Determine when the hook should be run. Don't add the detour yet
@@ -572,7 +473,7 @@ def NOOP(detour: HookProtocol) -> HookProtocol:
 
 def disable(obj):
     """
-    Disable the current function or class.
+    Disable the current hook or mod.
     """
     setattr(obj, "_disabled", True)
     return obj
@@ -703,16 +604,21 @@ def on_key_release(event: str):
 
 class HookManager:
     def __init__(self):
-        self.hooks: dict[str, FuncHook] = {}
+        self.hooks: dict[FunctionIdentifier, FuncHook] = {}
         # Keep a mapping of any hooks that try to be registered but fail.
         # These hooks will not be instances of classes, but the class type.
         self.failed_hooks: dict[str, Type[FuncHook]] = {}
         # A mapping of the custom event hooks which can be registered by modules
         # for individual mods.
         self.custom_callbacks: dict[str, dict[DetourTime, set[HookProtocol]]] = {}
-        self._uninitialized_hooks: set[str] = set()
+        self._uninitialized_hooks: set[FunctionIdentifier] = set()
+        self._hook_id_mapping: dict[HookProtocol, FunctionIdentifier] = {}
+        self._get_caller_detours: set[FunctionIdentifier] = set()
 
-        self._get_caller_detours: set[str] = set()
+    def _get_funchook(self, hook: HookProtocol) -> Optional[FuncHook]:
+        """Return the associated function hook for the provided hook."""
+        if (hook_id := self._hook_id_mapping.get(hook)) is not None:
+            return self.hooks.get(hook_id)
 
     def _resolve_dependencies(self):
         """Resolve dependencies of hooks.
@@ -768,78 +674,88 @@ class HookManager:
             for cb in callbacks.get(detour_time, set()):
                 cb()
 
+    def try_remove_hook(self, hook: HookProtocol):
+        """Remove the provided hook from the internal store only if it's already closed."""
+        if (hook_id := self._hook_id_mapping.get(hook)) is not None:
+            if (func_hook := self.hooks.get(hook_id)) is not None:
+                if func_hook.state == "closed":
+                    del self.hooks[hook_id]
+
     def register_hook(self, hook: HookProtocol):
-        """Register the provided hook."""
+        """Register the provided hook.
+        This will determine the offset of the function being hooked."""
+        if getattr(hook, "_disabled", False) is True:
+            # Do nothing, exit immediately.
+            return
         hook_func_name = hook._hook_func_name
         # If the hook has an overload, add it here so that we can disambiguate them.
         if getattr(hook, "_func_overload", None) is not None:
             hook_func_name += f"({hook._func_overload})"
-        # Check to see if this function hook name exists within the hook mapping.
-        # If it doesn't then we need to initialise the FuncHook and then add the detour to it.
-        # If it does then we simply add the detour to it.
-        if hook_func_name not in self.hooks:
-            # Check to see if it's a manual hook. If so, we initialize the FuncHook object differently.
-            if hook._is_manual_hook:
-                hook_logger.warning(
-                    "Manual hooks are no longer supported. This functionality will be removed completely in "
-                    "pyMHF 0.2. Use the @function_hook decorator instead."
-                )
-                return
-            elif hook._is_imported_func_hook:
-                hook = cast(HookProtocol, hook)
-                dll_name = hook._dll_name.lower()
-                hook_func_name = hook._hook_func_name
-                hook_func_def = hook._hook_func_def
-                if (dll_func_ptrs := _internal.imports.get(dll_name)) is not None:
-                    func_ptr = dll_func_ptrs.get(hook_func_name)
-                    # For now, cast the func_ptr object back to the target location in memory.
-                    # This is wasteful, but simple for now for testing...
-                    target = ctypes.cast(func_ptr, ctypes.c_void_p).value
-                    self.hooks[hook_func_name] = FuncHook(
-                        hook._hook_func_name,
-                        offset=target,
-                        func_def=hook_func_def,
-                        offset_is_absolute=True,
-                    )
-                else:
-                    hook_logger.error(f"Cannot find {dll_name} in the import list")
-            elif hook._is_exported_func_hook:
-                if _internal.BINARY_PATH is None:
-                    hook_logger.error("Current running binary path unknown. Cannot hook exported functions")
-                    return
-                # TODO: This is inefficient. We should only instantiate the "dll" once.
-                own_dll = ctypes.WinDLL(_internal.BINARY_PATH)
-                func_ptr = getattr(own_dll, hook._hook_func_name)
-                target = ctypes.cast(func_ptr, ctypes.c_void_p).value
-                self.hooks[hook_func_name] = FuncHook(
-                    hook._hook_func_name,
-                    offset=target,
-                    func_def=hook._hook_func_def,
-                    offset_is_absolute=True,
-                )
+
+        # First, try and look up some info about the hook.
+        # We can't trust the name of the hook as this may not be correct or mean anything.
+        # The only thing we can trust is a relative offset within a particular binary.
+
+        hook_binary = _internal.EXE_NAME
+        hook_offset = None
+        hook_offset_is_absolute = False
+
+        # First, if we have an offset then look it up.
+        if hook._hook_offset is not None:
+            hook_offset = hook._hook_offset
+        # Otherwise, try lookup the pattern if we have one.
+        elif (hook_pattern := hook._hook_pattern) is not None:
+            hook_offset = find_pattern_in_binary(hook_pattern, False, hook_binary)
+        elif hook._is_imported_func_hook:
+            hook = cast(HookProtocol, hook)
+            hook_binary = hook._dll_name.lower()
+            if (dll_func_ptrs := _internal.imports.get(hook_binary)) is not None:
+                func_ptr = dll_func_ptrs.get(hook_func_name)
+                # For now, cast the func_ptr object back to the target location in memory.
+                # This is wasteful, but simple for now for testing...
+                hook_offset = ctypes.cast(func_ptr, ctypes.c_void_p).value
+                hook_offset_is_absolute = True
             else:
-                # TODO: have a way to differentiate the binary here.
-                self.hooks[hook_func_name] = FuncHook(
-                    hook._hook_func_name,
-                    offset=hook._hook_offset,
-                    pattern=hook._hook_pattern,
-                    func_def=hook._hook_func_def,
-                    overload=getattr(hook, "_func_overload", None),
-                )
-            self._uninitialized_hooks.add(hook_func_name)
-        self.hooks[hook_func_name].add_detour(hook)
+                hook_logger.error(f"Cannot find {hook_binary} in the import list")
+                return
+        elif hook._is_exported_func_hook:
+            if _internal.BINARY_PATH is None:
+                hook_logger.error("Current running binary path unknown. Cannot hook exported functions")
+                return
+            # TODO: This is inefficient. We should only instantiate the "dll" once.
+            own_dll = ctypes.WinDLL(_internal.BINARY_PATH)
+            func_ptr = getattr(own_dll, hook._hook_func_name)
+            hook_offset = ctypes.cast(func_ptr, ctypes.c_void_p).value
+            hook_offset_is_absolute = True
+
+        if hook_offset is not None:
+            func_id = FunctionIdentifier(hook_func_name, hook_offset, hook_binary, hook_offset_is_absolute)
+        else:
+            hook_logger.error(f"Unable to find offset for {hook_func_name}. Hook will not be registered.")
+            return
+
+        if func_id not in self.hooks:
+            self.hooks[func_id] = FuncHook(
+                func_id.name,
+                offset=func_id.offset,
+                func_def=hook._hook_func_def,
+                binary=hook_binary,
+                offset_is_absolute=func_id.is_absolute,
+            )
+            self._uninitialized_hooks.add(func_id)
+            self._hook_id_mapping[hook] = func_id
+        self.hooks[func_id].add_detour(hook)
 
         if getattr(hook, "_get_caller", False):
-            self._get_caller_detours.add(hook_func_name)
+            self._get_caller_detours.add(func_id)
 
     def initialize_hooks(self) -> int:
         """Initialize any uninitialized hooks.
         This will also enable the hooks so that they become active.
         """
         count = 0
-        for hook_name in self._uninitialized_hooks:
-            hook = self.hooks[hook_name]
-            hook._init()
+        for hook_func_id in self._uninitialized_hooks:
+            hook = self.hooks[hook_func_id]
             bound = hook.bind()
             if bound:
                 count += 1
@@ -855,18 +771,18 @@ class HookManager:
                 else:
                     offset = hook.offset
                     prefix = f"{hook._binary}+"
-                hook_logger.info(f"Enabled hook for {hook_name} at {prefix}0x{offset:X}")
+                hook_logger.info(f"Enabled hook for {hook_func_id.name} at {prefix}0x{offset:X}")
             except Exception:
-                hook_logger.error(f"Unable to enable {hook_name} because:")
+                hook_logger.error(f"Unable to enable {hook_func_id.name} because:")
                 hook_logger.error(traceback.format_exc())
 
             # If any of the hooked functions want to log where they were called from, we need to overwrite
             # part of the trampoline bytes to capture the RSP register.
-            if hook_name in self._get_caller_detours:
+            if hook_func_id in self._get_caller_detours:
                 if not HAS_ICED:
                     hook_logger.error(
-                        f"Cannot get calling address of {hook_name} as `iced_x86` package is not installed.\n"
-                        "Please install and try again."
+                        f"Cannot get calling address of {hook_func_id.name} as `iced_x86` package is not "
+                        "installed.\nPlease install and try again."
                     )
                     continue
                 # First, get the first jump so we can go to the trampoline bytes.
@@ -888,35 +804,17 @@ class HookManager:
                     for j in range(len(orig_bytes)):
                         data_at_detour[i + j + 1] = orig_bytes[j]
                     hook_logger.info(
-                        f"The function {hook_name} has a modified hook to get the calling address."
+                        f"The function {hook_func_id.name} has a modified hook to get the calling address."
                     )
 
         # There are no uninitialized hooks.
         self._uninitialized_hooks = set()
         return count
 
-    def enable(self, func_name: str):
-        """Enable the hook for the provided function name."""
-        if hook := self.hooks.get(func_name):
-            hook.enable()
-            hook_logger.info(f"Enabled hook for function '{func_name}'")
-        else:
-            hook_logger.error(f"Couldn't enable hook for function '{func_name}'")
-            return
-
-    def disable(self, func_name: str):
-        """Disable the hook for the provided function name."""
-        if hook := self.hooks.get(func_name):
-            hook.disable()
-            hook_logger.info(f"Disabled hook for function '{func_name}'")
-        else:
-            hook_logger.error(f"Couldn't disable hook for function '{func_name}'")
-            return
-
     def _debug_show_states(self):
         # Return the states of all the registered hooks
-        for func_name, hook in self.hooks.items():
-            hook_logger.info(f"Functions registered for {func_name}:")
+        for hook_func_id, hook in self.hooks.items():
+            hook_logger.info(f"Functions registered for {hook_func_id.name}:")
             if hook._before_detours:
                 hook_logger.info("  Before Detours:")
                 for func in hook._before_detours:

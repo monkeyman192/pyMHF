@@ -18,4 +18,5 @@ class ModuleData:
     FUNC_BINARY: Optional[str] = None
 
 
+# TODO: Remove.
 module_data = ModuleData()

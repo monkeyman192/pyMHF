@@ -217,7 +217,7 @@ try:
             _loaded_mods, _loaded_hooks = mod_manager.load_single_mod(_internal.MODULE_PATH)
         elif _internal.LOAD_TYPE == _internal.LoadTypeEnum.MOD_FOLDER:
             _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(_internal.MODULE_PATH, deep_search=True)
-        else:
+        else:  # Loading a library.
             if mod_folder is not None:
                 _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(mod_folder, deep_search=True)
             else:
@@ -227,7 +227,16 @@ try:
                 )
     except Exception:
         logging.error(traceback.format_exc())
-    logging.info(f"Loaded {_loaded_mods} mods and {_loaded_hooks} hooks in {time.time() - start_time:.3f}s")
+    _mods_str = "mod"
+    if _loaded_mods != 1:
+        _mods_str = "mods"
+    _hooks_str = "hook"
+    if _loaded_hooks != 1:
+        _hooks_str = "hooks"
+    logging.info(
+        f"Loaded {_loaded_mods} {_mods_str} and {_loaded_hooks} {_hooks_str} in "
+        f"{time.time() - start_time:.3f}s"
+    )
 
     mod_manager._assign_mod_instances()
 

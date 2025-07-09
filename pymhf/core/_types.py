@@ -2,6 +2,21 @@ from enum import Enum
 from typing import Any, NamedTuple, Optional, Protocol
 
 
+class FunctionIdentifier(NamedTuple):
+    name: str
+    offset: int
+    binary: str
+    is_absolute: bool
+
+    def __eq__(self, other: "FunctionIdentifier"):
+        """Two FunctionIdentifier's are the same if their offset and binary are the same."""
+        return self.offset == other.offset and self.binary == other.binary
+
+    def __hash__(self):
+        """Only use the offset and binary values for the hash. Name doesn't matter."""
+        return hash((self.offset, self.binary))
+
+
 # TODO: Fully deprecate.
 class FUNCDEF(NamedTuple):
     restype: Any
@@ -35,7 +50,7 @@ class HookProtocol(Protocol):
     _func_overload: Optional[str]
     _get_caller: Optional[bool]
     _noop: Optional[bool]
-    _dll_name: str
+    _dll_name: Optional[str]
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
 

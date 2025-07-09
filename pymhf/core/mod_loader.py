@@ -28,7 +28,6 @@ from pymhf.core.errors import NoSaveError
 from pymhf.core.hooking import HookManager
 from pymhf.core.importing import import_file
 from pymhf.core.memutils import get_addressof, map_struct
-from pymhf.core.module_data import module_data
 from pymhf.core.utils import does_pid_have_focus, saferun
 from pymhf.gui.protocols import ButtonProtocol, ComboBoxProtocol, VariableProtocol
 
@@ -41,7 +40,7 @@ mod_logger = logging.getLogger("ModManager")
 
 def _is_mod_predicate(obj, ref_module) -> bool:
     if inspect.getmodule(obj) == ref_module and inspect.isclass(obj):
-        return issubclass(obj, Mod) and getattr(obj, "_should_enable", True)
+        return issubclass(obj, Mod) and not getattr(obj, "_disabled", False)
     return False
 
 
@@ -82,6 +81,7 @@ def _gui_variable_predicate(value) -> bool:
             and hasattr(value.fget, "_label_text")
             and hasattr(value.fget, "_variable_type")
         )
+    return False
 
 
 class StructEncoder(json.JSONEncoder):
@@ -99,7 +99,7 @@ class StructDecoder(json.JSONDecoder):
     def __init__(self):
         json.JSONDecoder.__init__(self, object_hook=self.object_hook)
 
-    def object_hook(seld, obj: dict):
+    def object_hook(self, obj: dict):
         if (module := obj.get("module")) is not None:
             if module == "__main__":
                 return globals()[obj["struct"]](**obj["fields"])
@@ -184,8 +184,9 @@ class Mod(ABC):
     # Minimum required pyMHF version for this mod.
     __pymhf_required_version__: Optional[str] = None
 
-    _custom_callbacks: dict[str, set[HookProtocol]]
+    _custom_callbacks: set[HookProtocol]
     pymhf_gui: "GUI"
+    _disabled: bool = False
 
     def __init__(self):
         # Find all the hooks defined for the mod.
@@ -270,14 +271,14 @@ class ModManager:
         d: dict[str, type[Mod]] = dict(
             inspect.getmembers(module, partial(_is_mod_predicate, ref_module=module))
         )
-        if not len(d) >= 1:
+        if len(d) == 0:
+            # No mod in the file. Just return
+            return False
+        elif len(d) > 1:
             mod_logger.error(
                 f"The file {module.__file__} has more than one mod defined in it. "
                 "Only define one mod per file."
             )
-        if len(d) == 0:
-            # No mod in the file. Just return
-            return False
         mod_name = list(d.keys())[0]
         mod = d[mod_name]
         if mod.__pymhf_required_version__ is not None:
@@ -382,16 +383,18 @@ class ModManager:
                 # Don't bind any since we'll always call bind later.
                 if op.isdir(fullpath):
                     self.load_mod_folder(fullpath, False, False)
-        # Once all the mods in the folder have been loaded, then parse the mod
-        # for function hooks and register then with the hook loader.
+
+        # Once all the mods in the folder have been loaded, then parse the mod for function hooks and register
+        # then with the hook loader.
+        # We only do this if we are also binding the mods since we only want to do this once.
         loaded_mods = len(self._preloaded_mods)
-        for _mod in self._preloaded_mods.values():
-            self.instantiate_mod(_mod)
-
-        self._preloaded_mods.clear()
-
         bound_hooks = 0
+
         if bind:
+            for _mod in self._preloaded_mods.values():
+                self.instantiate_mod(_mod)
+            self._preloaded_mods.clear()
+
             bound_hooks = self.hook_manager.initialize_hooks()
 
         return loaded_mods, bound_hooks
@@ -456,15 +459,11 @@ class ModManager:
             if (mod := self.mods.get(name)) is not None:
                 # First, remove everything.
                 for hook in mod.hooks:
-                    hook_name = hook._hook_func_name
-                    fh = self.hook_manager.hooks.get(hook_name)
-                    if fh is not None:
+                    if (fh := self.hook_manager._get_funchook(hook)) is not None:
                         mod_logger.info(f"Removing hook {hook}: {hook._hook_func_name}")
                         fh.remove_detour(hook)
-                        # If the hook has been closed it means that there are now no longer any methods
-                        # assigned as detours to it. Remove the hook from the registry.
-                        if fh.state == "closed":
-                            del self.hook_manager.hooks[hook_name]
+                        # Tell the hook manager to try and remove the hook if it can.
+                        self.hook_manager.try_remove_hook(hook)
 
                 self.hook_manager._remove_custom_callbacks(mod._custom_callbacks)
                 for hotkey_func in mod._hotkey_funcs:
@@ -518,19 +517,6 @@ class ModManager:
                                     del type_
                                     deleted_types.add(new_obj_type_name)
                             setattr(mod, field, state)
-
-                    # Check also to see if the file had any module-level __pymhf attributes which we might
-                    # to update the `module_data` with.
-                    _new_binary = getattr(new_module, "__pymhf_func_binary__", None)
-                    _new_offsets = getattr(new_module, "__pymhf_func_offsets__", {})
-                    _new_patterns = getattr(new_module, "__pymhf_func_patterns__", {})
-                    _new_func_call_sigs = getattr(new_module, "__pymhf_func_call_sigs__", {})
-
-                    if _new_binary:
-                        module_data.FUNC_BINARY = _new_binary
-                    module_data.FUNC_OFFSETS.update(_new_offsets)
-                    module_data.FUNC_PATTERNS.update(_new_patterns)
-                    module_data.FUNC_CALL_SIGS.update(_new_func_call_sigs)
 
                     # Return to GUI land to reload the mod.
                     gui.reload_tab(mod)
