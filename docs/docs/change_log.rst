@@ -1,7 +1,8 @@
 Change Log
 ==========
 
-Current (0.1.14.dev)
+0.1.14 (09/07/2025)
+-------------------
 
 - Added the ability for partial classes to subclass from another partial struct or ``ctypes.Structure``.
 - Change mod folder loading so that it will load from sub-folders as well. (`#64 <https://github.com/monkeyman192/pyMHF/issues/64>`_)
