@@ -12,6 +12,9 @@ from pymhf.core.utils import saferun_decorator
 calling_logger = getLogger("CallingManager")
 
 
+# TODO: Everything in this file is deprecated. DO NOT use it.
+
+
 @saferun_decorator
 def call_exported(name: str, func_def: FUNCDEF, *args):
     """Call a function exported by the main binary.
