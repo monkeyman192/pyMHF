@@ -6,6 +6,9 @@ Current (0.1.14.dev)
 - Added the ability for partial classes to subclass from another partial struct or ``ctypes.Structure``.
 - Change mod folder loading so that it will load from sub-folders as well. (`#64 <https://github.com/monkeyman192/pyMHF/issues/64>`_)
 - Implement a offset cache - This will reduce start up times after the initial load for any pattern which has already been found for the same binary. (`#2 <https://github.com/monkeyman192/pyMHF/issues/2>`_)
+- Changed the `@disable` decorator so that it can be applied to mods as well as hooks.
+- Made some internal changes so that mods which define the same hook (whether by having the same pattern or a different one that resolves to the same offset) will not cause a clash. (`#53 <https://github.com/monkeyman192/pyMHF/issues/53>`_)
+- Fixed an issue that meant that the numbers logged for loaded mods and hooks wasn't correct.
 
 0.1.13 (26/06/2025)
 -------------------
