@@ -365,6 +365,13 @@ def _run_module(
                 # which is one path deeper than we want to inject into the path.
                 if (mp := op.dirname(module_path)) not in _path:
                     _path.insert(0, mp)
+                # Also add the mod directory to the path.
+                # This will need more work and maybe we offset the path changing to the place where we load
+                # the mods, but this will help for now...
+                mod_folder = config.get("mod_dir")
+                mod_folder = canonicalize_setting(mod_folder, "pymhf", _module_path, binary_dir)
+                if mod_folder and mod_folder not in _path:
+                    _path.insert(0, mod_folder)
 
             saved_path = [x.replace("\\", "\\\\") for x in _path]
             pm_binary.inject_python_shellcode(

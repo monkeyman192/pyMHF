@@ -76,7 +76,7 @@ def match(patt: bytes, input: bytes):
     return True
 
 
-def get_mem(offset: int, size: int) -> bytes:
+def get_mem(offset: int, size: int) -> ctypes.Array[ctypes.c_char]:
     return (ctypes.c_char * size).from_address(offset)
 
 
@@ -198,7 +198,9 @@ def _get_memview_with_size(offset: int, size: int) -> Optional[memoryview]:
     )
 
 
-def map_struct(offset: int, type_: Type[Struct]) -> Struct:
+def map_struct(
+    offset: Union[int, ctypes.c_uint64, ctypes.c_uint32, ctypes._Pointer], type_: Type[Struct]
+) -> Struct:
     """Return an instance of the `type_` struct provided which shares memory
     with the provided offset.
     Note that the amount of memory to read is automatically determined by the

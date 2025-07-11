@@ -7,33 +7,37 @@ from typing import Generic, Type, TypeVar
 
 _cenum_type_cache = {}
 
-T = TypeVar("T", bound=IntEnum)
+IE = TypeVar("IE", bound=IntEnum)
 
 
-class c_enum32(ctypes.c_int32, Generic[T]):
+class c_enum32(ctypes.c_int32, Generic[IE]):
     """c_int32 wrapper for enums. This doesn't have the full set of features an enum would normally have,
     but just enough to make it useful."""
 
-    _enum_type: Type[T]
+    _enum_type: Type[IE]
 
     @property
-    def _enum_value(self):
+    def _enum_value(self) -> IE:
         return self._enum_type(self.value)
 
     @property
     def name(self) -> str:
         return self._enum_value.name
 
-    def __str__(self):
-        return self._enum_value.__str__()
+    def __str__(self) -> str:
+        try:
+            return self._enum_value.__str__()
+        except ValueError:
+            # In this case the value is probably invalid. Return a string...
+            return f"INVALID ENUM VALID: {self.value}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self._enum_value.__repr__()
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return other == self.value
 
-    def __class_getitem__(cls: Type["c_enum32"], enum_type: Type[T]):
+    def __class_getitem__(cls: Type["c_enum32"], enum_type: Type[IE]):
         """Get the actual concrete type based on the enum_type provided.
         This will be cached so we only generate one instance of the type per IntEnum."""
         if not issubclass(enum_type, IntEnum):
@@ -41,7 +45,7 @@ class c_enum32(ctypes.c_int32, Generic[T]):
         if enum_type in _cenum_type_cache:
             return _cenum_type_cache[enum_type]
         else:
-            _cls: Type[c_enum32[T]] = types.new_class(f"c_enum32[{enum_type}]", (c_enum32,))
+            _cls: Type[c_enum32[IE]] = types.new_class(f"c_enum32[{enum_type}]", (c_enum32,))
             _cls._enum_type = enum_type
             _cenum_type_cache[enum_type] = _cls
             return _cls

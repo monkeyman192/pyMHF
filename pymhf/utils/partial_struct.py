@@ -81,13 +81,13 @@ def partial_struct(cls: _T) -> _T:
             raise ValueError(f"The field {field_name!r} has an invalid type: {field_type}")
         if field_offset is not None and not isinstance(field_offset, int):
             raise ValueError(f"The field {field_name!r} has an invalid offset: {field_offset!r}")
-        # COrrect the field offset by the size of the subclass.
+        # Correct the field offset by the size of the subclass.
         if field_offset and field_offset - subclass_size > curr_position:
             padding_bytes = field_offset - subclass_size - curr_position
             _fields_.append((f"_padding_{curr_position:X}", ctypes.c_ubyte * padding_bytes))
             curr_position += padding_bytes
         field_alignment = ctypes.alignment(field_type)
-        if curr_position % field_alignment != 0:
+        if field_alignment and (curr_position % field_alignment != 0):
             # If the field is not aligned to the correct position, then move the current position forward
             # to ensure it's right.
             # Don't bother adding this as padding since it will just add extra unnecessary fields.

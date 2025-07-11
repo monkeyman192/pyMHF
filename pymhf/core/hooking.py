@@ -735,13 +735,16 @@ class HookManager:
             return
 
         if func_id not in self.hooks:
-            self.hooks[func_id] = FuncHook(
-                func_id.name,
-                offset=func_id.offset,
-                func_def=hook._hook_func_def,
-                binary=hook_binary,
-                offset_is_absolute=func_id.is_absolute,
-            )
+            try:
+                self.hooks[func_id] = FuncHook(
+                    func_id.name,
+                    offset=func_id.offset,
+                    func_def=hook._hook_func_def,
+                    binary=hook_binary,
+                    offset_is_absolute=func_id.is_absolute,
+                )
+            except Exception:
+                hook_logger.exception(f"There was an issue creating the func hook for {func_id}")
             self._uninitialized_hooks.add(func_id)
             self._hook_id_mapping[hook] = func_id
         self.hooks[func_id].add_detour(hook)
@@ -882,7 +885,9 @@ class FunctionHook(Generic[P, R]):
             return self._this_is_pointer
         if self._funcdef is None:
             self._funcdef = _get_funcdef(self._func)
-        self._this_is_pointer = issubclass(self._funcdef.arg_types[0], ctypes._Pointer)
+        self._this_is_pointer = issubclass(self._funcdef.arg_types[0], ctypes._Pointer) | issubclass(
+            self._funcdef.arg_types[0], ctypes._Pointer_orig
+        )
         return self._this_is_pointer
 
     def _call(self, *args, **kwargs) -> Optional[R]:
@@ -917,7 +922,14 @@ class FunctionHook(Generic[P, R]):
             # Finally, call the function.
             if offset is not None:
                 cfunc = sig(offset)
-                val = cfunc(*_args)
+                try:
+                    val = cfunc(*_args)
+                except ctypes.ArgumentError:
+                    hook_logger.error(
+                        f"{self._func.__qualname__!r} has function signature {self._funcdef.arg_types} "
+                        f"but was called with {_args}"
+                    )
+                    raise
                 return val
             else:
                 hook_logger.error(f"Unable to call {self._func.__qualname__!r} - Cannot find function.")
@@ -944,7 +956,7 @@ class FunctionHook(Generic[P, R]):
             # bound to, and then get the address of it and pass it in as the first argument.
             if self._bound_class is not None:
                 try:
-                    if self._this_is_pointer:
+                    if self.this_is_pointer:
                         return self._call(ctypes.byref(self._bound_class), *args, **kwargs)
                     else:
                         # If it's not a pointer, then we'll assume it's an int and pass the address...
