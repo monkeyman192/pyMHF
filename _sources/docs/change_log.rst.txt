@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+Current (0.1.15.dev)
+--------------------
+
+- Fixed an issue where the `this` argument wouldn't get correctly determined to be a pointer.
+- Added the configured mod directory to the system path to aide in inter-mod communication.
+
 0.1.14 (09/07/2025)
 -------------------
 
