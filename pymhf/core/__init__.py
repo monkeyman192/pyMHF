@@ -16,6 +16,7 @@ if not typing.TYPE_CHECKING:
     ctypes._Pointer = _Pointer
 
 
+# TODO: Assess whether we need this any more...
 def pymhf_overload(func):
     setattr(func, "_is_overloaded", True)
     return func
