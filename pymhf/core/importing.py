@@ -1,14 +1,14 @@
+import ast
 import importlib
 import importlib.util
 import logging
 import os.path as op
 import string
 import sys
-import traceback
 from types import ModuleType
 from typing import Optional
 
-logger = logging.getLogger("pymfh.core.importing")
+logger = logging.getLogger(__name__)
 
 
 VALID_CHARS = string.ascii_letters + string.digits + "_"
@@ -25,6 +25,53 @@ def _clean_name(name: str) -> str:
         else:
             out += char
     return out
+
+
+def _fully_unpack_ast_attr(obj: ast.Attribute) -> str:
+    name = ""
+    _obj = obj
+    while isinstance(_obj, ast.Attribute):
+        if name:
+            name = f"{_obj.attr}.{name}"
+        else:
+            name = _obj.attr
+        _obj = _obj.value
+    else:
+        if isinstance(_obj, ast.Name):
+            name = f"{_obj.id}.{name}"
+    return name
+
+
+def parse_file_for_mod(data: str) -> bool:
+    """Parse the provided data and determine if there is at least one mod class in it."""
+    tree = ast.parse(data)
+    mod_class_name = None
+    for node in tree.body:
+        # First, determine the name the Mod object is imported as.
+        if isinstance(node, ast.Import):
+            for node_ in node.names:
+                if isinstance(node_, ast.alias):
+                    if node_.name in ("pymhf", "pymhf.core.mod_loader"):
+                        mod_class_name = (node_.asname or node_.name) + ".Mod"
+        if isinstance(node, ast.ImportFrom):
+            if node.module in ("pymhf", "pymhf.core.mod_loader"):
+                for node_ in node.names:
+                    if isinstance(node_, ast.alias):
+                        if node_.name == "Mod":
+                            mod_class_name = node_.asname or node_.name
+        # Now, when we go over the class nodes, check the base classes.
+        if isinstance(node, ast.ClassDef):
+            for base in node.bases:
+                # For a simple name, it's easy - just match it.
+                if isinstance(base, ast.Name):
+                    if base.id == mod_class_name:
+                        return True
+                # If it's an attribute it's a bit trickier...
+                elif isinstance(base, ast.Attribute):
+                    resolved_base = _fully_unpack_ast_attr(base)
+                    if resolved_base == mod_class_name:
+                        return True
+    return False
 
 
 def import_file(fpath: str) -> Optional[ModuleType]:
@@ -44,5 +91,4 @@ def import_file(fpath: str) -> Optional[ModuleType]:
         else:
             print("failed")
     except Exception:
-        logger.error(f"Error loading {fpath}")
-        logger.error(traceback.format_exc())
+        logger.exception(f"Error loading {fpath}")

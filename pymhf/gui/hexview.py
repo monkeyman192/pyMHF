@@ -9,7 +9,7 @@ from pymem.ressources.structure import MEMORY_STATE
 
 from pymhf.utils.winapi import MemoryInfo, QueryAddress
 
-logger = getLogger("hexView")
+logger = getLogger(__name__)
 
 BITS = struct.calcsize("P") * 8
 

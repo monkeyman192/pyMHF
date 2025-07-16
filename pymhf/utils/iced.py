@@ -19,7 +19,7 @@ try:
 except ImportError:
     HAS_ICED = False
 
-logger = logging.getLogger("iced")
+logger = logging.getLogger(__name__)
 
 
 BITS = struct.calcsize("P") * 8

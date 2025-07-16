@@ -23,7 +23,7 @@ WINDOW_TITLE = "pyMHF"
 # - Add support for mod states
 
 
-logger = logging.getLogger("GUILogger")
+logger = logging.getLogger(__name__)
 rootLogger = logging.getLogger("")
 
 

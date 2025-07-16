@@ -1,9 +1,13 @@
 import os
 import os.path as op
 import re
+from logging import getLogger
 from typing import Optional
 
 PATH_RE = re.compile(r"^\{(?P<tag>EXE_DIR|USER_DIR|CURR_DIR)\}(?P<rest>[^{}]*)$")
+
+
+logger = getLogger(__name__)
 
 
 def canonicalize_setting(
@@ -39,7 +43,8 @@ def canonicalize_setting(
         elif value == "~":
             tag = "USER_DIR"
         elif not op.exists(value):
-            raise ValueError(f"Path doesn't exist: {value}")
+            logger.error(f"Path doesn't exist: {value}")
+            return None
 
     # If the path provided already exists, simply return it.
     if tag is None and op.exists(value):

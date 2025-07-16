@@ -20,7 +20,7 @@ __all__ = ["getsize", "get_addressof", "map_struct", "find_pattern_in_binary"]
 BLACKLIST = type, ModuleType, FunctionType
 
 
-mem_logger = logging.getLogger("MemUtils")
+logger = logging.getLogger(__name__)
 
 MEM_ACCESS_R = 0x100  # Read only.
 MEM_ACCESS_RW = 0x200  # Read and Write access.
@@ -276,7 +276,7 @@ def find_pattern_in_binary(
     binary we ran, but it could be some other dll under the same process.)
     """
     if (_cached_offset := cache.offset_cache.get(pattern, binary)) is not None:
-        mem_logger.debug(
+        logger.debug(
             f"Using cached offset 0x{_cached_offset:X} for pattern {pattern}"
             f" and binary {binary or _internal.EXE_NAME}"
         )
@@ -293,6 +293,6 @@ def find_pattern_in_binary(
         _offset = _offset - module.lpBaseOfDll
     # Cache even if there is no result (so we don't repeatedly look for it when it's not there in case there
     # is an issue.)
-    mem_logger.debug(f"Found {pattern} at 0x{_offset:X} for binary {binary}")
+    logger.debug(f"Found {pattern} at 0x{_offset:X} for binary {binary}")
     cache.offset_cache.set(pattern, _offset, binary, True)
     return _offset

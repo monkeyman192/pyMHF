@@ -1,5 +1,6 @@
 import asyncio
 import concurrent.futures
+import glob
 import os
 import os.path as op
 import subprocess
@@ -16,7 +17,8 @@ import pymem.process
 import pymem.ressources.kernel32
 
 from pymhf.core._internal import LoadTypeEnum
-from pymhf.core.logging import open_log_console
+from pymhf.core.importing import parse_file_for_mod
+from pymhf.core.log_handling import open_log_console
 from pymhf.core.process import start_process
 from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol
 from pymhf.core.utils import hash_bytes
@@ -127,7 +129,6 @@ def get_process_when_ready(
             print("Failed to inject python for some reason... Trying again in 2 seconds")
             time.sleep(2)
             binary.inject_python_interpreter()
-        print(f"Python injected into pid {binary.process_id}")
         if start_paused:
             target_process.suspend()
 
@@ -265,15 +266,23 @@ def _run_module(
     log_pid = None
     logging_config = config.get("logging", {})
     log_window_name_override = logging_config.get("window_name_override", "pymhf console")
-    log_dir = logging_config.get("log_dir", "{CURR_DIR}")
-    log_dir = canonicalize_setting(log_dir, plugin_name, _module_path, binary_dir, "LOGS")
+    _log_dir = logging_config.get("log_dir", "{CURR_DIR}")
+    log_dir = canonicalize_setting(_log_dir, plugin_name, _module_path, binary_dir, "LOGS")
+    if log_dir is None and binary_dir is not None:
+        log_dir = op.join(binary_dir, "LOGS")
+    if log_dir is None:
+        print(f"Unable to determine a location to put logs from {_log_dir}. No logs will be saved!")
 
     mod_save_dir = config.get("mod_save_dir", "{CURR_DIR}")
     mod_save_dir = canonicalize_setting(mod_save_dir, plugin_name, _module_path, binary_dir, "MOD_SAVES")
 
     executor = None
     futures = []
-    loop = asyncio.get_event_loop()
+    try:
+        loop = asyncio.get_event_loop()
+    except (RuntimeError, ValueError):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
     def kill_injected_code(loop: asyncio.AbstractEventLoop):
         # End one last "escape sequence" message:
@@ -288,10 +297,10 @@ def _run_module(
         loop.run_until_complete(client_completed)
 
     try:
-        log_pid = open_log_console(op.join(CWD, "log_terminal.py"), log_dir, log_window_name_override)
+        if log_dir:
+            log_pid = open_log_console(op.join(CWD, "log_terminal.py"), log_dir, log_window_name_override)
         # Have a small nap just to give it some time.
         time.sleep(0.5)
-        print(f"Opened the console log with PID: {log_pid}")
         if binary_path:
             with open(binary_path, "rb") as f:
                 binary_hash = hash_bytes(f)
@@ -302,18 +311,18 @@ def _run_module(
         def close_callback(x):
             print("pyMHF exiting...")
             for _pid in {pm_binary.process_id, log_pid}:
-                try:
-                    os.kill(_pid, SIGTERM)
-                except Exception:
-                    # If we can't kill it, it's probably already dead. Just continue.
-                    pass
+                if _pid:
+                    try:
+                        os.kill(_pid, SIGTERM)
+                    except Exception:
+                        # If we can't kill it, it's probably already dead. Just continue.
+                        pass
             # Finally, send a SIGTERM to ourselves...
             os.kill(os.getpid(), SIGTERM)
 
         # Wait some time for the data to be written to memory.
         time.sleep(3)
 
-        print(f"proc id from pymem: {pm_binary.process_id}")
         offset_map = {}
         # This is a mapping of the required assemblies to their filenames so we may do an import look up on
         # the inside.
@@ -366,13 +375,34 @@ def _run_module(
                 if (mp := op.dirname(module_path)) not in _path:
                     _path.insert(0, mp)
                 # Also add the mod directory to the path.
-                # This will need more work and maybe we offset the path changing to the place where we load
-                # the mods, but this will help for now...
-                mod_folder = config.get("mod_dir")
-                mod_folder = canonicalize_setting(mod_folder, "pymhf", _module_path, binary_dir)
-                if mod_folder and mod_folder not in _path:
-                    _path.insert(0, mod_folder)
-
+                _mod_folder = config.get("mod_dir")
+                mod_folder = canonicalize_setting(_mod_folder, "pymhf", _module_path, binary_dir)
+                if _mod_folder and not mod_folder:
+                    # In this case the directory for the mod folder doesn't actually exist. Log the steps
+                    # required to re-configure.
+                    print(
+                        f"[ERROR] Mod folder can't be found or resolved: {_mod_folder}.\n"
+                        "[ERROR] Please reconfigure the path by running `pymhf config <library or path>` and "
+                        "then selecting 'Set mod directory'."
+                    )
+                    sys.exit(0)
+                if mod_folder:
+                    if mod_folder not in _path:
+                        _path.insert(0, mod_folder)
+                    # Loop over each of the direct descendents of the mod folder and see if each folder
+                    # contains any mods.
+                    # If it does, then inject that directory into the path.
+                    for _fpath in os.listdir(mod_folder):
+                        fpath = op.join(mod_folder, _fpath)
+                        if op.isdir(fpath):
+                            for pyfile in glob.iglob(op.join(fpath, "*.py")):
+                                with open(pyfile, "r") as f:
+                                    if parse_file_for_mod(f.read()):
+                                        # Once we know that at least one file contains a mod, stop iterating
+                                        # and add the folder to the path.
+                                        if fpath not in _path:
+                                            _path.insert(0, fpath)
+                                        break
             saved_path = [x.replace("\\", "\\\\") for x in _path]
             pm_binary.inject_python_shellcode(
                 f"""
@@ -414,7 +444,6 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
         with open(op.join(CWD, "injected.py"), "r") as f:
             shellcode = f.read()
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
-        print(f"Injecting hooking code into proc id {pm_binary.process_id}")
         fut = executor.submit(pm_binary.inject_python_shellcode, shellcode)
         fut.add_done_callback(lambda x: close_callback(x))
         futures.append(fut)

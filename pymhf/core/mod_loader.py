@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from pymhf.gui.gui import GUI
 
 
-mod_logger = logging.getLogger("ModManager")
+logger = logging.getLogger(__name__)
 
 
 def _is_mod_predicate(obj, ref_module) -> bool:
@@ -108,10 +108,10 @@ class StructDecoder(json.JSONDecoder):
                     module_ = importlib.import_module(module)
                     return getattr(module_, obj["struct"])(**obj["fields"])
                 except ImportError:
-                    mod_logger.error(f"Cannot import {module}")
+                    logger.error(f"Cannot import {module}")
                     return
                 except AttributeError:
-                    mod_logger.error(f"Cannot find {obj['struct']} in {module}")
+                    logger.error(f"Cannot find {obj['struct']} in {module}")
                     return
         return obj
 
@@ -143,14 +143,14 @@ class ModState(ABC):
                 for f in fields(self):
                     _data[f.name] = getattr(self, f.name)
             except TypeError:
-                mod_logger.error(
+                logger.error(
                     "To save a mod state it must either be a dataclass or "
                     "have the _save_fields_ attribute. State was not saved"
                 )
                 return
         if not _internal.MOD_SAVE_DIR:
             _internal.MOD_SAVE_DIR = op.join(_internal.MODULE_PATH, "MOD_SAVES")
-            mod_logger.warning(
+            logger.warning(
                 f"No mod_save_dir config value set. Please set one. Falling back to {_internal.MOD_SAVE_DIR}"
             )
         if not op.exists(_internal.MOD_SAVE_DIR):
@@ -226,7 +226,7 @@ class _Proxy:
         self.mod_class_name = class_name
 
     def __getattr__(self, name):
-        return lambda *args, **kwargs: mod_logger.warning(
+        return lambda *args, **kwargs: logger.warning(
             f"Called {self.mod_class_name}.{name} with args: {args} and kwargs: {kwargs}"
         )
 
@@ -275,7 +275,7 @@ class ModManager:
             # No mod in the file. Just return
             return False
         elif len(d) > 1:
-            mod_logger.error(
+            logger.error(
                 f"The file {module.__file__} has more than one mod defined in it. "
                 "Only define one mod per file."
             )
@@ -291,14 +291,14 @@ class ModManager:
             try:
                 mod_version = parse_version(mod.__pymhf_required_version__)
             except InvalidVersion:
-                mod_logger.warning(
+                logger.warning(
                     f"__pymhf_required_version__ defined on mod {mod.__name__} is not a valid version string"
                 )
                 mod_version = None
             if mod_version is None or mod_version <= pymhf_version:
                 self._preloaded_mods[mod_name] = mod
             else:
-                mod_logger.error(
+                logger.error(
                     f"Mod {mod.__name__} requires a newer verison of "
                     f"pyMHF ({mod_version} ≥ {pymhf_version})! "
                     "Please update"
@@ -449,7 +449,7 @@ class ModManager:
                     if dependency in self.mods:
                         setattr(module, dependency, self.mods[dependency].__class__)
                     else:
-                        mod_logger.warning(
+                        logger.warning(
                             f"Dependency {dependency!r} is unsatisfied. There may be issues when running."
                         )
 
@@ -460,7 +460,7 @@ class ModManager:
                 # First, remove everything.
                 for hook in mod.hooks:
                     if (fh := self.hook_manager._get_funchook(hook)) is not None:
-                        mod_logger.info(f"Removing hook {hook}: {hook._hook_func_name}")
+                        logger.info(f"Removing hook {hook}: {hook._hook_func_name}")
                         fh.remove_detour(hook)
                         # Tell the hook manager to try and remove the hook if it can.
                         self.hook_manager.try_remove_hook(hook)
@@ -501,15 +501,15 @@ class ModManager:
                                             # re-instantiate it so that we can get any potential changes to
                                             # it.
                                             member_req_reinst[member] = member_type
-                                            mod_logger.debug(f"{member}: {_module}")
-                            mod_logger.debug(
+                                            logger.debug(f"{member}: {_module}")
+                            logger.debug(
                                 f"Reinstantiating the following members: {list(member_req_reinst.keys())}"
                             )
                             deleted_types = set()
                             for _name, type_ in member_req_reinst.items():
                                 data_offset = get_addressof(type_)
                                 new_obj_type_name = type_.__class__.__name__
-                                mod_logger.debug(f"{_name} is of type {new_obj_type_name}")
+                                logger.debug(f"{_name} is of type {new_obj_type_name}")
                                 new_obj_type = getattr(new_module, new_obj_type_name)
                                 new_obj = map_struct(data_offset, new_obj_type)
                                 setattr(state, _name, new_obj)
@@ -529,11 +529,11 @@ class ModManager:
                 # remove or add these attributes as required. Might want to have some kind of "copy" method to
                 # actually create a new instance each time but persist the data across.
 
-                mod_logger.info(f"Finished reloading {name}")
+                logger.info(f"Finished reloading {name}")
             else:
-                mod_logger.error(f"Cannot find mod {name}")
+                logger.error(f"Cannot find mod {name}")
         except Exception:
-            mod_logger.error(traceback.format_exc())
+            logger.error(traceback.format_exc())
 
 
 mod_manager = ModManager()

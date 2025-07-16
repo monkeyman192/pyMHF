@@ -26,7 +26,7 @@ from pymhf.core.functions import FuncDef, _get_funcdef
 from pymhf.core.memutils import _get_binary_info, find_pattern_in_binary, get_addressof
 from pymhf.utils.iced import HAS_ICED, generate_load_stack_pointer_bytes, get_first_jmp_addr
 
-hook_logger = logging.getLogger("HookManager")
+logger = logging.getLogger(__name__)
 
 
 BITS = struct.calcsize("P") * 8
@@ -142,7 +142,7 @@ class FuncHook(cyminhook.MinHook):
             else:
                 detour_list = self._after_detours
         else:
-            hook_logger.error(f"Detour {detour} has an invalid detour time: {detour._hook_time}")
+            logger.error(f"Detour {detour} has an invalid detour time: {detour._hook_time}")
         return detour_list
 
     def add_detour(self, detour: HookProtocol):
@@ -154,7 +154,7 @@ class FuncHook(cyminhook.MinHook):
 
         if getattr(detour, "_noop", False):
             self._has_noop = True
-            hook_logger.warning(
+            logger.warning(
                 f"The hook {detour._hook_func_name} has been marked as NOOP. If there are multiple detours "
                 "registered for this hook they may behave weirdly and the game may crash if this hook is not "
                 "defined well."
@@ -162,7 +162,7 @@ class FuncHook(cyminhook.MinHook):
 
         # Determine the detour list to use. If none, then return.
         if (detour_list := self._determine_detour_list(detour)) is None:
-            hook_logger.error(
+            logger.error(
                 f"Unable to assign {detour} to a detour type. Please check it. It has not been added."
             )
             return
@@ -186,11 +186,11 @@ class FuncHook(cyminhook.MinHook):
                     self._disabled_detours.add(detour)
                     detour_list.remove(self._oneshot_detours[detour])
                 except ValueError:
-                    hook_logger.warning(
+                    logger.warning(
                         f"Had an issue removing one-shot {detour._hook_func_name} from detour list."
                     )
                 except Exception:
-                    hook_logger.error(traceback.format_exc())
+                    logger.error(traceback.format_exc())
 
             self._oneshot_detours[detour] = _one_shot
             detour_list.append(_one_shot)
@@ -250,9 +250,9 @@ class FuncHook(cyminhook.MinHook):
             super().__init__(signature=self.signature, target=self.target)
         except cyminhook._cyminhook.Error as e:  # type: ignore
             if e.status == cyminhook._cyminhook.Status.MH_ERROR_ALREADY_CREATED:
-                hook_logger.error("Hook is already created")
-            hook_logger.error(f"Failed to initialize hook {self._name} at 0x{self.target:X}")
-            hook_logger.error(e.status.name[3:].replace("_", " ") + f" ({e})")
+                logger.error("Hook is already created")
+            logger.error(f"Failed to initialize hook {self._name} at 0x{self.target:X}")
+            logger.error(e.status.name[3:].replace("_", " ") + f" ({e})")
             self.state = "failed"
             return False
         self.state = "initialized"
@@ -269,8 +269,8 @@ class FuncHook(cyminhook.MinHook):
                     ret = r
         except Exception:
             bad_detour = self._before_detours.pop(i)
-            hook_logger.error(f"There was an error with detour {bad_detour}. It has been disabled.")
-            hook_logger.error(traceback.format_exc())
+            logger.error(f"There was an error with detour {bad_detour}. It has been disabled.")
+            logger.error(traceback.format_exc())
             self._disabled_detours.add(bad_detour)
 
         # If we don't have any decorators which NOOP the original function then run as usual.
@@ -301,8 +301,8 @@ class FuncHook(cyminhook.MinHook):
                 bad_detour = self._after_detours.pop(i)
             else:
                 bad_detour = self._after_detours_with_results.pop(j)
-            hook_logger.error(f"There was an error with detour {bad_detour}. It has been disabled.")
-            hook_logger.error(traceback.format_exc())
+            logger.error(f"There was an error with detour {bad_detour}. It has been disabled.")
+            logger.error(traceback.format_exc())
             self._disabled_detours.add(bad_detour)
 
         if after_ret is not None:
@@ -463,7 +463,7 @@ def NOOP(detour: HookProtocol) -> HookProtocol:
     if getattr(detour, "_hook_time", None) == DetourTime.BEFORE:
         setattr(detour, "_noop", True)
     else:
-        hook_logger.warning(
+        logger.warning(
             "NOOP decorator can only be applied to 'before' hooks."
             "Either change the detour to a before detour, or, if it is, ensure that this decorator is "
             "applied above the hook decorator."
@@ -716,11 +716,11 @@ class HookManager:
                 hook_offset = ctypes.cast(func_ptr, ctypes.c_void_p).value
                 hook_offset_is_absolute = True
             else:
-                hook_logger.error(f"Cannot find {hook_binary} in the import list")
+                logger.error(f"Cannot find {hook_binary} in the import list")
                 return
         elif hook._is_exported_func_hook:
             if _internal.BINARY_PATH is None:
-                hook_logger.error("Current running binary path unknown. Cannot hook exported functions")
+                logger.error("Current running binary path unknown. Cannot hook exported functions")
                 return
             # TODO: This is inefficient. We should only instantiate the "dll" once.
             own_dll = ctypes.WinDLL(_internal.BINARY_PATH)
@@ -731,7 +731,7 @@ class HookManager:
         if hook_offset is not None:
             func_id = FunctionIdentifier(hook_func_name, hook_offset, hook_binary, hook_offset_is_absolute)
         else:
-            hook_logger.error(f"Unable to find offset for {hook_func_name}. Hook will not be registered.")
+            logger.error(f"Unable to find offset for {hook_func_name}. Hook will not be registered.")
             return
 
         if func_id not in self.hooks:
@@ -744,7 +744,7 @@ class HookManager:
                     offset_is_absolute=func_id.is_absolute,
                 )
             except Exception:
-                hook_logger.exception(f"There was an issue creating the func hook for {func_id}")
+                logger.exception(f"There was an issue creating the func hook for {func_id}")
             self._uninitialized_hooks.add(func_id)
             self._hook_id_mapping[hook] = func_id
         self.hooks[func_id].add_detour(hook)
@@ -774,16 +774,16 @@ class HookManager:
                 else:
                     offset = hook.offset
                     prefix = f"{hook._binary}+"
-                hook_logger.info(f"Enabled hook for {hook_func_id.name} at {prefix}0x{offset:X}")
+                logger.debug(f"Enabled hook for {hook_func_id.name} at {prefix}0x{offset:X}")
             except Exception:
-                hook_logger.error(f"Unable to enable {hook_func_id.name} because:")
-                hook_logger.error(traceback.format_exc())
+                logger.error(f"Unable to enable {hook_func_id.name} because:")
+                logger.error(traceback.format_exc())
 
             # If any of the hooked functions want to log where they were called from, we need to overwrite
             # part of the trampoline bytes to capture the RSP register.
             if hook_func_id in self._get_caller_detours:
                 if not HAS_ICED:
-                    hook_logger.error(
+                    logger.error(
                         f"Cannot get calling address of {hook_func_id.name} as `iced_x86` package is not "
                         "installed.\nPlease install and try again."
                     )
@@ -806,7 +806,7 @@ class HookManager:
                         data_at_detour[i] = rsp_load_bytes[i]
                     for j in range(len(orig_bytes)):
                         data_at_detour[i + j + 1] = orig_bytes[j]
-                    hook_logger.info(
+                    logger.info(
                         f"The function {hook_func_id.name} has a modified hook to get the calling address."
                     )
 
@@ -817,15 +817,15 @@ class HookManager:
     def _debug_show_states(self):
         # Return the states of all the registered hooks
         for hook_func_id, hook in self.hooks.items():
-            hook_logger.info(f"Functions registered for {hook_func_id.name}:")
+            logger.info(f"Functions registered for {hook_func_id.name}:")
             if hook._before_detours:
-                hook_logger.info("  Before Detours:")
+                logger.info("  Before Detours:")
                 for func in hook._before_detours:
-                    hook_logger.info(f"    {func}")
+                    logger.info(f"    {func}")
             if hook._after_detours:
-                hook_logger.info("  After Detours:")
+                logger.info("  After Detours:")
                 for func in hook._after_detours:
-                    hook_logger.info(f"    {func}")
+                    logger.info(f"    {func}")
 
 
 class Structure(ctypes.Structure):
@@ -925,16 +925,16 @@ class FunctionHook(Generic[P, R]):
                 try:
                     val = cfunc(*_args)
                 except ctypes.ArgumentError:
-                    hook_logger.error(
+                    logger.error(
                         f"{self._func.__qualname__!r} has function signature {self._funcdef.arg_types} "
                         f"but was called with {_args}"
                     )
                     raise
                 return val
             else:
-                hook_logger.error(f"Unable to call {self._func.__qualname__!r} - Cannot find function.")
+                logger.error(f"Unable to call {self._func.__qualname__!r} - Cannot find function.")
         except Exception:
-            hook_logger.exception(f"There was an exception calling {self._func.__qualname__!r}")
+            logger.exception(f"There was an exception calling {self._func.__qualname__!r}")
             return None
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> Optional[R]:
@@ -962,7 +962,7 @@ class FunctionHook(Generic[P, R]):
                         # If it's not a pointer, then we'll assume it's an int and pass the address...
                         return self._call(ctypes.addressof(self._bound_class), *args, **kwargs)
                 except Exception:
-                    hook_logger.exception(f"Failed to call {self._func.__qualname__} with args {args}")
+                    logger.exception(f"Failed to call {self._func.__qualname__} with args {args}")
             else:
                 raise ValueError("Not bound to anything...")
 
