@@ -357,15 +357,16 @@
                   
   <section id="change-log">
 <h1>Change Log<a class="headerlink" href="#change-log" title="Link to this heading">#</a></h1>
-<section id="current-0-1-15-dev">
-<h2>Current (0.1.15.dev)<a class="headerlink" href="#current-0-1-15-dev" title="Link to this heading">#</a></h2>
+<section id="id1">
+<h2>0.1.15 (16/07/2025)<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Fixed an issue where the <cite>this</cite> argument wouldn’t get correctly determined to be a pointer.</p></li>
 <li><p>Added the configured mod directory to the system path to aide in inter-mod communication.</p></li>
+<li><p>Improved support for mod folders which contained sub-folder for each mod. Now each folder is added to the system path if it contains any mods. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/71">#71</a>)</p></li>
 </ul>
 </section>
-<section id="id1">
-<h2>0.1.14 (09/07/2025)<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<section id="id3">
+<h2>0.1.14 (09/07/2025)<a class="headerlink" href="#id3" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Added the ability for partial classes to subclass from another partial struct or <code class="docutils literal notranslate"><span class="pre">ctypes.Structure</span></code>.</p></li>
 <li><p>Change mod folder loading so that it will load from sub-folders as well. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/64">#64</a>)</p></li>
@@ -375,16 +376,16 @@
 <li><p>Fixed an issue that meant that the numbers logged for loaded mods and hooks wasn’t correct.</p></li>
 </ul>
 </section>
-<section id="id5">
-<h2>0.1.13 (26/06/2025)<a class="headerlink" href="#id5" title="Link to this heading">#</a></h2>
+<section id="id7">
+<h2>0.1.13 (26/06/2025)<a class="headerlink" href="#id7" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Fixed an issue where function definitions defined with a pointer as their <code class="docutils literal notranslate"><span class="pre">this</span></code> argument weren’t able to be called correctly.</p></li>
 <li><p>Fixed an issue where calling a library directly with <code class="docutils literal notranslate"><span class="pre">pymhf</span> <span class="pre">run</span> <span class="pre">&lt;library</span> <span class="pre">path&gt;</span></code> wouldn’t be able to import the library.</p></li>
 <li><p>Improved front-facing type hinting.</p></li>
 </ul>
 </section>
-<section id="id6">
-<h2>0.1.12 (23/06/2025)<a class="headerlink" href="#id6" title="Link to this heading">#</a></h2>
+<section id="id8">
+<h2>0.1.12 (23/06/2025)<a class="headerlink" href="#id8" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Identified and fixed partially by config changes and partially by documentation issues with pyMHF being run with uv. Thanks to <a class="reference external" href="https://github.com/Foundit3923">&#64;Foundit3923</a> for helping to figure out the issues.</p></li>
 <li><p>Improved inter-mod communication.</p></li>
@@ -393,8 +394,8 @@
 <li><p>Added a <a class="reference internal" href="../api/pymhf.extensions.ctypes.html#pymhf.extensions.ctypes.c_enum32" title="pymhf.extensions.ctypes.c_enum32"><code class="xref py py-func docutils literal notranslate"><span class="pre">c_enum32</span></code></a> type which can be used to construct enums as fields.</p></li>
 </ul>
 </section>
-<section id="id7">
-<h2>0.1.11 (29/04/2025)<a class="headerlink" href="#id7" title="Link to this heading">#</a></h2>
+<section id="id9">
+<h2>0.1.11 (29/04/2025)<a class="headerlink" href="#id9" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Added the <a class="reference internal" href="../api/pymhf.gui.decorators.html#pymhf.gui.decorators.gui_combobox" title="pymhf.gui.decorators.gui_combobox"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.gui.decorators.gui_combobox</span></code></a> decorator (partial work on <a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/15">#15</a>).</p></li>
 <li><p>Added the ability for mods to access each others’ attributes and methods. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/5">#5</a>). See <a class="reference internal" href="inter_mod_functionality.html"><span class="doc">this page</span></a> for more details.</p></li>
@@ -407,8 +408,8 @@
 <li><p>Fixed an issue with the debug mode toggle in the GUI. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/pull/49">#49</a>).</p></li>
 </ul>
 </section>
-<section id="id15">
-<h2>0.1.10 (26/02/2025)<a class="headerlink" href="#id15" title="Link to this heading">#</a></h2>
+<section id="id17">
+<h2>0.1.10 (26/02/2025)<a class="headerlink" href="#id17" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Added <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.get_caller" title="pymhf.core.hooking.get_caller"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.core.hooking.get_caller</span></code></a> decorator for detours. When added, this will determine the location the function was called from. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/34">#34</a>). NOTE: This currently will only work properly for 64bit applications.</p></li>
 <li><p>Added an <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.exported" title="pymhf.core.hooking.exported"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.core.hooking.exported</span></code></a> hook to allow hooking functions which are exported by the main exe.</p></li>
@@ -419,32 +420,32 @@
 <li><p>Added a class decorator <a class="reference internal" href="../api/pymhf.utils.partial_struct.html#pymhf.utils.partial_struct.partial_struct" title="pymhf.utils.partial_struct.partial_struct"><code class="xref py py-func docutils literal notranslate"><span class="pre">pymhf.utils.partial_struct.partial_struct</span></code></a> which can be used to create <code class="docutils literal notranslate"><span class="pre">ctypes.Structure</span></code> types without needing to know the entire layout of the struct. See <a class="reference internal" href="partial_structs.html"><span class="doc">here</span></a> for details.</p></li>
 </ul>
 </section>
-<section id="id17">
-<h2>0.1.9 (23/01/2025)<a class="headerlink" href="#id17" title="Link to this heading">#</a></h2>
+<section id="id19">
+<h2>0.1.9 (23/01/2025)<a class="headerlink" href="#id19" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Added <code class="docutils literal notranslate"><span class="pre">cmd</span></code> mode to the configuration to run commands in any registered libraries.</p></li>
 <li><p>Added transparency slider and “always on top” options to the pymhf window.</p></li>
 <li><p>Made a fix to manual hooks which were being declared with a pattern and name only.</p></li>
 </ul>
 </section>
-<section id="id18">
-<h2>0.1.8 (26/12/2024)<a class="headerlink" href="#id18" title="Link to this heading">#</a></h2>
+<section id="id20">
+<h2>0.1.8 (26/12/2024)<a class="headerlink" href="#id20" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Add ability for single-file mods to be run by pymhf. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/19">#19</a>)</p></li>
 <li><p>Changed the config system to use toml files. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/27">#27</a>)</p></li>
 <li><p>Added ability for pymhf to be attached to an already running process. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/28">#28</a>)</p></li>
 </ul>
 </section>
-<section id="id22">
-<h2>0.1.7 (10/10/2024)<a class="headerlink" href="#id22" title="Link to this heading">#</a></h2>
+<section id="id24">
+<h2>0.1.7 (10/10/2024)<a class="headerlink" href="#id24" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Implement ability to call overloaded functions which have patterns.</p></li>
 <li><p>Improve safety of hooking functions and keyboard bindings as well as GUI reload fix.</p></li>
 <li><p>Added functions to set the main window active (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/6">#6</a>) - Contributed by <a class="reference external" href="https://github.com/Foundit3923">&#64;Foundit3923</a></p></li>
 </ul>
 </section>
-<section id="id25">
-<h2>0.1.6 (08/09/2024)<a class="headerlink" href="#id25" title="Link to this heading">#</a></h2>
+<section id="id27">
+<h2>0.1.6 (08/09/2024)<a class="headerlink" href="#id27" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Add ability for GUI widgets to reload when their associated mod gets reloaded (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/4">#4</a>)</p></li>
 <li><p>Add <code class="docutils literal notranslate"><span class="pre">extra_args</span></code> option to GUI field type decorators (eg, <code class="docutils literal notranslate"><span class="pre">FLOAT</span></code>) which are passed through to DearPyGui (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/8">#8</a>)</p></li>
@@ -452,37 +453,37 @@
 <li><p>Add the ability for patterns to be hooked up using the <code class="docutils literal notranslate"><span class="pre">FUNC_PATTERNS</span></code> data in implementing libraries (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/14">#14</a>)</p></li>
 </ul>
 </section>
-<section id="id29">
-<h2>0.1.5 (26/08/2024)<a class="headerlink" href="#id29" title="Link to this heading">#</a></h2>
+<section id="id31">
+<h2>0.1.5 (26/08/2024)<a class="headerlink" href="#id31" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Allow overriding of function return values.</p></li>
 <li><p>Fixed issue with <code class="docutils literal notranslate"><span class="pre">after</span></code> manual hooks with a <code class="docutils literal notranslate"><span class="pre">_result_</span></code> argument.</p></li>
 <li><p>Implement pattern scanning functionality (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/1">#1</a>)</p></li>
 </ul>
 </section>
-<section id="id31">
-<h2>0.1.4 (14/08/2024)<a class="headerlink" href="#id31" title="Link to this heading">#</a></h2>
+<section id="id33">
+<h2>0.1.4 (14/08/2024)<a class="headerlink" href="#id33" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Overhauled config system to provide a more user-friendly experience.</p></li>
 <li><p>Fixed a critical bug in hooking which meant that no result was returned.</p></li>
 <li><p>Fixed an issue injecting variables into pymhf.</p></li>
 </ul>
 </section>
-<section id="id32">
-<h2>0.1.3 (31/07/2024)<a class="headerlink" href="#id32" title="Link to this heading">#</a></h2>
+<section id="id34">
+<h2>0.1.3 (31/07/2024)<a class="headerlink" href="#id34" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Implemented manual hooks. These are a decorator which have the can take an offset, name, and function definition, and allow for hooking a function without having to rely on the underlying library which utilises pymhf.</p></li>
 <li><p>Made changes so that libraries can be installed as plugins to pymhf so that they can be run like <code class="docutils literal notranslate"><span class="pre">pymhf</span> <span class="pre">&lt;libname&gt;</span></code></p></li>
 </ul>
 </section>
-<section id="id33">
-<h2>0.1.2 (15/07/2024)<a class="headerlink" href="#id33" title="Link to this heading">#</a></h2>
+<section id="id35">
+<h2>0.1.2 (15/07/2024)<a class="headerlink" href="#id35" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Made improvements to config reading</p></li>
 </ul>
 </section>
-<section id="id34">
-<h2>0.1.1 (05/07/2024)<a class="headerlink" href="#id34" title="Link to this heading">#</a></h2>
+<section id="id36">
+<h2>0.1.1 (05/07/2024)<a class="headerlink" href="#id36" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Fixed issues loading applications which aren’t loaded with steam.</p></li>
 <li><p>Fixed logging number of mods loaded.</p></li>
@@ -491,8 +492,8 @@
 <li><p>Added <code class="docutils literal notranslate"><span class="pre">&#64;no_gui</span></code> decorator which can be applied to a <code class="docutils literal notranslate"><span class="pre">Mod</span></code> class to indicate that it doesn’t need to be shown in the GUI.</p></li>
 </ul>
 </section>
-<section id="id35">
-<h2>0.1.0 (30/06/2024)<a class="headerlink" href="#id35" title="Link to this heading">#</a></h2>
+<section id="id37">
+<h2>0.1.0 (30/06/2024)<a class="headerlink" href="#id37" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Initial release. Much of the functionality has been copied over from <a class="reference external" href="https://github.com/monkeyman192/NMS.py">NMS.py</a> which was how this project started.</p></li>
 </ul>

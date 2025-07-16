@@ -1,11 +1,12 @@
 Change Log
 ==========
 
-Current (0.1.15.dev)
---------------------
+0.1.15 (16/07/2025)
+-------------------
 
 - Fixed an issue where the `this` argument wouldn't get correctly determined to be a pointer.
 - Added the configured mod directory to the system path to aide in inter-mod communication.
+- Improved support for mod folders which contained sub-folder for each mod. Now each folder is added to the system path if it contains any mods. (`#71 <https://github.com/monkeyman192/pyMHF/issues/71>`_)
 
 0.1.14 (09/07/2025)
 -------------------
