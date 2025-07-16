@@ -78,8 +78,6 @@ try:
 
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-    hook_logger = logging.getLogger("HookManager")
-
     # Since we are running inside a thread, `asyncio.get_event_loop` will
     # generally fail.
     # Detect this and create a new event loop anyway since we are running in a
@@ -245,7 +243,7 @@ try:
     for func_name, hook_class in hook_manager.failed_hooks.items():
         offset = hook_class.target
         _data = (ctypes.c_char * 0x20).from_address(offset)
-        hook_logger.error(f"Hook {func_name} first 0x20 bytes: {_data.value.hex()}")
+        rootLogger.error(f"Hook {func_name} first 0x20 bytes: {_data.value.hex()}")
 
     # Each client connection will create a new protocol instance
     coro = loop.create_server(ExecutingProtocol, "127.0.0.1", 6770)
