@@ -44,7 +44,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf.core.importing';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pymhf.core.memutils module" href="pymhf.core.memutils.html" />
+    <link rel="next" title="pymhf.core.log_handling module" href="pymhf.core.log_handling.html" />
     <link rel="prev" title="pymhf.core.hooking module" href="pymhf.core.hooking.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -283,6 +283,7 @@
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.functions.html">pymhf.core.functions module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.hooking.html">pymhf.core.hooking module</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">pymhf.core.importing module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.core.log_handling.html">pymhf.core.log_handling module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.memutils.html">pymhf.core.memutils module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.mod_loader.html">pymhf.core.mod_loader module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.module_data.html">pymhf.core.module_data module</a></li>
@@ -385,6 +386,12 @@
 <span class="sig-prename descclassname"><span class="pre">pymhf.core.importing.</span></span><span class="sig-name descname"><span class="pre">import_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/types.html#types.ModuleType" title="(in Python v3.13)"><span class="pre">ModuleType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pymhf.core.importing.import_file" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.core.importing.parse_file_for_mod">
+<span class="sig-prename descclassname"><span class="pre">pymhf.core.importing.</span></span><span class="sig-name descname"><span class="pre">parse_file_for_mod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#pymhf.core.importing.parse_file_for_mod" title="Link to this definition">#</a></dt>
+<dd><p>Parse the provided data and determine if there is at least one mod class in it.</p>
+</dd></dl>
+
 </section>
 
 
@@ -407,11 +414,11 @@
       </div>
     </a>
     <a class="right-next"
-       href="pymhf.core.memutils.html"
+       href="pymhf.core.log_handling.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">pymhf.core.memutils module</p>
+        <p class="prev-next-title">pymhf.core.log_handling module</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

@@ -1,0 +1,7 @@
+pymhf.core.log\_handling module
+===============================
+
+.. automodule:: pymhf.core.log_handling
+   :members:
+   :undoc-members:
+   :show-inheritance:

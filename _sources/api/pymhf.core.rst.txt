@@ -12,6 +12,7 @@ Submodules
    pymhf.core.functions
    pymhf.core.hooking
    pymhf.core.importing
+   pymhf.core.log_handling
    pymhf.core.memutils
    pymhf.core.mod_loader
    pymhf.core.module_data

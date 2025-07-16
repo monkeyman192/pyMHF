@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>pymhf.core.utils module &#8212; pyMHF  documentation</title>
+    <title>pymhf.core.log_handling module &#8212; pyMHF  documentation</title>
   
   
   
@@ -41,11 +41,11 @@
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf.core.utils';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf.core.log_handling';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pymhf.extensions namespace" href="pymhf.extensions.html" />
-    <link rel="prev" title="pymhf.core.module_data module" href="pymhf.core.module_data.html" />
+    <link rel="next" title="pymhf.core.memutils module" href="pymhf.core.memutils.html" />
+    <link rel="prev" title="pymhf.core.importing module" href="pymhf.core.importing.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -283,11 +283,11 @@
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.functions.html">pymhf.core.functions module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.hooking.html">pymhf.core.hooking module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.importing.html">pymhf.core.importing module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pymhf.core.log_handling.html">pymhf.core.log_handling module</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">pymhf.core.log_handling module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.memutils.html">pymhf.core.memutils module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.mod_loader.html">pymhf.core.mod_loader module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.module_data.html">pymhf.core.module_data module</a></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">pymhf.core.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.core.utils.html">pymhf.core.utils module</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="pymhf.extensions.html">pymhf.extensions namespace</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -362,7 +362,7 @@
     
     <li class="breadcrumb-item"><a href="pymhf.core.html" class="nav-link">pymhf.core package</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pymhf.core.utils module</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pymhf.core.log_handling module</span></li>
   </ul>
 </nav>
 </div>
@@ -379,82 +379,37 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-pymhf.core.utils">
-<span id="pymhf-core-utils-module"></span><h1>pymhf.core.utils module<a class="headerlink" href="#module-pymhf.core.utils" title="Link to this heading">#</a></h1>
+  <section id="module-pymhf.core.log_handling">
+<span id="pymhf-core-log-handling-module"></span><h1>pymhf.core.log_handling module<a class="headerlink" href="#module-pymhf.core.log_handling" title="Link to this heading">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="pymhf.core.utils.does_pid_have_focus">
-<span class="sig-prename descclassname"><span class="pre">pymhf.core.utils.</span></span><span class="sig-name descname"><span class="pre">does_pid_have_focus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#pymhf.core.utils.does_pid_have_focus" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pymhf.core.utils.get_foreground_pid">
-<span class="sig-prename descclassname"><span class="pre">pymhf.core.utils.</span></span><span class="sig-name descname"><span class="pre">get_foreground_pid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.utils.get_foreground_pid" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pymhf.core.utils.get_foreground_window_title">
-<span class="sig-prename descclassname"><span class="pre">pymhf.core.utils.</span></span><span class="sig-name descname"><span class="pre">get_foreground_window_title</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pymhf.core.utils.get_foreground_window_title" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pymhf.core.utils.get_hwnds_for_pid">
-<span class="sig-prename descclassname"><span class="pre">pymhf.core.utils.</span></span><span class="sig-name descname"><span class="pre">get_hwnds_for_pid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pymhf.core.utils.get_hwnds_for_pid" title="Link to this definition">#</a></dt>
-<dd><p>Return all HWND’s for the provided PID.</p>
+<dt class="sig sig-object py" id="pymhf.core.log_handling.open_log_console">
+<span class="sig-prename descclassname"><span class="pre">pymhf.core.log_handling.</span></span><span class="sig-name descname"><span class="pre">open_log_console</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_script</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_override</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'pymhf</span> <span class="pre">console'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pymhf.core.log_handling.open_log_console" title="Link to this definition">#</a></dt>
+<dd><p>Open the logging console and return the pid of it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_script</strong> – Path to the logging script to be run.</p></li>
+<li><p><strong>log_dir</strong> – Path where the log files will be written to.</p></li>
+<li><p><strong>name_override</strong> – Name to override the default “pymhf console” window title.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="pymhf.core.utils.get_main_window">
-<span class="sig-prename descclassname"><span class="pre">pymhf.core.utils.</span></span><span class="sig-name descname"><span class="pre">get_main_window</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Win32Window</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pymhf.core.utils.get_main_window" title="Link to this definition">#</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.core.log_handling.stdoutSocket">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.log_handling.</span></span><span class="sig-name descname"><span class="pre">stdoutSocket</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/multiprocessing.html#multiprocessing.connection.Connection" title="(in Python v3.13)"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.log_handling.stdoutSocket" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.log_handling.stdoutSocket.flush">
+<span class="sig-name descname"><span class="pre">flush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.log_handling.stdoutSocket.flush" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="pymhf.core.utils.get_main_window_handle">
-<span class="sig-prename descclassname"><span class="pre">pymhf.core.utils.</span></span><span class="sig-name descname"><span class="pre">get_main_window_handle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pymhf.core.utils.get_main_window_handle" title="Link to this definition">#</a></dt>
-<dd><p>Return the handle of the main running application window if possible.
-This will correspond to the HWND for the window belonging to the PID of the main running process.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pymhf.core.utils.get_window_by_handle">
-<span class="sig-prename descclassname"><span class="pre">pymhf.core.utils.</span></span><span class="sig-name descname"><span class="pre">get_window_by_handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Win32Window</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pymhf.core.utils.get_window_by_handle" title="Link to this definition">#</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.log_handling.stdoutSocket.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.log_handling.stdoutSocket.write" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="pymhf.core.utils.hash_bytes">
-<span class="sig-prename descclassname"><span class="pre">pymhf.core.utils.</span></span><span class="sig-name descname"><span class="pre">hash_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fileobj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BufferedReader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_bufsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">262144</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#pymhf.core.utils.hash_bytes" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pymhf.core.utils.is_main_window_foreground">
-<span class="sig-prename descclassname"><span class="pre">pymhf.core.utils.</span></span><span class="sig-name descname"><span class="pre">is_main_window_foreground</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#pymhf.core.utils.is_main_window_foreground" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pymhf.core.utils.safe_assign_enum">
-<span class="sig-prename descclassname"><span class="pre">pymhf.core.utils.</span></span><span class="sig-name descname"><span class="pre">safe_assign_enum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.utils.safe_assign_enum" title="Link to this definition">#</a></dt>
-<dd><p>Safely try and get the enum with the associated integer value.
-If the index isn’t one in the enum return the original index.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pymhf.core.utils.saferun">
-<span class="sig-prename descclassname"><span class="pre">pymhf.core.utils.</span></span><span class="sig-name descname"><span class="pre">saferun</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.utils.saferun" title="Link to this definition">#</a></dt>
-<dd><p>Safely run the specified function with args and kwargs.</p>
-<p>Any exception raised will be shown and ignored</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pymhf.core.utils.saferun_decorator">
-<span class="sig-prename descclassname"><span class="pre">pymhf.core.utils.</span></span><span class="sig-name descname"><span class="pre">saferun_decorator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.utils.saferun_decorator" title="Link to this definition">#</a></dt>
-<dd><p>Safely run the decorated function so that any errors are caught and logged.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pymhf.core.utils.set_main_window_active">
-<span class="sig-prename descclassname"><span class="pre">pymhf.core.utils.</span></span><span class="sig-name descname"><span class="pre">set_main_window_active</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.utils.set_main_window_active" title="Link to this definition">#</a></dt>
-<dd><p>Set the main window as active.
-If a callback is provided, it will be called after activating the window.
-This callback must not take any arguments and any return value will be ignored.</p>
 </dd></dl>
 
 </section>
@@ -470,20 +425,20 @@ This callback must not take any arguments and any return value will be ignored.<
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="pymhf.core.module_data.html"
+       href="pymhf.core.importing.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">pymhf.core.module_data module</p>
+        <p class="prev-next-title">pymhf.core.importing module</p>
       </div>
     </a>
     <a class="right-next"
-       href="pymhf.extensions.html"
+       href="pymhf.core.memutils.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">pymhf.extensions namespace</p>
+        <p class="prev-next-title">pymhf.core.memutils module</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
