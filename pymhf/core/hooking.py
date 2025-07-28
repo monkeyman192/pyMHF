@@ -313,6 +313,11 @@ class FuncHook(cyminhook.MinHook):
         super().close()
         self.state = "closed"
 
+    def queue_enable(self):
+        if self._should_enable:
+            cyminhook.queue_enable(self)
+            self.state = "enabled"
+
     def enable(self):
         if self._should_enable:
             super().enable()
@@ -745,6 +750,7 @@ class HookManager:
                 )
             except Exception:
                 logger.exception(f"There was an issue creating the func hook for {func_id}")
+                return
             self._uninitialized_hooks.add(func_id)
             self._hook_id_mapping[hook] = func_id
         self.hooks[func_id].add_detour(hook)
@@ -767,7 +773,7 @@ class HookManager:
                 continue
             # Try and enable the hook.
             try:
-                hook.enable()
+                hook.queue_enable()
                 if hook._offset_is_absolute:
                     offset = hook.target
                     prefix = ""
@@ -779,9 +785,14 @@ class HookManager:
                 logger.error(f"Unable to enable {hook_func_id.name} because:")
                 logger.error(traceback.format_exc())
 
+        # Now, bulk enable all hooks.
+        cyminhook.apply_queued()
+
+        for hook_func_id in self._uninitialized_hooks:
             # If any of the hooked functions want to log where they were called from, we need to overwrite
             # part of the trampoline bytes to capture the RSP register.
             if hook_func_id in self._get_caller_detours:
+                hook = self.hooks[hook_func_id]
                 if not HAS_ICED:
                     logger.error(
                         f"Cannot get calling address of {hook_func_id.name} as `iced_x86` package is not "

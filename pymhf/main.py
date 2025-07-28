@@ -249,7 +249,7 @@ def _run_module(
         print("Python injected")
         proc = None
 
-    if pm_binary is None or proc is None:
+    if pm_binary is None:
         # TODO: Raise better error messages/reason why it couldn't load.
         print("FATAL ERROR: Cannot start process!")
         return
@@ -533,7 +533,14 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
         finally:
             print("Forcibly shutting down process")
             time.sleep(1)
-            for _pid in {pm_binary.process_id, log_pid}:
+            # Only close the main process if we started it. Otherwise leave it.
+            if start_exe:
+                pid_set = {pm_binary.process_id, log_pid}
+            else:
+                pid_set = {
+                    log_pid,
+                }
+            for _pid in pid_set:
                 if _pid:
                     try:
                         os.kill(_pid, SIGTERM)
