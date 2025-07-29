@@ -9,25 +9,8 @@ pyMHF provides all the tools required to make setting up a library easy, so that
 
 Follow the next steps to get your library project set up.
 
-Creating the folder structure
------------------------------
-
-.. code::
-
-    LibraryName
-    ├── functions
-    │   ├── __init__.py
-    │   ├── call_sigs.py
-    │   ├── hooks.py
-    │   ├── offsets.py
-    ├── types
-    │   ├── structs.py
-    ├── __init__.py
-    └── pymhf.cfg
-
-
-`pyproject.toml` contents
--------------------------
+``pyproject.toml`` contents
+---------------------------
 
 ``pymhflib`` entry-point
 ~~~~~~~~~~~~~~~~~~~~~~~~

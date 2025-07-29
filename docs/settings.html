@@ -359,7 +359,7 @@
 <h1>Configuring pyMHF<a class="headerlink" href="#configuring-pymhf" title="Link to this heading">#</a></h1>
 <p>pyMHF configuration is written in the <a class="reference external" href="https://toml.io/en/">toml</a> format.
 These can be provided in one of two ways, depending on whether you are providing them as part of a library, or as part of a single-file mod.</p>
-<p>For a library, the settings MUST be provided in a <code class="docutils literal notranslate"><span class="pre">pymhf.toml</span></code> file within the root directory of the library (ie. not the top level, but the named directory which contains all the files relevant to the library, cf. <span class="xref std std-doc">/docs/writing_libraries</span>)
+<p>For a library, the settings MUST be provided in a <code class="docutils literal notranslate"><span class="pre">pymhf.toml</span></code> file within the root directory of the library (ie. not the top level, but the named directory which contains all the files relevant to the library, cf. <a class="reference internal" href="libraries/writing_libraries.html"><span class="doc">Writing Libraries</span></a>)
 For a single-file mod, the settings are provided in the inline metadata (see <a class="reference internal" href="single_file_mods.html"><span class="doc">here</span></a>).</p>
 <section id="configuration-sections-and-values">
 <h2>Configuration sections and values<a class="headerlink" href="#configuration-sections-and-values" title="Link to this heading">#</a></h2>
@@ -369,7 +369,12 @@ For a single-file mod, the settings are provided in the inline metadata (see <a 
 <p>This section handles properties which relate to the game or program that the library will be for.</p>
 <section id="exe">
 <span id="settings-pymhf-exe"></span><h4><code class="docutils literal notranslate"><span class="pre">exe</span></code><a class="headerlink" href="#exe" title="Link to this heading">#</a></h4>
-<p>Either the absolute path to the binary being run, or the name of the exe which is being run by steam.</p>
+<p>If <a class="reference internal" href="#settings-pymhf-start-exe"><span class="std std-ref">start_exe</span></a> is <code class="docutils literal notranslate"><span class="pre">True</span></code> (the default) - either the absolute path to the binary being run, or the name of the exe which is being run by steam.</p>
+<p>If <a class="reference internal" href="#settings-pymhf-start-exe"><span class="std std-ref">start_exe</span></a> is <code class="docutils literal notranslate"><span class="pre">False</span></code> - the exe name (ie. <code class="docutils literal notranslate"><span class="pre">notepad.exe</span></code>) of an already running process to attach to.</p>
+</section>
+<section id="pid">
+<span id="settings-pymhf-pid"></span><h4><code class="docutils literal notranslate"><span class="pre">pid</span></code><a class="headerlink" href="#pid" title="Link to this heading">#</a></h4>
+<p>The process id to attach pyMHF to. This will have no effect if <a class="reference internal" href="#settings-pymhf-exe"><span class="std std-ref">exe</span></a> is specified and also if <a class="reference internal" href="#settings-pymhf-start-exe"><span class="std std-ref">start_exe</span></a> is False.</p>
 </section>
 <section id="steam-guid">
 <span id="settings-pymhf-steam-guid"></span><h4><code class="docutils literal notranslate"><span class="pre">steam_guid</span></code><a class="headerlink" href="#steam-guid" title="Link to this heading">#</a></h4>
