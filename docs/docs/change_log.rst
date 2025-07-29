@@ -7,6 +7,7 @@ Current (0.1.16.dev)
 - Improved hooking performance by using the bulk enable mode in minhook. (`#26 <https://github.com/monkeyman192/pyMHF/issues/26>`_)
 - Fixed an issue running mods where attach to already existing processes.
 - Fixed an issue with getting the caller offset address.
+- Added the ability to specify an already running processes' PID to attach pyMHF. (`#75 <https://github.com/monkeyman192/pyMHF/issues/75>`_)
 
 0.1.15 (16/07/2025)
 -------------------

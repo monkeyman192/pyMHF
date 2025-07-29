@@ -4,7 +4,7 @@ Configuring pyMHF
 pyMHF configuration is written in the `toml <https://toml.io/en/>`_ format.
 These can be provided in one of two ways, depending on whether you are providing them as part of a library, or as part of a single-file mod.
 
-For a library, the settings MUST be provided in a ``pymhf.toml`` file within the root directory of the library (ie. not the top level, but the named directory which contains all the files relevant to the library, cf. :doc:`/docs/writing_libraries`)
+For a library, the settings MUST be provided in a ``pymhf.toml`` file within the root directory of the library (ie. not the top level, but the named directory which contains all the files relevant to the library, cf. :doc:`/docs/libraries/writing_libraries`)
 For a single-file mod, the settings are provided in the inline metadata (see :doc:`here </docs/single_file_mods>`).
 
 Configuration sections and values
@@ -22,7 +22,16 @@ This section handles properties which relate to the game or program that the lib
 ``exe``
 """""""
 
-Either the absolute path to the binary being run, or the name of the exe which is being run by steam.
+If :ref:`settings-pymhf.start_exe` is ``True`` (the default) - either the absolute path to the binary being run, or the name of the exe which is being run by steam.
+
+If :ref:`settings-pymhf.start_exe` is ``False`` - the exe name (ie. ``notepad.exe``) of an already running process to attach to.
+
+.. _settings-pymhf.pid:
+
+``pid``
+"""""""
+
+The process id to attach pyMHF to. This will have no effect if :ref:`settings-pymhf.exe` is specified and also if :ref:`settings-pymhf.start_exe` is False.
 
 .. _settings-pymhf.steam_guid:
 

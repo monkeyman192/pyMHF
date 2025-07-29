@@ -47,7 +47,7 @@ class WrappedProcess:
         if self.proc is not None:
             self.proc.resume()
         else:
-            pymem.ressources.kernel32.ResumeThread(self.thread_handle)
+            pymem.ressources.kernel32.ResumeThread(self.thread_handle)  # type: ignore
 
 
 class pymhfExitException(Exception):
@@ -157,12 +157,6 @@ def load_module(plugin_name: str, module_path: str):
     _run_module(module_path, module_cfg, plugin_name, config_dir)
 
 
-def _required_config_val(config: dict[str, Any], key: str) -> Any:
-    if (val := config.get(key)) is not None:
-        return val
-    raise ValueError(f"[tool.pymhf] missing config value: {key}")
-
-
 def _run_module(
     module_path: str,
     config: dict[str, Any],
@@ -191,10 +185,15 @@ def _run_module(
         load_type = LoadTypeEnum.LIBRARY
 
     binary_path = None
-    binary_exe = _required_config_val(config, "exe")
+    binary_exe = config.get("exe", None)
     required_assemblies = []
     required_assemblies = config.get("required_assemblies", [])
     start_exe = config.get("start_exe", True)
+    to_load_pid = config.get("pid", None)
+    if to_load_pid is None and binary_exe is None:
+        raise ValueError("[tool.pymhf] requires either an `exe` or `pid` value.")
+    if binary_exe is None and start_exe is True:
+        raise ValueError("[tool.pymhf] requires `exe` to be set if `start_exe = true`")
     try:
         steam_gameid = int(config.get("steam_gameid", 0))
     except (ValueError, TypeError):
@@ -215,16 +214,21 @@ def _run_module(
     if steam_gameid:
         cmd = f"steam://rungameid/{steam_gameid}"
         is_steam = True
-    else:
+    elif binary_exe is not None:
         if op.isabs(binary_exe):
             cmd = binary_path = binary_exe
             # We only need the binary_exe to be the name from here on.
             binary_exe = op.basename(binary_exe)
         else:
-            # TODO: Allow support for running local binaries or binaries which are on the path.
-            raise ValueError("[tool.pymhf].exe must be a full path if no steam_gameid is provided.")
+            if start_exe is True:
+                raise ValueError(
+                    "[tool.pymhf].exe must be a full path if no steam_gameid is provided and start_exe is not"
+                    " true"
+                )
+            else:
+                pass
 
-    if start_exe:
+    if start_exe and binary_exe is not None:
         # Check to see fi the binary is already running... Just in case.
         # If it is, we use it, otherwise start it.
         try:
@@ -244,10 +248,17 @@ def _run_module(
     else:
         # If we aren't starting the exe then by the time we have run we expect the process to already exist,
         # so just find it with pymem.
-        pm_binary = pymem.Pymem(binary_exe)
-        pm_binary.inject_python_interpreter()
-        print("Python injected")
-        proc = None
+        if binary_exe is not None:
+            pm_binary = pymem.Pymem(binary_exe)
+            pm_binary.inject_python_interpreter()
+            print("Python injected")
+            proc = None
+        else:
+            pm_binary = pymem.Pymem()
+            pm_binary.open_process_from_id(to_load_pid)
+            pm_binary.inject_python_interpreter()
+            print("Python injected")
+            proc = None
 
     if pm_binary is None:
         # TODO: Raise better error messages/reason why it couldn't load.
@@ -320,8 +331,9 @@ def _run_module(
             # Finally, send a SIGTERM to ourselves...
             os.kill(os.getpid(), SIGTERM)
 
-        # Wait some time for the data to be written to memory.
-        time.sleep(3)
+        # Wait some time for the data to be written to memory only if we are starting the process ourselves.
+        if start_exe:
+            time.sleep(2)
 
         offset_map = {}
         # This is a mapping of the required assemblies to their filenames so we may do an import look up on
@@ -475,7 +487,8 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
                 # Kill the injected code so that we don't wait forever for the future to end.
                 kill_injected_code(loop)
                 raise
-            proc.resume()
+            if proc is not None:
+                proc.resume()
 
         print("pyMHF interactive python command prompt")
         print("Type any valid python commands to execute them within the games' process")
@@ -533,14 +546,7 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
         finally:
             print("Forcibly shutting down process")
             time.sleep(1)
-            # Only close the main process if we started it. Otherwise leave it.
-            if start_exe:
-                pid_set = {pm_binary.process_id, log_pid}
-            else:
-                pid_set = {
-                    log_pid,
-                }
-            for _pid in pid_set:
+            for _pid in {pm_binary.process_id, log_pid}:
                 if _pid:
                     try:
                         os.kill(_pid, SIGTERM)

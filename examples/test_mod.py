@@ -2,7 +2,7 @@
 # dependencies = ["pymhf[gui]>=0.1.15"]
 # 
 # [tool.pymhf]
-# exe = "C:/Windows/System32/notepad.exe"
+# exe = "notepad.exe"
 # start_paused = false
 # start_exe = false
 #
