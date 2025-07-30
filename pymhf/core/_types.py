@@ -1,6 +1,40 @@
 from enum import Enum
 from typing import Any, NamedTuple, Optional, Protocol
 
+from typing_extensions import NotRequired, TypedDict
+
+
+class pymhfGUIConfig(TypedDict):
+    shown: NotRequired[bool]
+    scale: NotRequired[float]
+    always_on_top: NotRequired[bool]
+
+
+class pymhfLoggingConfig(TypedDict):
+    default_log_dir: NotRequired[str]
+    log_level: NotRequired[str]
+    window_name_override: NotRequired[str]
+
+
+class pymhfConfig(TypedDict):
+    exe: NotRequired[str]
+    pid: NotRequired[int]
+    steam_guid: NotRequired[int]
+    required_assemblies: NotRequired[list[str]]
+    start_paused: NotRequired[bool]
+    default_mod_save_dir: NotRequired[str]
+    internal_mod_dir: NotRequired[str]
+    start_exe: NotRequired[bool]
+    logging: NotRequired[pymhfLoggingConfig]
+    gui: NotRequired[pymhfGUIConfig]
+
+
+class LoadTypeEnum(Enum):
+    INVALID = 0
+    SINGLE_FILE = 1
+    LIBRARY = 2
+    MOD_FOLDER = 3
+
 
 class FunctionIdentifier(NamedTuple):
     name: str

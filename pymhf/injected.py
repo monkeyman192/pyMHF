@@ -29,11 +29,12 @@ try:
     socket_logger_loaded = True
 
     import pymhf.core._internal as _internal
+    from pymhf.core._types import LoadTypeEnum
     from pymhf.utils.config import canonicalize_setting
 
     log_level = _internal.CONFIG.get("logging", {}).get("log_level", "info")
 
-    _internal.LOAD_TYPE = _internal.LoadTypeEnum(_internal.LOAD_TYPE)
+    _internal.LOAD_TYPE = LoadTypeEnum(_internal.LOAD_TYPE)
 
     _module_path = _internal.MODULE_PATH
     if op.isfile(_module_path):
@@ -210,10 +211,10 @@ try:
     _loaded_mods = 0
     _loaded_hooks = 0
     try:
-        if _internal.LOAD_TYPE == _internal.LoadTypeEnum.SINGLE_FILE:
+        if _internal.LOAD_TYPE == LoadTypeEnum.SINGLE_FILE:
             # For a single file mod, we just load that file.
             _loaded_mods, _loaded_hooks = mod_manager.load_single_mod(_internal.MODULE_PATH)
-        elif _internal.LOAD_TYPE == _internal.LoadTypeEnum.MOD_FOLDER:
+        elif _internal.LOAD_TYPE == LoadTypeEnum.MOD_FOLDER:
             _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(_internal.MODULE_PATH, deep_search=True)
         else:  # Loading a library.
             if mod_folder is not None:

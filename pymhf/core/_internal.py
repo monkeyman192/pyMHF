@@ -1,14 +1,7 @@
 import ctypes
 from concurrent.futures import ThreadPoolExecutor
-from enum import Enum
 
-
-class LoadTypeEnum(Enum):
-    INVALID = 0
-    SINGLE_FILE = 1
-    LIBRARY = 2
-    MOD_FOLDER = 3
-
+from pymhf.core._types import LoadTypeEnum
 
 CWD: str = ""
 MODULE_PATH: str = ""

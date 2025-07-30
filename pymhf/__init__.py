@@ -13,7 +13,7 @@ import questionary
 from .core._types import FUNCDEF  # noqa
 from .core.hooking import FuncHook  # noqa
 from .core.mod_loader import Mod, ModState  # noqa
-from .main import load_mod_file, load_module  # noqa
+from .main import load_mod_file, load_module, run_module  # noqa
 from .utils.imports import SPHINX_AUTODOC_RUNNING
 
 try:

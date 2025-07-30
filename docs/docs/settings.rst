@@ -22,6 +22,8 @@ This section handles properties which relate to the game or program that the lib
 ``exe``
 """""""
 
+*Required unless ``pid`` specified*
+
 If :ref:`settings-pymhf.start_exe` is ``True`` (the default) - either the absolute path to the binary being run, or the name of the exe which is being run by steam.
 
 If :ref:`settings-pymhf.start_exe` is ``False`` - the exe name (ie. ``notepad.exe``) of an already running process to attach to.
@@ -30,6 +32,8 @@ If :ref:`settings-pymhf.start_exe` is ``False`` - the exe name (ie. ``notepad.ex
 
 ``pid``
 """""""
+
+*Optional*
 
 The process id to attach pyMHF to. This will have no effect if :ref:`settings-pymhf.exe` is specified and also if :ref:`settings-pymhf.start_exe` is False.
 

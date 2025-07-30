@@ -8,7 +8,7 @@ import time
 import webbrowser
 from functools import partial
 from signal import SIGTERM
-from typing import Any, Optional
+from typing import Optional
 
 import psutil
 import pymem
@@ -16,7 +16,7 @@ import pymem.exception
 import pymem.process
 import pymem.ressources.kernel32
 
-from pymhf.core._internal import LoadTypeEnum
+from pymhf.core._types import LoadTypeEnum, pymhfConfig
 from pymhf.core.importing import parse_file_for_mod
 from pymhf.core.log_handling import open_log_console
 from pymhf.core.process import start_process
@@ -140,7 +140,8 @@ def get_process_when_ready(
 def load_mod_file(filepath):
     """Load an individual file as a mod."""
     pymhf_settings = read_pymhf_settings(filepath, True)
-    _run_module(filepath, pymhf_settings, None, None)
+    print(pymhf_settings)
+    run_module(filepath, pymhf_settings, None, None)
 
 
 def load_module(plugin_name: str, module_path: str):
@@ -154,12 +155,12 @@ def load_module(plugin_name: str, module_path: str):
     module_cfg_file = op.join(module_path, "pymhf.toml")
     module_cfg = read_pymhf_settings(module_cfg_file)
     module_cfg.update(local_cfg)
-    _run_module(module_path, module_cfg, plugin_name, config_dir)
+    run_module(module_path, module_cfg, plugin_name, config_dir)
 
 
-def _run_module(
+def run_module(
     module_path: str,
-    config: dict[str, Any],
+    config: pymhfConfig,
     plugin_name: Optional[str] = None,
     config_dir: Optional[str] = None,
 ):

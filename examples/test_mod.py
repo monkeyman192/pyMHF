@@ -16,7 +16,7 @@
 # ///
 from logging import getLogger
 
-from pymhf import Mod
+from pymhf import Mod, load_mod_file
 
 logger = getLogger("TestMod")
 
@@ -28,3 +28,7 @@ class TestMod(Mod):
     def __init__(self):
         super().__init__()
         logger.info("Loaded Test mod!")
+
+
+if __name__ == "__main__":
+    load_mod_file(__file__)
