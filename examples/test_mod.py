@@ -5,11 +5,13 @@
 # exe = "notepad.exe"
 # start_paused = false
 # start_exe = false
+# interactive_console = false
 #
 # [tool.pymhf.gui]
 # always_on_top = false
 # 
 # [tool.pymhf.logging]
+# shown = false
 # log_dir = "."
 # log_level = "info"
 # window_name_override = "pyMHF Test Mod"

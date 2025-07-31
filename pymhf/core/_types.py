@@ -14,6 +14,7 @@ class pymhfLoggingConfig(TypedDict):
     default_log_dir: NotRequired[str]
     log_level: NotRequired[str]
     window_name_override: NotRequired[str]
+    shown: NotRequired[bool]
 
 
 class pymhfConfig(TypedDict):
@@ -25,6 +26,7 @@ class pymhfConfig(TypedDict):
     default_mod_save_dir: NotRequired[str]
     internal_mod_dir: NotRequired[str]
     start_exe: NotRequired[bool]
+    interactive_console: NotRequired[bool]
     logging: NotRequired[pymhfLoggingConfig]
     gui: NotRequired[pymhfGUIConfig]
 

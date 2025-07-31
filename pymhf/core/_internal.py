@@ -1,7 +1,7 @@
 import ctypes
 from concurrent.futures import ThreadPoolExecutor
 
-from pymhf.core._types import LoadTypeEnum
+from pymhf.core._types import LoadTypeEnum, pymhfConfig
 
 CWD: str = ""
 MODULE_PATH: str = ""
@@ -12,7 +12,7 @@ PID: int = -1
 BINARY_HASH: str = ""
 BASE_ADDRESS: int = -1
 SIZE_OF_IMAGE: int = -1
-CONFIG: dict = {}
+CONFIG: pymhfConfig = {}
 EXE_NAME: str = ""
 BINARY_PATH: str = ""
 LOAD_TYPE: LoadTypeEnum = LoadTypeEnum.INVALID
