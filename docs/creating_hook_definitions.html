@@ -721,6 +721,38 @@ Instead, use either <a class="reference external" href="https://docs.python.org/
 Internally pyMHF does fix this issue so if this line isn’t included your code should still run.</p>
 </div>
 </section>
+<section id="creating-new-empty-instances-of-classes">
+<h3>Creating new empty instances of classes<a class="headerlink" href="#creating-new-empty-instances-of-classes" title="Link to this heading">#</a></h3>
+<p>Often when calling a function from the binary you’ll need to pass in a pointer to a class which may be populated with some data.
+pyMHF makes this easy by providing the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.Structure.new_empty" title="pymhf.core.hooking.Structure.new_empty"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Structure.new_empty()</span></code></a> classmethod class which will allocate enough memory for the structure as per its definition and return an instance of the class bound to this memory region.</p>
+<p>We can see how to use this below:</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">Structure</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial_struct</span>
+
+<span class="nd">@partial_struct</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Vector</span><span class="p">(</span><span class="n">Structure</span><span class="p">):</span>
+    <span class="n">_total_size_</span> <span class="o">=</span> <span class="mh">0x10</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span> <span class="mh">0x0</span><span class="p">]</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span> <span class="mh">0x4</span><span class="p">]</span>
+    <span class="n">z</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span> <span class="mh">0x8</span><span class="p">]</span>
+
+<span class="c1"># Create an instance and pass it into some function...</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">function</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">vect</span> <span class="o">=</span> <span class="n">Vector</span><span class="o">.</span><span class="n">new_empty</span><span class="p">()</span>
+    <span class="c1"># `get_position` is some made up function which we will say takes in a</span>
+    <span class="c1"># pointer to a vector and sets the components to be the player location.</span>
+    <span class="n">get_position</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="n">vect</span><span class="p">))</span>
+    <span class="c1"># Now afterwards we would see the components of the vector will have actual values</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;I am at (</span><span class="si">{</span><span class="n">vect</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">vect</span><span class="o">.</span><span class="n">y</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">vect</span><span class="o">.</span><span class="n">z</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the above code snippet, <code class="docutils literal notranslate"><span class="pre">vect</span></code> will have all of the bytes in the associated memory region set to 0. For fields like ints and such this is fine, but for fields which are pointers care needs to be taken to not try and derefence the values. It is recommended that you only try and access data from this class once you have passed it into some function to set the data (or set the data yourself!).</p>
+</div>
+</section>
 </section>
 </section>
 

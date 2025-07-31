@@ -560,6 +560,14 @@ function normally returns something otherwise the hooked program will almost cer
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.hooking.</span></span><span class="sig-name descname"><span class="pre">Structure</span></span><a class="headerlink" href="#pymhf.core.hooking.Structure" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></p>
 <p>Simple wrapper around ctypes.Structure.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.hooking.Structure.new_empty">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">new_empty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="headerlink" href="#pymhf.core.hooking.Structure.new_empty" title="Link to this definition">#</a></dt>
+<dd><p>Create a new empty instance of the structure. This will have ALL of its data as empty bytes.
+The purpose of this is to allocate enough bytes to fit the object in memory so that it may then be
+populated with real data, or passed to some function to have its’ data populated.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py function">
