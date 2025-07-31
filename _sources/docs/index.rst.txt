@@ -4,6 +4,7 @@ Usage guide
 .. toctree::
    :maxdepth: 1
 
+   usage
    settings
    writing_mods
    creating_hook_definitions

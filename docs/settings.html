@@ -45,7 +45,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Writing Mods" href="writing_mods.html" />
-    <link rel="prev" title="Usage guide" href="index.html" />
+    <link rel="prev" title="Usage" href="usage.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -276,6 +276,7 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Configuring pyMHF</a></li>
 <li class="toctree-l1"><a class="reference internal" href="writing_mods.html">Writing Mods</a></li>
 <li class="toctree-l1"><a class="reference internal" href="creating_hook_definitions.html">Creating hook definitions</a></li>
@@ -369,11 +370,13 @@ For a single-file mod, the settings are provided in the inline metadata (see <a 
 <p>This section handles properties which relate to the game or program that the library will be for.</p>
 <section id="exe">
 <span id="settings-pymhf-exe"></span><h4><code class="docutils literal notranslate"><span class="pre">exe</span></code><a class="headerlink" href="#exe" title="Link to this heading">#</a></h4>
+<p><em>Required unless ``pid`` specified</em></p>
 <p>If <a class="reference internal" href="#settings-pymhf-start-exe"><span class="std std-ref">start_exe</span></a> is <code class="docutils literal notranslate"><span class="pre">True</span></code> (the default) - either the absolute path to the binary being run, or the name of the exe which is being run by steam.</p>
 <p>If <a class="reference internal" href="#settings-pymhf-start-exe"><span class="std std-ref">start_exe</span></a> is <code class="docutils literal notranslate"><span class="pre">False</span></code> - the exe name (ie. <code class="docutils literal notranslate"><span class="pre">notepad.exe</span></code>) of an already running process to attach to.</p>
 </section>
 <section id="pid">
 <span id="settings-pymhf-pid"></span><h4><code class="docutils literal notranslate"><span class="pre">pid</span></code><a class="headerlink" href="#pid" title="Link to this heading">#</a></h4>
+<p><em>Optional</em></p>
 <p>The process id to attach pyMHF to. This will have no effect if <a class="reference internal" href="#settings-pymhf-exe"><span class="std std-ref">exe</span></a> is specified and also if <a class="reference internal" href="#settings-pymhf-start-exe"><span class="std std-ref">start_exe</span></a> is False.</p>
 </section>
 <section id="steam-guid">
@@ -388,7 +391,7 @@ For a single-file mod, the settings are provided in the inline metadata (see <a 
 </section>
 <section id="start-paused">
 <span id="settings-pymhf-start-paused"></span><h4><code class="docutils literal notranslate"><span class="pre">start_paused</span></code><a class="headerlink" href="#start-paused" title="Link to this heading">#</a></h4>
-<p><em>Optional</em> - default <code class="docutils literal notranslate"><span class="pre">True</span></code></p>
+<p><em>Optional</em> - default <code class="docutils literal notranslate"><span class="pre">true</span></code></p>
 <p>Whether or not to start the binary paused. Some programs do no like being started paused, however, if you can start paused it is preferred so that all hooks are created before any code is executed, ensuring no potential detours to be run are missed.</p>
 </section>
 <section id="default-mod-save-dir">
@@ -406,7 +409,12 @@ For a single-file mod, the settings are provided in the inline metadata (see <a 
 <p><em>Optional</em></p>
 <p>By default pyMHF will start the configured binary so that it may attach itself and start hooking functions as soon as possible.
 This can sometimes have issues, or you may want to only attach at some later time.
-By setting this value to <cite>false</cite>, pyMHF will not attempt to start the binary and will instead find the process based on the <a class="reference internal" href="#settings-pymhf-exe"><span class="std std-ref">exe</span></a> value.</p>
+By setting this value to <code class="docutils literal notranslate"><span class="pre">false</span></code>, pyMHF will not attempt to start the binary and will instead find the process based on the <a class="reference internal" href="#settings-pymhf-exe"><span class="std std-ref">exe</span></a> value.</p>
+</section>
+<section id="interactive-console">
+<h4><code class="docutils literal notranslate"><span class="pre">interactive_console</span></code><a class="headerlink" href="#interactive-console" title="Link to this heading">#</a></h4>
+<p><em>Optional</em> - Default <code class="docutils literal notranslate"><span class="pre">true</span></code></p>
+<p>If set to <code class="docutils literal notranslate"><span class="pre">false</span></code> then there will be no interactive python terminal created in the initial terminal.</p>
 </section>
 </section>
 <section id="pymhf-logging-section">
@@ -414,7 +422,7 @@ By setting this value to <cite>false</cite>, pyMHF will not attempt to start the
 <section id="default-log-dir">
 <span id="settings-pymhf-logging-default-log-dir"></span><h4><code class="docutils literal notranslate"><span class="pre">default_log_dir</span></code><a class="headerlink" href="#default-log-dir" title="Link to this heading">#</a></h4>
 <p><em>Can use magic path</em></p>
-<p>The path to save the logs under. If not an absolute path, a subdirectory called <code class="docutils literal notranslate"><span class="pre">LOGS</span></code> will be created under this directory.</p>
+<p>The path to save the logs under. If not an absolute path, a subdirectory called <code class="docutils literal notranslate"><span class="pre">logs</span></code> will be created under this directory.</p>
 </section>
 <section id="log-level">
 <span id="settings-pymhf-logging-log-level"></span><h4><code class="docutils literal notranslate"><span class="pre">log_level</span></code><a class="headerlink" href="#log-level" title="Link to this heading">#</a></h4>
@@ -424,12 +432,17 @@ By setting this value to <cite>false</cite>, pyMHF will not attempt to start the
 <span id="settings-pymhf-logging-window-name-override"></span><h4><code class="docutils literal notranslate"><span class="pre">window_name_override</span></code><a class="headerlink" href="#window-name-override" title="Link to this heading">#</a></h4>
 <p>A string to override the default log window name. Note: This has some limitation currently such as only ascii characters being supported. This will be fixed some time in the future.</p>
 </section>
+<section id="shown">
+<h4><code class="docutils literal notranslate"><span class="pre">shown</span></code><a class="headerlink" href="#shown" title="Link to this heading">#</a></h4>
+<p><em>Optional</em> - Default <code class="docutils literal notranslate"><span class="pre">true</span></code></p>
+<p>If set to <code class="docutils literal notranslate"><span class="pre">false</span></code>, then the log window will not be created and logs will be written by default to configured <code class="docutils literal notranslate"><span class="pre">log_dir</span></code> location if possible, otherwise they will be placed in the same directory as the module is determined to be loaded from.</p>
+</section>
 </section>
 <section id="pymhf-gui-section">
 <h3><code class="docutils literal notranslate"><span class="pre">pymhf.gui</span></code> section:<a class="headerlink" href="#pymhf-gui-section" title="Link to this heading">#</a></h3>
 <p>This section related to properties specifically for the GUI which is auto-generated.</p>
-<section id="shown">
-<span id="settings-pymhf-gui-shown"></span><h4><code class="docutils literal notranslate"><span class="pre">shown</span></code><a class="headerlink" href="#shown" title="Link to this heading">#</a></h4>
+<section id="settings-pymhf-gui-shown">
+<span id="id1"></span><h4><code class="docutils literal notranslate"><span class="pre">shown</span></code><a class="headerlink" href="#settings-pymhf-gui-shown" title="Link to this heading">#</a></h4>
 <p>Whether or not to show the GUI (<code class="docutils literal notranslate"><span class="pre">True</span></code> or <code class="docutils literal notranslate"><span class="pre">False</span></code>).</p>
 </section>
 <section id="scale">
@@ -486,12 +499,12 @@ By setting this value to <cite>false</cite>, pyMHF will not attempt to start the
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="index.html"
+       href="usage.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Usage guide</p>
+        <p class="prev-next-title">Usage</p>
       </div>
     </a>
     <a class="right-next"
