@@ -373,13 +373,13 @@ def test_invalid_cases():
     with pytest.raises(ValueError, match=re.escape("The field 'a' has an invalid type: <class 'int'>")):
 
         @partial_struct
-        class Test(ctypes.Structure):
+        class Test1(ctypes.Structure):
             a: int
 
     with pytest.raises(ValueError, match=re.escape("The field 'a' has an invalid type: <class 'int'>")):
 
         @partial_struct
-        class Test(ctypes.Structure):
+        class Test2(ctypes.Structure):
             a: Annotated[int, int]
 
     # Invalid annotation
@@ -391,14 +391,14 @@ def test_invalid_cases():
     ):
 
         @partial_struct
-        class Test(ctypes.Structure):
+        class Test3(ctypes.Structure):
             a: Annotated[int, str, float]
 
     # Invalid offset
     with pytest.raises(ValueError, match=re.escape("The field 'a' has an invalid offset: 'hi'")):
 
         @partial_struct
-        class Test(ctypes.Structure):
+        class Test4(ctypes.Structure):
             a: Annotated[ctypes.c_int32, "hi"]
 
 

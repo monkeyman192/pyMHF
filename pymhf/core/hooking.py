@@ -23,7 +23,7 @@ from pymhf.core._types import (
     ManualHookProtocol,
 )
 from pymhf.core.functions import FuncDef, _get_funcdef
-from pymhf.core.memutils import _get_binary_info, find_pattern_in_binary, get_addressof
+from pymhf.core.memutils import _get_binary_info, find_pattern_in_binary, get_addressof, map_struct
 from pymhf.utils.iced import HAS_ICED, generate_load_stack_pointer_bytes, get_first_jmp_addr
 
 logger = logging.getLogger(__name__)
@@ -850,6 +850,16 @@ class Structure(ctypes.Structure):
         if isinstance(res, FunctionHook):
             res._bound_class = self
         return res
+
+    @classmethod
+    def new_empty(cls) -> Self:
+        """Create a new empty instance of the structure. This will have ALL of its data as empty bytes
+        (ie. \x00). The purpose of this is to allocate enough bytes to fit the object in memory so that it may
+        then be populated with real data, or passed to some function to have its' data populated.
+        """
+        buffer = ctypes.create_string_buffer(ctypes.sizeof(cls))
+        addr = get_addressof(buffer)
+        return map_struct(addr, cls)
 
 
 P = ParamSpec("P")
