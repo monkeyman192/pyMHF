@@ -396,6 +396,7 @@ We can see how to use this below:
     import ctypes
     from typing import Annotated
     from pymhf.core.hooking import Structure
+    from pymhf.utils.partial_struct import partial_struct
 
     @partial_struct
     class Vector(Structure):

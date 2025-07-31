@@ -853,9 +853,9 @@ class Structure(ctypes.Structure):
 
     @classmethod
     def new_empty(cls) -> Self:
-        """Create a new empty instance of the structure. This will have ALL of its data as empty bytes
-        (ie. \x00). The purpose of this is to allocate enough bytes to fit the object in memory so that it may
-        then be populated with real data, or passed to some function to have its' data populated.
+        """Create a new empty instance of the structure. This will have ALL of its data as empty bytes.
+        The purpose of this is to allocate enough bytes to fit the object in memory so that it may then be
+        populated with real data, or passed to some function to have its' data populated.
         """
         buffer = ctypes.create_string_buffer(ctypes.sizeof(cls))
         addr = get_addressof(buffer)
