@@ -4,6 +4,7 @@ import ctypes
 import locale
 import logging
 import logging.handlers
+import os
 import os.path as op
 import time
 import traceback
@@ -14,26 +15,58 @@ from typing import Optional
 import pymem
 import pymem.process
 
-import pymhf.core.utils as utils
+from pymhf.core.utils import get_main_window_handle
 
 socket_logger_loaded = False
 executor = None
 ready = False
 
 try:
-    rootLogger = logging.getLogger("")
-    rootLogger.setLevel(logging.INFO)
-    socketHandler = logging.handlers.SocketHandler("localhost", logging.handlers.DEFAULT_TCP_LOGGING_PORT)
-    rootLogger.addHandler(socketHandler)
-    logging.info("Loading pyMHF...")
-    socket_logger_loaded = True
-
     import pymhf.core._internal as _internal
     from pymhf.utils.config import canonicalize_setting
 
-    log_level = _internal.CONFIG.get("logging", {}).get("log_level", "info")
+    rootLogger = logging.getLogger("")
 
-    _internal.LOAD_TYPE = _internal.LoadTypeEnum(_internal.LOAD_TYPE)
+    logging_config = _internal.CONFIG.get("logging", {}) or {}
+
+    log_level = logging_config.get("log_level", "info")
+    if log_level.lower() == "debug":
+        rootLogger.setLevel(logging.DEBUG)
+    else:
+        rootLogger.setLevel(logging.INFO)
+
+    if not logging_config.get("shown", True):
+        # In this case we just want to log to a file somewhere... For now, default to a folder called logs
+        # where the module path is.
+        formatter = logging.Formatter("%(asctime)s %(name)-24s %(levelname)-6s %(message)s")
+
+        _log_dir = logging_config.get("log_dir", "{CURR_DIR}")
+        if op.isdir(_internal.MODULE_PATH):
+            module_dir = _internal.MODULE_PATH
+        else:
+            module_dir = op.join(_internal.MODULE_PATH, "..")
+        log_dir = canonicalize_setting(_log_dir, None, module_dir, op.dirname(_internal.BINARY_PATH), "logs")
+        # If this ends up not being able to be resolved, fallback to logs in the same directory as the module.
+        if log_dir is None:
+            if op.isdir(_internal.MODULE_PATH):
+                log_dir = op.join(_internal.MODULE_PATH, "logs")
+            else:
+                log_dir = op.join(_internal.MODULE_PATH, "..", "logs")
+        os.makedirs(log_dir, exist_ok=True)
+        file_handler = logging.FileHandler(
+            op.join(log_dir, f"pymhf-{time.strftime('%Y%m%dT%H%M%S')}.log"), encoding="utf-8"
+        )
+        file_handler.setFormatter(formatter)
+        rootLogger.addHandler(file_handler)
+    else:
+        socketHandler = logging.handlers.SocketHandler("localhost", logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+        rootLogger.addHandler(socketHandler)
+    logging.info("Loading pyMHF...")
+    socket_logger_loaded = True
+
+    from pymhf.core._types import LoadTypeEnum
+
+    _internal.LOAD_TYPE = LoadTypeEnum(_internal.LOAD_TYPE)
 
     _module_path = _internal.MODULE_PATH
     if op.isfile(_module_path):
@@ -47,10 +80,6 @@ try:
 
     mod_folder = _internal.CONFIG.get("mod_dir")
     mod_folder = canonicalize_setting(mod_folder, "pymhf", _module_path, _binary_dir)
-
-    debug_mode = log_level.lower() == "debug"
-    if debug_mode:
-        rootLogger.setLevel(logging.DEBUG)
 
     import keyboard._winkeyboard as kwk
 
@@ -210,10 +239,10 @@ try:
     _loaded_mods = 0
     _loaded_hooks = 0
     try:
-        if _internal.LOAD_TYPE == _internal.LoadTypeEnum.SINGLE_FILE:
+        if _internal.LOAD_TYPE == LoadTypeEnum.SINGLE_FILE:
             # For a single file mod, we just load that file.
             _loaded_mods, _loaded_hooks = mod_manager.load_single_mod(_internal.MODULE_PATH)
-        elif _internal.LOAD_TYPE == _internal.LoadTypeEnum.MOD_FOLDER:
+        elif _internal.LOAD_TYPE == LoadTypeEnum.MOD_FOLDER:
             _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(_internal.MODULE_PATH, deep_search=True)
         else:  # Loading a library.
             if mod_folder is not None:
@@ -238,7 +267,7 @@ try:
 
     mod_manager._assign_mod_instances()
 
-    _internal.MAIN_HWND = utils.get_main_window_handle()
+    _internal.MAIN_HWND = get_main_window_handle()
 
     for func_name, hook_class in hook_manager.failed_hooks.items():
         offset = hook_class.target

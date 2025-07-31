@@ -8,7 +8,7 @@ import time
 import webbrowser
 from functools import partial
 from signal import SIGTERM
-from typing import Any, Optional
+from typing import Optional
 
 import psutil
 import pymem
@@ -16,7 +16,7 @@ import pymem.exception
 import pymem.process
 import pymem.ressources.kernel32
 
-from pymhf.core._internal import LoadTypeEnum
+from pymhf.core._types import LoadTypeEnum, pymhfConfig
 from pymhf.core.importing import parse_file_for_mod
 from pymhf.core.log_handling import open_log_console
 from pymhf.core.process import start_process
@@ -140,7 +140,7 @@ def get_process_when_ready(
 def load_mod_file(filepath):
     """Load an individual file as a mod."""
     pymhf_settings = read_pymhf_settings(filepath, True)
-    _run_module(filepath, pymhf_settings, None, None)
+    run_module(filepath, pymhf_settings, None, None)
 
 
 def load_module(plugin_name: str, module_path: str):
@@ -154,12 +154,12 @@ def load_module(plugin_name: str, module_path: str):
     module_cfg_file = op.join(module_path, "pymhf.toml")
     module_cfg = read_pymhf_settings(module_cfg_file)
     module_cfg.update(local_cfg)
-    _run_module(module_path, module_cfg, plugin_name, config_dir)
+    run_module(module_path, module_cfg, plugin_name, config_dir)
 
 
-def _run_module(
+def run_module(
     module_path: str,
-    config: dict[str, Any],
+    config: pymhfConfig,
     plugin_name: Optional[str] = None,
     config_dir: Optional[str] = None,
 ):
@@ -190,6 +190,9 @@ def _run_module(
     required_assemblies = config.get("required_assemblies", [])
     start_exe = config.get("start_exe", True)
     to_load_pid = config.get("pid", None)
+    interactive_console = config.get("interactive_console", True)
+    logging_config = config.get("logging", {}) or {}
+    show_log_window = logging_config.get("shown", True)
     if to_load_pid is None and binary_exe is None:
         raise ValueError("[tool.pymhf] requires either an `exe` or `pid` value.")
     if binary_exe is None and start_exe is True:
@@ -278,7 +281,7 @@ def _run_module(
     logging_config = config.get("logging", {})
     log_window_name_override = logging_config.get("window_name_override", "pymhf console")
     _log_dir = logging_config.get("log_dir", "{CURR_DIR}")
-    log_dir = canonicalize_setting(_log_dir, plugin_name, _module_path, binary_dir, "LOGS")
+    log_dir = canonicalize_setting(_log_dir, plugin_name, _module_path, binary_dir, "logs")
     if log_dir is None and binary_dir is not None:
         log_dir = op.join(binary_dir, "LOGS")
     if log_dir is None:
@@ -308,7 +311,7 @@ def _run_module(
         loop.run_until_complete(client_completed)
 
     try:
-        if log_dir:
+        if log_dir and show_log_window:
             log_pid = open_log_console(op.join(CWD, "log_terminal.py"), log_dir, log_window_name_override)
         # Have a small nap just to give it some time.
         time.sleep(0.5)
@@ -490,29 +493,40 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
             if proc is not None:
                 proc.resume()
 
-        print("pyMHF interactive python command prompt")
-        print("Type any valid python commands to execute them within the games' process")
-        # TODO: change this to use a threading.Event object, and in a separate thread, poll every second or so
-        # the running game process to see if it's still running (using psutil?)
-        # Might need to modify the WrappedProcess object to always create the pstuil.Process object to make it
-        # work easier...
+        if interactive_console:
+            print("pyMHF interactive python command prompt")
+            print("Type any valid python commands to execute them within the games' process")
+            # TODO: change this to use a threading.Event object, and in a separate thread, poll every second
+            # or so the running game process to see if it's still running (using psutil?)
+            # Might need to modify the WrappedProcess object to always create the pstuil.Process object to
+            # make it work easier...
 
-        # TODO: This should become False when we exit form the program...
-        while True:
-            try:
-                input_ = input(">>> ")
-                client_completed = asyncio.Future()
-                client_factory = partial(TerminalProtocol, message=input_, future=client_completed)
-                factory_coroutine = loop.create_connection(
-                    client_factory,
-                    "127.0.0.1",
-                    6770,
-                )
-                loop.run_until_complete(factory_coroutine)
-                loop.run_until_complete(client_completed)
-            except KeyboardInterrupt:
-                kill_injected_code(loop)
-                raise
+            # TODO: This should become False when we exit form the program...
+            while True:
+                try:
+                    input_ = input(">>> ")
+                    client_completed = asyncio.Future()
+                    client_factory = partial(TerminalProtocol, message=input_, future=client_completed)
+                    factory_coroutine = loop.create_connection(
+                        client_factory,
+                        "127.0.0.1",
+                        6770,
+                    )
+                    loop.run_until_complete(factory_coroutine)
+                    loop.run_until_complete(client_completed)
+                except KeyboardInterrupt:
+                    break
+            kill_injected_code(loop)
+        else:
+            while True:
+                # TODO: Maybe make this a bit more sane...
+                try:
+                    input_ = input("Type 'exit' or press CTRL+C to exit the process:\n")
+                    if input_.lower() == "exit":
+                        break
+                except KeyboardInterrupt:
+                    break
+            kill_injected_code(loop)
     except KeyboardInterrupt:
         # If it's a keyboard interrupt, just pass as it will have bubbled up from
         # below.

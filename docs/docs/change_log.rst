@@ -8,6 +8,8 @@ Current (0.1.16.dev)
 - Fixed an issue running mods where attach to already existing processes.
 - Fixed an issue with getting the caller offset address.
 - Added the ability to specify an already running processes' PID to attach pyMHF. (`#75 <https://github.com/monkeyman192/pyMHF/issues/75>`_)
+- Made :py:func:`~pymhf.main.run_module` a public method as the recommended way to invoke pyMHF from code. (`#76 <https://github.com/monkeyman192/pyMHF/issues/76>`_)
+- Added config options to not use the interactive python interpreter and not show the log window. (`#76 <https://github.com/monkeyman192/pyMHF/issues/76>`_)
 
 0.1.15 (16/07/2025)
 -------------------

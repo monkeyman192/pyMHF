@@ -8,6 +8,7 @@ import win32gui
 
 import pymhf.core._internal as _internal
 import pymhf.core.caching as cache
+from pymhf.core._types import pymhfConfig
 from pymhf.core.mod_loader import Mod, ModManager
 from pymhf.gui.hexview import HexView
 from pymhf.gui.protocols import ButtonProtocol, ComboBoxProtocol, VariableProtocol, VariableType
@@ -47,7 +48,7 @@ def toggle_on_top(item: int, value: bool):
 class GUI:
     hex_view: HexView
 
-    def __init__(self, mod_manager: ModManager, config: dict):
+    def __init__(self, mod_manager: ModManager, config: pymhfConfig):
         self.config = config
         self.always_on_top = config.get("gui", {}).get("always_on_top", False)
         self.is_debug = config.get("logging", {}).get("log_level") == "debug"
@@ -75,7 +76,7 @@ class GUI:
         # NOTE: These are ONLY updated when the viewport is minimised by the `hide_window` method.
         # TODO: Maybe set a max height and width?
         self._window_dimensions = [0, 0]
-        self._window_position = [0, 0]
+        self._window_position: list[float] = [0, 0]
 
         # Some info related settings
         self._hide_pyd_modules = True

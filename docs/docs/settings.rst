@@ -22,6 +22,8 @@ This section handles properties which relate to the game or program that the lib
 ``exe``
 """""""
 
+*Required unless ``pid`` specified*
+
 If :ref:`settings-pymhf.start_exe` is ``True`` (the default) - either the absolute path to the binary being run, or the name of the exe which is being run by steam.
 
 If :ref:`settings-pymhf.start_exe` is ``False`` - the exe name (ie. ``notepad.exe``) of an already running process to attach to.
@@ -30,6 +32,8 @@ If :ref:`settings-pymhf.start_exe` is ``False`` - the exe name (ie. ``notepad.ex
 
 ``pid``
 """""""
+
+*Optional*
 
 The process id to attach pyMHF to. This will have no effect if :ref:`settings-pymhf.exe` is specified and also if :ref:`settings-pymhf.start_exe` is False.
 
@@ -56,7 +60,7 @@ A list of assemblies that are required to be loaded by the binary at ``path`` fo
 ``start_paused``
 """"""""""""""""
 
-*Optional* - default ``True``
+*Optional* - default ``true``
 
 Whether or not to start the binary paused. Some programs do no like being started paused, however, if you can start paused it is preferred so that all hooks are created before any code is executed, ensuring no potential detours to be run are missed.
 
@@ -87,7 +91,14 @@ The path to the directory which contains the mods to be run by the library.
 
 By default pyMHF will start the configured binary so that it may attach itself and start hooking functions as soon as possible.
 This can sometimes have issues, or you may want to only attach at some later time.
-By setting this value to `false`, pyMHF will not attempt to start the binary and will instead find the process based on the :ref:`settings-pymhf.exe` value.
+By setting this value to ``false``, pyMHF will not attempt to start the binary and will instead find the process based on the :ref:`settings-pymhf.exe` value.
+
+``interactive_console``
+"""""""""""""""""""""""
+
+*Optional* - Default ``true``
+
+If set to ``false`` then there will be no interactive python terminal created in the initial terminal.
 
 ``pymhf.logging`` section:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -99,7 +110,7 @@ By setting this value to `false`, pyMHF will not attempt to start the binary and
 
 *Can use magic path*
 
-The path to save the logs under. If not an absolute path, a subdirectory called ``LOGS`` will be created under this directory.
+The path to save the logs under. If not an absolute path, a subdirectory called ``logs`` will be created under this directory.
 
 .. _settings-pymhf.logging.log_level:
 
@@ -114,6 +125,13 @@ Whether to log at the standard level (``INFO``), or more in-depth (``DEBUG``).
 """"""""""""""""""""""""
 
 A string to override the default log window name. Note: This has some limitation currently such as only ascii characters being supported. This will be fixed some time in the future.
+
+``shown``
+"""""""""
+
+*Optional* - Default ``true``
+
+If set to ``false``, then the log window will not be created and logs will be written by default to configured ``log_dir`` location if possible, otherwise they will be placed in the same directory as the module is determined to be loaded from.
 
 ``pymhf.gui`` section:
 ^^^^^^^^^^^^^^^^^^^^^^
