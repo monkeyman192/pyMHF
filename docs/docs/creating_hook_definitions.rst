@@ -382,3 +382,37 @@ Any docstrings which are included as part of the body will be shown in your IDE 
 .. note::
     Python has issues with correctly type hinting ctypes pointers. The correct way to specify a pointer of some type is to use ``ctypes.POINTER(type)``, however static typing tools won't accept this as a correct type even though this returns a type. To get around this the recommended way to type pointers is to use ``ctypes._Pointer[type]``, and include ``from __future__ import annotations`` on the first line of your script.
     Internally pyMHF does fix this issue so if this line isn't included your code should still run.
+
+Creating new empty instances of classes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Often when calling a function from the binary you'll need to pass in a pointer to a class which may be populated with some data.
+pyMHF makes this easy by providing the :py:meth:`Structure.new_empty() <pymhf.core.hooking.Structure.new_empty>` classmethod class which will allocate enough memory for the structure as per its definition and return an instance of the class bound to this memory region.
+
+We can see how to use this below:
+
+.. code-block:: py
+
+    import ctypes
+    from typing import Annotated
+    from pymhf.core.hooking import Structure
+    from pymhf.utils.partial_struct import partial_struct
+
+    @partial_struct
+    class Vector(Structure):
+        _total_size_ = 0x10
+        x: Annotated[ctypes.c_float, 0x0]
+        y: Annotated[ctypes.c_float, 0x4]
+        z: Annotated[ctypes.c_float, 0x8]
+
+    # Create an instance and pass it into some function...
+    def function(self):
+        vect = Vector.new_empty()
+        # `get_position` is some made up function which we will say takes in a
+        # pointer to a vector and sets the components to be the player location.
+        get_position(ctypes.byref(vect))
+        # Now afterwards we would see the components of the vector will have actual values
+        print(f"I am at ({vect.x}, {vect.y}, {vect.z})")
+
+.. note::
+    In the above code snippet, ``vect`` will have all of the bytes in the associated memory region set to 0. For fields like ints and such this is fine, but for fields which are pointers care needs to be taken to not try and derefence the values. It is recommended that you only try and access data from this class once you have passed it into some function to set the data (or set the data yourself!).

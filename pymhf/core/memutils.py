@@ -36,7 +36,7 @@ ctypes.pythonapi.PyMemoryView_FromMemory.restype = ctypes.py_object
 
 # TypeVar for the map_struct so that we can correctly get the returned type to
 # be the same as the input type.
-CTYPES = Union[ctypes._SimpleCData, ctypes.Structure, ctypes._Pointer]
+CTYPES = Union[ctypes._SimpleCData, ctypes.Structure, ctypes._Pointer, ctypes.Array]
 Struct = TypeVar("Struct", bound=CTYPES)
 
 
