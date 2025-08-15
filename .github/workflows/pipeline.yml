@@ -39,11 +39,10 @@ jobs:
         run: |
           uv run ruff check ./pymhf ./tests
           uv run ruff format --check ./pymhf ./tests
-          uv run python -m twine check ./dist/*
       - name: Run unit tests
         run: uv run pytest ./tests
   build:
-    name: Build wheel and 
+    name: Build wheel and docs
     runs-on: Windows-latest
     needs:
       - lint_testing
@@ -79,6 +78,8 @@ jobs:
           uv run sphinx-build -M html $pwd/docs $pwd/build
       - name: Build Python ${{ matrix.py_ver.version}} wheel
         run: uv build
+      - name: Check built artefacts
+        run: uv run python -m twine check ./dist/*
       - name: Upload Wheels
         uses: actions/upload-artifact@v4
         with:
