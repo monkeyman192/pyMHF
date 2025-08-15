@@ -7,7 +7,7 @@ import traceback
 from collections import defaultdict
 from collections.abc import Callable
 from ctypes import CFUNCTYPE
-from typing import Any, Optional, Type, Union, cast
+from typing import Any, Optional, Type, Union
 
 import cyminhook
 from typing_extensions import Concatenate, Generic, ParamSpec, Self, TypeVar, deprecated
