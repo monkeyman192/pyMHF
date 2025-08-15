@@ -35,10 +35,11 @@ def partial_struct(cls: _T) -> _T:
     # try... except.
     # However in the case of annotated fields, it's much faster, so it's beneficial to always do this.
     calling_frame = None
+    _locals = locals()
     if (cframe := inspect.currentframe()) is not None:
         calling_frame = cframe.f_back
     if calling_frame is not None:
-        locals().update(calling_frame.f_locals)
+        _locals.update(calling_frame.f_locals)
     _fields_ = []
     curr_position = 0
     total_size = getattr(cls, "_total_size_", 0)
@@ -56,7 +57,7 @@ def partial_struct(cls: _T) -> _T:
                 exclude_fields.add(field[0])
             subclass_size += ctypes.sizeof(subclass)
     # If there are, loop over the annotations and extract the info we need to construct the _fields_.
-    for field_name, annotation in get_type_hints(cls, include_extras=True, localns=locals()).items():
+    for field_name, annotation in get_type_hints(cls, include_extras=True, localns=_locals).items():
         # Ingore any fields which we have picked up from any subclasses.
         if field_name in exclude_fields:
             continue

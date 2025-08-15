@@ -15,6 +15,7 @@ import pymem
 import pymem.exception
 import pymem.process
 import pymem.ressources.kernel32
+import pyrun_injected.dllinject as dllinject
 
 from pymhf.core._types import LoadTypeEnum, pymhfConfig
 from pymhf.core.importing import parse_file_for_mod
@@ -71,7 +72,7 @@ def get_process_when_ready(
     required_assemblies: Optional[list[str]] = None,
     is_steam: bool = True,
     start_paused: bool = False,
-):
+) -> tuple[Optional[dllinject.pyRunner], Optional[WrappedProcess]]:
     target_process: Optional[WrappedProcess] = None
     parent_process = None
     # If we are running something which is under steam, make sure steam is
@@ -121,18 +122,11 @@ def get_process_when_ready(
 
     if target_process is not None:
         binary = pymem.Pymem(target)
-        # TODO: We can inject python in really early since any loaded dll's will persist through steam's
-        # forking process.
-        try:
-            binary.inject_python_interpreter()
-        except pymem.exception.MemoryWriteError:
-            print("Failed to inject python for some reason... Trying again in 2 seconds")
-            time.sleep(2)
-            binary.inject_python_interpreter()
+        injected = dllinject.pyRunner(binary)
         if start_paused:
             target_process.suspend()
 
-        return binary, target_process
+        return injected, target_process
     else:
         return None, None
 
@@ -185,6 +179,7 @@ def run_module(
         load_type = LoadTypeEnum.LIBRARY
 
     binary_path = None
+    injected = None
     binary_exe = config.get("exe", None)
     required_assemblies = []
     required_assemblies = config.get("required_assemblies", [])
@@ -237,11 +232,11 @@ def run_module(
         try:
             pm_binary = pymem.Pymem(binary_exe)
             print(f"Found an already running instance of {binary_exe!r}")
-            pm_binary.inject_python_interpreter()
+            injected = dllinject.pyRunner(pm_binary)
             print("Python injected")
             proc = None
         except pymem.exception.ProcessNotFound:
-            pm_binary, proc = get_process_when_ready(
+            injected, proc = get_process_when_ready(
                 cmd,
                 binary_exe,
                 required_assemblies,
@@ -253,18 +248,26 @@ def run_module(
         # so just find it with pymem.
         if binary_exe is not None:
             pm_binary = pymem.Pymem(binary_exe)
-            pm_binary.inject_python_interpreter()
+            injected = dllinject.pyRunner(pm_binary)
             print("Python injected")
             proc = None
         else:
             pm_binary = pymem.Pymem()
             pm_binary.open_process_from_id(to_load_pid)
-            pm_binary.inject_python_interpreter()
+            injected = dllinject.pyRunner(pm_binary)
             print("Python injected")
             proc = None
 
-    if pm_binary is None:
+    if injected is None:
         # TODO: Raise better error messages/reason why it couldn't load.
+        print("FATAL ERROR: Cannot start process!")
+        return
+    if injected.pm is None:
+        print("FATAL ERROR: Cannot start process!")
+        return
+
+    pm_binary = injected.pm
+    if pm_binary.process_id is None:
         print("FATAL ERROR: Cannot start process!")
         return
 
@@ -419,21 +422,20 @@ def run_module(
                                             _path.insert(0, fpath)
                                         break
             saved_path = [x.replace("\\", "\\\\") for x in _path]
-            pm_binary.inject_python_shellcode(
-                f"""
+
+            injected_data_list = []
+
+            # Inject the new path
+            sys_path_str = f"""
 import sys
 sys.path = {saved_path}
-                """
-            )
+"""
+            injected_data_list.append(dllinject.StringType(sys_path_str, False))
 
-            with open(op.join(CWD, "_preinject.py"), "r") as f:
-                _preinject_shellcode = f.read()
-            pm_binary.inject_python_shellcode(_preinject_shellcode)
+            # Inject our preinject script.
+            injected_data_list.append(dllinject.StringType(op.join(CWD, "_preinject.py"), True))
             # Inject the common NMS variables which are required for general use.
-            module_path = op.realpath(module_path)
-            module_path = module_path.replace("\\", "\\\\")
-            pm_binary.inject_python_shellcode(
-                f"""
+            internals_str = f"""
 pymhf.core._internal.MODULE_PATH = {module_path!r}
 pymhf.core._internal.BASE_ADDRESS = {binary_base!r}
 pymhf.core._internal.SIZE_OF_IMAGE = {binary_size!r}
@@ -449,17 +451,16 @@ pymhf.core._internal.MOD_SAVE_DIR = {mod_save_dir!r}
 pymhf.core._internal.INCLUDED_ASSEMBLIES = {included_assemblies!r}
 pymhf.core._internal.CACHE_DIR = {cache_dir!r}
                 """
-            )
+            injected_data_list.append(dllinject.StringType(internals_str, False))
         except Exception as e:
             import traceback
 
             print(e)
             print(traceback.format_exc())
         # Inject the script
-        with open(op.join(CWD, "injected.py"), "r") as f:
-            shellcode = f.read()
+        injected_data_list.append(dllinject.StringType(op.join(CWD, "injected.py"), True))
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
-        fut = executor.submit(pm_binary.inject_python_shellcode, shellcode)
+        fut = executor.submit(injected.run_data, injected_data_list)
         fut.add_done_callback(lambda x: close_callback(x))
         futures.append(fut)
 
@@ -541,8 +542,8 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
     finally:
         loop.close()
         try:
-            for future in concurrent.futures.as_completed(futures, timeout=5):
-                print(future)
+            for _ in concurrent.futures.as_completed(futures, timeout=5):
+                pass
         except TimeoutError:
             # Don't really care.
             print("Got a time out error...")

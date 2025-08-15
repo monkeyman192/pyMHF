@@ -16,6 +16,7 @@ import pymhf.core._internal as _internal
 from pymhf.core._types import (
     FUNCDEF,
     CallerHookProtocol,
+    CustomTriggerProtocol,
     DetourTime,
     FunctionIdentifier,
     HookProtocol,
@@ -615,7 +616,7 @@ class HookManager:
         self.failed_hooks: dict[str, Type[FuncHook]] = {}
         # A mapping of the custom event hooks which can be registered by modules
         # for individual mods.
-        self.custom_callbacks: dict[str, dict[DetourTime, set[HookProtocol]]] = {}
+        self.custom_callbacks: dict[str, dict[DetourTime, set[CustomTriggerProtocol]]] = {}
         self._uninitialized_hooks: set[FunctionIdentifier] = set()
         self._hook_id_mapping: dict[HookProtocol, FunctionIdentifier] = {}
         self._get_caller_detours: set[FunctionIdentifier] = set()
@@ -633,7 +634,7 @@ class HookManager:
         # TODO: Make work.
         pass
 
-    def _add_custom_callbacks(self, callbacks: set[HookProtocol]):
+    def _add_custom_callbacks(self, callbacks: set[CustomTriggerProtocol]):
         """Add the provided function to the specified callback type."""
         for cb in callbacks:
             if (cb_type := cb._custom_trigger) is None:
@@ -648,7 +649,7 @@ class HookManager:
             else:
                 self.custom_callbacks[cb_type][detour_time].add(cb)
 
-    def _remove_custom_callbacks(self, callbacks: set[HookProtocol]):
+    def _remove_custom_callbacks(self, callbacks: set[CustomTriggerProtocol]):
         # Remove the values in the list which correspond to the data in `callbacks`
         for cb in callbacks:
             if (cb_type := cb._custom_trigger) is None:
@@ -660,7 +661,14 @@ class HookManager:
                 if all(not x for x in self.custom_callbacks[cb_type].values()):
                     del self.custom_callbacks[cb_type]
 
-    def call_custom_callbacks(self, callback_key: str, detour_time: DetourTime = DetourTime.NONE):
+    def call_custom_callbacks(
+        self,
+        callback_key: str,
+        detour_time: DetourTime = DetourTime.NONE,
+        args: Optional[list] = None,
+        kwargs: Optional[dict] = None,
+        alert_nonexist: bool = False,
+    ):
         """Call the specified custom callback with the given detour_time.
 
         Parameters
@@ -669,6 +677,12 @@ class HookManager:
             The key which is used to reference the custom callback.
         detour_time:
             Whether to call the ``before`` or ``after`` detour.
+        args:
+            An optional list of args to be passed to the function(s) if found.
+        kwargs:
+            An optional dictionary of keyword arguments to be passed to the function(s) if found.
+        alert_nonexistant:
+            If True, raise a ``ValueError`` if no function is found for the ``callback_key`` value.
 
         Notes
         -----
@@ -676,8 +690,14 @@ class HookManager:
         """
         callbacks = self.custom_callbacks.get(callback_key, {})
         if callbacks:
+            if args is None:
+                args = []
+            if kwargs is None:
+                kwargs = {}
             for cb in callbacks.get(detour_time, set()):
-                cb()
+                cb(*args, **kwargs)
+        elif alert_nonexist:
+            raise ValueError(f"Custom callback {callback_key} cannot be found.")
 
     def try_remove_hook(self, hook: HookProtocol):
         """Remove the provided hook from the internal store only if it's already closed."""
@@ -712,7 +732,6 @@ class HookManager:
         elif (hook_pattern := hook._hook_pattern) is not None:
             hook_offset = find_pattern_in_binary(hook_pattern, False, hook_binary)
         elif hook._is_imported_func_hook:
-            hook = cast(HookProtocol, hook)
             hook_binary = hook._dll_name.lower()
             if (dll_func_ptrs := _internal.imports.get(hook_binary)) is not None:
                 func_ptr = dll_func_ptrs.get(hook_func_name)

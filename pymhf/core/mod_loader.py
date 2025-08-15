@@ -23,7 +23,7 @@ from packaging.version import InvalidVersion
 from packaging.version import parse as parse_version
 
 import pymhf.core._internal as _internal
-from pymhf.core._types import HookProtocol, KeyPressProtocol
+from pymhf.core._types import CustomTriggerProtocol, HookProtocol, KeyPressProtocol
 from pymhf.core.errors import NoSaveError
 from pymhf.core.hooking import HookManager
 from pymhf.core.importing import import_file
@@ -184,7 +184,7 @@ class Mod(ABC):
     # Minimum required pyMHF version for this mod.
     __pymhf_required_version__: Optional[str] = None
 
-    _custom_callbacks: set[HookProtocol]
+    _custom_callbacks: set[CustomTriggerProtocol]
     pymhf_gui: "GUI"
     _disabled: bool = False
 
@@ -216,7 +216,7 @@ class Mod(ABC):
         return {x[1] for x in inspect.getmembers(self, predicate)}
 
 
-T = TypeVar("T", bound=Mod)
+ModClass = TypeVar("ModClass", bound=Mod)
 
 
 class _Proxy:
@@ -249,7 +249,7 @@ class ModManager:
     def __getitem__(self, key: str) -> _Proxy: ...
 
     @overload
-    def __getitem__(self, key: Type[T]) -> T: ...
+    def __getitem__(self, key: Type[ModClass]) -> ModClass: ...
 
     def __getitem__(self, key):
         # If the key is a string then we are using it as a placeholder in the case of wanting to run a mod
