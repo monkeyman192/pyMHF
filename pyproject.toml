@@ -3,7 +3,8 @@ name = "pyMHF"
 description = "python Modding and Hooking Framework"
 readme = "README.md"
 requires-python = ">=3.9, <4"
-license = {file = "LICENSE.md"}
+license = "MIT"
+license-files = ["LICENSE"]
 keywords = ["hooking", "games", "hacking", "modding"]
 authors = [
   {name = "monkeyman192"}
@@ -14,7 +15,6 @@ maintainers = [
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Environment :: Win32 (MS Windows)",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: Microsoft",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
