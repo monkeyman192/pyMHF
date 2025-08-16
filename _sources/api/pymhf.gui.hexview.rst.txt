@@ -3,5 +3,5 @@ pymhf.gui.hexview module
 
 .. automodule:: pymhf.gui.hexview
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

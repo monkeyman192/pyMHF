@@ -3,5 +3,5 @@ pymhf.extensions.ctypes module
 
 .. automodule:: pymhf.extensions.ctypes
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

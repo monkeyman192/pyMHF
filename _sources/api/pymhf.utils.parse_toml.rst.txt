@@ -3,5 +3,5 @@ pymhf.utils.parse\_toml module
 
 .. automodule:: pymhf.utils.parse_toml
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

@@ -3,5 +3,5 @@ pymhf.core.errors module
 
 .. automodule:: pymhf.core.errors
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

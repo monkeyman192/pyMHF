@@ -3,5 +3,5 @@ pymhf.core.mod\_loader module
 
 .. automodule:: pymhf.core.mod_loader
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

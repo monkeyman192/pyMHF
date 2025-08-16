@@ -3,5 +3,5 @@ pymhf.core.memutils module
 
 .. automodule:: pymhf.core.memutils
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

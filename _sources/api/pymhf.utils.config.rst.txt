@@ -3,5 +3,5 @@ pymhf.utils.config module
 
 .. automodule:: pymhf.utils.config
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

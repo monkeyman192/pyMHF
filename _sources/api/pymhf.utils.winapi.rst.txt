@@ -3,5 +3,5 @@ pymhf.utils.winapi module
 
 .. automodule:: pymhf.utils.winapi
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

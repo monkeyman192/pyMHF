@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/change_log';</script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -367,6 +367,8 @@
 <li><p>Added the ability to specify an already running processes’ PID to attach pyMHF. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/75">#75</a>)</p></li>
 <li><p>Made <a class="reference internal" href="../api/pymhf.main.html#pymhf.main.run_module" title="pymhf.main.run_module"><code class="xref py py-func docutils literal notranslate"><span class="pre">run_module</span></code></a> a public method as the recommended way to invoke pyMHF from code. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/76">#76</a>)</p></li>
 <li><p>Added config options to not use the interactive python interpreter and not show the log window. (<a class="reference external" href="https://github.com/monkeyman192/pyMHF/issues/76">#76</a>)</p></li>
+<li><p>Added <a class="reference external" href="https://github.com/monkeyman192/pyrun_injected">pyrun_injected</a> as a dependency to allow injecting python versions greater than 3.11.</p></li>
+<li><p>Improved custom callback functionality by allowing extra arguments to be passed to the called functions.</p></li>
 </ul>
 </section>
 <section id="id5">
@@ -579,7 +581,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     <br/>
   </p>
 </div>

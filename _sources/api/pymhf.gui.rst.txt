@@ -16,5 +16,5 @@ Module contents
 
 .. automodule:: pymhf.gui
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
