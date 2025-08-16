@@ -55,7 +55,7 @@ The steps to run the above script from scratch (ie. with no ``uv`` installed) ar
     python -m pip install uv
     uv run script.py
 
-In the above ensure that the ``python`` command runs a python version between 3.9 and 3.11 INCLUSIVE.
+In the above ensure that the ``python`` command runs a python version of at least 3.9.
 Replace `script.py` with the name of the script as it was saved.
 
 Note that the line ``load_mod_file(__file__)`` in the above script is what tells python to run the script with pyMHF.
