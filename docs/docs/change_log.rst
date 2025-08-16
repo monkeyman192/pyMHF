@@ -1,8 +1,8 @@
 Change Log
 ==========
 
-Current (0.1.16.dev)
---------------------
+0.1.16 (16/08/2025)
+-------------------
 
 - Improved hooking performance by using the bulk enable mode in minhook. (`#26 <https://github.com/monkeyman192/pyMHF/issues/26>`_)
 - Fixed an issue running mods where attach to already existing processes.
