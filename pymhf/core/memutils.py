@@ -201,7 +201,7 @@ def _get_memview_with_size(offset: int, size: int) -> Optional[memoryview]:
 def map_struct(
     offset: Union[int, ctypes.c_uint64, ctypes.c_uint32, ctypes._Pointer], type_: Type[Struct]
 ) -> Struct:
-    """Return an instance of the `type_` struct provided which shares memory
+    r"""Return an instance of the ``type_`` struct provided which shares memory
     with the provided offset.
     Note that the amount of memory to read is automatically determined by the
     size of the struct provided.

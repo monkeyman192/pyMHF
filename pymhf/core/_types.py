@@ -70,6 +70,14 @@ class KeyPressProtocol(Protocol):
     _hotkey_press: str
 
 
+class CustomTriggerProtocol(Protocol):
+    _custom_trigger: Optional[str]
+    _description: Optional[str]
+    _hook_time: DetourTime
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
+
+
 class HookProtocol(Protocol):
     _disabled: bool
     _is_funchook: bool
@@ -82,7 +90,6 @@ class HookProtocol(Protocol):
     _hook_offset: Optional[int]
     _hook_pattern: Optional[str]
     _hook_time: DetourTime
-    _custom_trigger: Optional[str]
     _func_overload: Optional[str]
     _get_caller: Optional[bool]
     _noop: Optional[bool]

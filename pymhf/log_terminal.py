@@ -4,6 +4,7 @@ import logging.handlers
 import os
 import os.path as op
 import pickle
+import platform
 import select
 import socketserver
 import struct
@@ -16,7 +17,7 @@ import pymhf
 # Font: Varsity
 # Character Width: Full
 # Character Height: Full
-LOGO = """
+LOGO = r"""
  _______    ____  ____   ____    ____   ____  ____   ________  
 |_   __ \  |_  _||_  _| |_   \  /   _| |_   ||   _| |_   __  | 
   | |__) |   \ \  / /     |   \/   |     | |__| |     | |_ \_| 
@@ -122,7 +123,8 @@ def main(path: str):
     root_logger.addHandler(stream_handler)
     tcpserver = LogRecordSocketReceiver()
     print(LOGO)
-    print(f"Version: {pymhf.__version__}")
+    print(f"pyMHF Version: {pymhf.__version__}")
+    print(f"Python version: {platform.python_version()}")
     print("Logger waiting for backend process... Please wait...")
     tcpserver.serve_until_stopped()
 
