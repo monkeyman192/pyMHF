@@ -22,7 +22,7 @@ from pymhf.core.importing import parse_file_for_mod
 from pymhf.core.log_handling import open_log_console
 from pymhf.core.process import start_process
 from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol
-from pymhf.core.utils import hash_bytes
+from pymhf.core.hashing import hash_bytes_from_file, hash_bytes_from_memory
 from pymhf.utils.config import canonicalize_setting
 from pymhf.utils.parse_toml import read_pymhf_settings
 from pymhf.utils.winapi import get_exe_path_from_pid
@@ -319,8 +319,12 @@ def run_module(
         # Have a small nap just to give it some time.
         time.sleep(0.5)
         if binary_path:
-            with open(binary_path, "rb") as f:
-                binary_hash = hash_bytes(f)
+            try:
+                with open(binary_path, "rb") as f:
+                    binary_hash = hash_bytes_from_file(f)
+            except PermissionError:
+                print(f"Cannot open {binary_path!r} to hash it. Trying to read from memory...")
+                binary_hash = hash_bytes_from_memory(binary_path)
             print(f"Exe hash is: {binary_hash}")
         else:
             binary_hash = 0
