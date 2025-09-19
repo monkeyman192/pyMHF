@@ -50,12 +50,7 @@ jobs:
         with:
           compiler: g++-14.2.0
       - name: Build test binaries
-        run: g++ ./tests/cpp/app.cpp -Wall -o ./tests/app.exe
-      - name: Upload exe
-        uses: actions/upload-artifact@v4
-        with:
-          name: test_app
-          path: ./tests/app.exe
+        run: g++ ./tests/programs/src/app.cpp -Wall -o ./tests/programs/app.exe
       - name: Run unit tests
         run: uv run pytest ./tests
   build:
