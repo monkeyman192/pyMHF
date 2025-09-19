@@ -1,7 +1,8 @@
 import ctypes
 import re
+import types
 from enum import IntEnum
-from typing import Annotated
+from typing import Annotated, Generic, Type, TypeVar, Union
 
 import pytest
 
@@ -405,3 +406,61 @@ def test_invalid_cases():
 def test_invalid_c_enum32_cases():
     with pytest.raises(TypeError):
         c_enum32[22]
+
+
+T = TypeVar("T", bound=Union[ctypes._SimpleCData, ctypes.Structure])
+
+
+class cTkDynamicArray(ctypes.Structure, Generic[T]):
+    _template_type: Type[T]
+    _fields_ = [
+        ("offset", ctypes.c_uint32),
+        ("count", ctypes.c_uint32),
+    ]
+
+    offset: int
+    count: int
+
+    def value(self, source: bytearray) -> ctypes.Array[T]:
+        # This is pretty hacky, but it does the job.
+        # A more realistic implementation would be reading memory directly so would be implemented as a
+        # property.
+        if self.offset == 0 or self.count == 0:
+            # Empty lists are stored as empty header bytes.
+            return (self._template_type * 0)()
+        type_ = self._template_type * self.count
+        return type_.from_buffer(source, self.offset)
+
+    def __class_getitem__(cls: type["cTkDynamicArray"], key: T):
+        _cls: type["cTkDynamicArray"] = types.new_class(f"cTkDynamicArray<{key}>", (cls,))
+        _cls._template_type = key
+        return _cls
+
+
+def test_self_referential_struct():
+    # Test the case of the struct having a data type which is itself.
+    # To do this we'll need to introduce a serializable list.
+    @partial_struct
+    class SelfRef(ctypes.Structure):
+        a: Annotated[ctypes.c_uint32, 0x0]
+        children: Annotated["cTkDynamicArray[SelfRef]", 0x4]
+
+    data = bytearray(
+        b"\x01\x00\x00\x00"  # 'a' for the parent.
+        b"\x0c\x00\x00\x00\x02\x00\x00\x00"  # Child data "header"
+        b"\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"  # Child 1. a = 2
+        b"\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"  # Child 2. a = 3
+    )
+
+    obj = SelfRef.from_buffer(data)
+    assert obj.a == 1
+    assert obj.children.count == 2
+    # Get the children
+    children = obj.children.value(data)
+    assert children[0].a == 2
+    assert children[0].children.count == 0
+    sub_child = children[0].children.value(data)
+    assert sub_child._length_ == 0
+    assert sub_child._type_ == SelfRef
+    assert children[1].a == 3
+    assert children[1].children.count == 0

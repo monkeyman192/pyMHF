@@ -695,7 +695,15 @@ class HookManager:
             if kwargs is None:
                 kwargs = {}
             for cb in callbacks.get(detour_time, set()):
-                cb(*args, **kwargs)
+                try:
+                    cb(*args, **kwargs)
+                except Exception:
+                    logger.exception(f"There was an issue calling custom callback {cb}. It has been removed.")
+                    self._remove_custom_callbacks(
+                        {
+                            cb,
+                        }
+                    )
         elif alert_nonexist:
             raise ValueError(f"Custom callback {callback_key} cannot be found.")
 

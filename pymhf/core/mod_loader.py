@@ -189,6 +189,7 @@ class Mod(ABC):
     _disabled: bool = False
 
     def __init__(self):
+        self._abc_initialised = True
         # Find all the hooks defined for the mod.
         self.hooks: set[HookProtocol] = self.get_members(_funchook_predicate)
         self._custom_callbacks = self.get_members(_callback_predicate)
@@ -199,6 +200,7 @@ class Mod(ABC):
         self._gui_comboboxes: dict[str, ComboBoxProtocol] = {
             x[1].__qualname__: x[1] for x in inspect.getmembers(self, _gui_combobox_predicate)
         }
+        # TODO: If this isn't initialised and a call is made to it before it is we have an issue...
         self.pymhf_gui = None
         # For variables, unless there is a better way, store just the name so we
         # can our own special binding of the name to the GUI.
@@ -399,9 +401,16 @@ class ModManager:
 
         return loaded_mods, bound_hooks
 
-    def instantiate_mod(self, mod: type[Mod], quiet: bool = False) -> Mod:
+    def instantiate_mod(self, mod: type[Mod], quiet: bool = False) -> Optional[Mod]:
         """Register all the functions within the mod as hooks."""
         _mod = mod()
+        # Detect whether or not the mod has called __init__ on the parent class.
+        if not getattr(_mod, "_abc_initialised", False):
+            logger.error(
+                f"The mod {mod} has an __init__ statement which doesn't call super().__init__\n"
+                "This mod will not be loaded until this is fixed."
+            )
+            return None
         # First register each of the methods which are detours.
         for hook in _mod.hooks:
             self.hook_manager.register_hook(hook)
@@ -482,7 +491,9 @@ class ModManager:
                 new_module = self.load_mod(module.__file__)
                 for _mod in self._preloaded_mods.values():
                     mod = self.instantiate_mod(_mod)
-
+                    if mod is None:
+                        # If the mod isn't instantiated for any reason, skip it.
+                        continue
                     # Get the mod states for the mod if there are any and reapply them to the new mod
                     # instance.
                     if mod_state := self.mod_states.get(name):

@@ -40,6 +40,10 @@ def partial_struct(cls: _T) -> _T:
         calling_frame = cframe.f_back
     if calling_frame is not None:
         _locals.update(calling_frame.f_locals)
+
+    # Also add the class to the locals so that it can find itself in the case it references itself.
+    _locals.update({cls.__name__: cls})
+
     _fields_ = []
     curr_position = 0
     total_size = getattr(cls, "_total_size_", 0)
@@ -78,6 +82,17 @@ def partial_struct(cls: _T) -> _T:
             else:
                 field_type = annotation.__origin__
                 field_offset = metadata
+        # Check to make sure that the `field_type` is not a string(as can happen when we have a
+        # self-reference).
+        if isinstance(field_type, str):
+            field_type = getattr(annotation, "__origin__", None)
+            if field_type is None:
+                raise ValueError(
+                    f"The provided metadata {metadata} for field {field_name!r} is invalid. "
+                    "If the type in the `Field` component of the annotation is a string, please ensure the "
+                    "first argument of the Annotation is also the same string so that the type can be "
+                    "resolved."
+                )
         if not issubclass(field_type, get_args(CTYPES)):
             raise ValueError(f"The field {field_name!r} has an invalid type: {field_type}")
         if field_offset is not None and not isinstance(field_offset, int):

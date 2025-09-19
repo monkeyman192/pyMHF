@@ -10,7 +10,7 @@ Note that the view can only access memory that the process has access to, so ent
 Methods
 -------
 
-The ``gui`` property of the mod is a :py:class:`~pymhf.gui.gui.GUI` instance which has the ``hex_view`` property.
+The ``pymhf_gui`` property of the mod is a :py:class:`~pymhf.gui.gui.GUI` instance which has the ``hex_view`` property.
 
 This :py:class:`~pymhf.gui.hexview.HexView` instance has two methods which are useful:
 
