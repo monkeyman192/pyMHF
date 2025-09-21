@@ -27,7 +27,6 @@ from pymhf.utils.winapi import (
     IMAGE_SCN_MEM_WRITE,
     IMAGE_SECTION_HEADER,
     GetSystemInfo,
-    ReadProcessMemory,
     VirtualQueryEx,
 )
 
@@ -59,26 +58,30 @@ def _is_hashable_page(mbi: MEMORY_BASIC_INFORMATION32 | MEMORY_BASIC_INFORMATION
     return True
 
 
-def _read_process_memory(
-    process_handle: wintypes.HANDLE,
+def _read_bytes_into(
+    pm_binary: pymem.Pymem,
     address: int,
     out_obj: CDataLike,
     size: int | None = None,
     out_bytes_read: ctypes.c_size_t = ctypes.c_size_t(),
     raise_on_err: bool = True,
-) -> wintypes.BOOL:
+) -> bool:
     if size is None:
         size = ctypes.sizeof(out_obj)
-    res = ReadProcessMemory(
-        process_handle,
-        ctypes.c_void_p(address),
-        ctypes.byref(out_obj),
-        size,
-        ctypes.byref(out_bytes_read),
-    )
-    if raise_on_err and (not res or out_bytes_read.value != size):
-        raise OSError(f"Failed to read memory at 0x{address:X}: {ctypes.get_last_error()}")
-    return res
+
+    try:
+        data = pm_binary.read_bytes(address, size)
+
+        buffer = (ctypes.c_char * len(data)).from_buffer_copy(data)
+        ctypes.memmove(ctypes.byref(out_obj), buffer, len(data))
+
+        out_bytes_read.value = len(data)
+        return True
+    except Exception as e:
+        out_bytes_read.value = 0
+        if raise_on_err:
+            raise OSError(f"Failed to read memory at 0x{address:X}") from e
+        return False
 
 
 def _get_page_size() -> int:
@@ -105,21 +108,21 @@ def _get_main_module(pm_binary: pymem.Pymem) -> MODULEINFO:
     return main_module
 
 
-def _get_sections_info(process_handle: wintypes.HANDLE, address: int) -> tuple[int, int]:
+def _get_sections_info(pm_binary: pymem.Pymem, address: int) -> tuple[int, int]:
     dos_header = IMAGE_DOS_HEADER()
-    _read_process_memory(process_handle, address, dos_header)
+    _read_bytes_into(pm_binary, address, dos_header)
     if dos_header.e_magic != IMAGE_DOS_SIGNATURE:
         raise ValueError(f"Invalid DOS header magic for address 0x{address:X}")
 
     address += dos_header.e_lfanew
     signature = wintypes.DWORD()
-    _read_process_memory(process_handle, address, signature)
+    _read_bytes_into(pm_binary, address, signature)
     if signature.value != IMAGE_NT_SIGNATURE:
         raise ValueError(f"Invalid PE header signature for address 0x{address:X}")
 
     address += ctypes.sizeof(wintypes.DWORD)
     file_header = IMAGE_FILE_HEADER()
-    _read_process_memory(process_handle, address, file_header)
+    _read_bytes_into(pm_binary, address, file_header)
 
     num_sections = int(file_header.NumberOfSections)
     opt_header_size = int(file_header.SizeOfOptionalHeader)
@@ -129,7 +132,7 @@ def _get_sections_info(process_handle: wintypes.HANDLE, address: int) -> tuple[i
 
 
 def _get_read_only_sections(
-    process_handle: wintypes.HANDLE,
+    pm_binary: pymem.Pymem,
     sections_base: int,
     num_sections: int,
     max_module_size: int,
@@ -138,7 +141,7 @@ def _get_read_only_sections(
     for i in range(num_sections):
         section_address = sections_base + i * ctypes.sizeof(IMAGE_SECTION_HEADER)
         section_header = IMAGE_SECTION_HEADER()
-        _read_process_memory(process_handle, section_address, section_header)
+        _read_bytes_into(pm_binary, section_address, section_header)
 
         characteristics = section_header.Characteristics
         if not (characteristics & IMAGE_SCN_MEM_EXECUTE) or (characteristics & IMAGE_SCN_MEM_WRITE):
@@ -192,8 +195,8 @@ def hash_bytes_from_memory(pm_binary: pymem.Pymem, _bufsize: int = 2**18) -> str
     if not base_address or not module_size:
         raise OSError("Failed to resolve main module base/size")
 
-    sections_base, num_sections = _get_sections_info(process_handle, base_address)
-    sections = _get_read_only_sections(process_handle, sections_base, num_sections, module_size)
+    sections_base, num_sections = _get_sections_info(pm_binary, base_address)
+    sections = _get_read_only_sections(pm_binary, sections_base, num_sections, module_size)
     if not sections:
         raise ValueError("No read-only sections found in the main module")
     sections.sort(key=lambda s: s[0])
@@ -226,8 +229,8 @@ def hash_bytes_from_memory(pm_binary: pymem.Pymem, _bufsize: int = 2**18) -> str
             current = address
             while current < region_end:
                 to_read = min(_bufsize, region_end - current)
-                res = _read_process_memory(
-                    process_handle,
+                res = _read_bytes_into(
+                    pm_binary,
                     current,
                     buffer,
                     to_read,

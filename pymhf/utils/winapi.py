@@ -132,17 +132,6 @@ VirtualQuery.argtypes = [
 VirtualQuery.restype = ctypes.c_size_t
 
 
-ReadProcessMemory = ctypes.windll.kernel32.ReadProcessMemory
-ReadProcessMemory.argtypes = [
-    wintypes.HANDLE,
-    wintypes.LPCVOID,
-    wintypes.LPVOID,
-    ctypes.c_size_t,
-    ctypes.POINTER(ctypes.c_size_t),
-]
-ReadProcessMemory.restype = wintypes.BOOL
-
-
 GetSystemInfo = ctypes.windll.kernel32.GetSystemInfo
 GetSystemInfo.argtypes = [ctypes.POINTER(pymem.ressources.structure.SYSTEM_INFO)]
 GetSystemInfo.restype = None
