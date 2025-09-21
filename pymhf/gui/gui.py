@@ -476,11 +476,15 @@ class GUI:
             while dpg.is_dearpygui_running():
                 # For each tracking variable, update the value.
                 for vars in self.tracking_variables.get(self._current_tab, []):
-                    tag, cls, var, is_str = vars
-                    if is_str:
-                        dpg.set_value(tag, str(getattr(cls, var)))
-                    else:
-                        dpg.set_value(tag, getattr(cls, var))
+                    try:
+                        tag, cls, var, is_str = vars
+                        if is_str:
+                            dpg.set_value(tag, str(getattr(cls, var)))
+                        else:
+                            dpg.set_value(tag, getattr(cls, var))
+                    except Exception:
+                        # If we can't set the value, don't crash the whole program.
+                        pass
                 dpg.render_dearpygui_frame()
             dpg.destroy_context()
         except Exception:
