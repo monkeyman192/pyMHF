@@ -41,6 +41,8 @@ else:
 
 
 def _is_hashable_page(mbi: MEMORY_BASIC_INFORMATION32 | MEMORY_BASIC_INFORMATION64) -> bool:
+    """Check if a memory page is suitable for hashing. The page must not change during runtime and/or
+    between runs."""
     if mbi.State != MEMORY_STATE.MEM_COMMIT:
         return False
     if mbi.Type != MEMORY_TYPES.MEM_IMAGE:
@@ -66,6 +68,7 @@ def _read_bytes_into(
     out_bytes_read: ctypes.c_size_t = ctypes.c_size_t(),
     raise_on_err: bool = True,
 ) -> bool:
+    """Read bytes from the process memory into a `ctypes` object."""
     if size is None:
         size = ctypes.sizeof(out_obj)
 
@@ -85,6 +88,7 @@ def _read_bytes_into(
 
 
 def _get_page_size() -> int:
+    """Get the system page size. Defaults to 4096 if it cannot be determined."""
     sys_info = SYSTEM_INFO()
     GetSystemInfo(ctypes.byref(sys_info))
     return sys_info.dwPageSize or 4096
@@ -109,6 +113,7 @@ def _get_main_module(pm_binary: pymem.Pymem) -> MODULEINFO:
 
 
 def _get_sections_info(pm_binary: pymem.Pymem, address: int) -> tuple[int, int]:
+    """Get the base address and number of sections in the PE file at the given address."""
     dos_header = IMAGE_DOS_HEADER()
     _read_bytes_into(pm_binary, address, dos_header)
     if dos_header.e_magic != IMAGE_DOS_SIGNATURE:
@@ -137,6 +142,7 @@ def _get_read_only_sections(
     num_sections: int,
     max_module_size: int,
 ):
+    """Get a list of read-only sections in the PE file at the given address."""
     sections = []
     for i in range(num_sections):
         section_address = sections_base + i * ctypes.sizeof(IMAGE_SECTION_HEADER)
@@ -181,6 +187,9 @@ def hash_bytes_from_file(fileobj: BufferedReader, _bufsize: int = 2**18) -> str:
 
 
 def hash_bytes_from_memory(pm_binary: pymem.Pymem, _bufsize: int = 2**18) -> str:
+    """Hash the bytes of the main module of the given `pymem.Pymem` instance.
+    In order to ensure that the hash is stable across runs, this only read from sections that are not expected
+    to change between runs."""
     process_handle = pm_binary.process_handle
     pid = pm_binary.process_id
     if not process_handle or not pid:
