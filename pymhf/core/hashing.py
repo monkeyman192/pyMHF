@@ -3,7 +3,6 @@ import ctypes.wintypes as wintypes
 import hashlib
 import os
 from io import BufferedReader
-from typing import TYPE_CHECKING, Any, TypeAlias
 
 import psutil
 import pymem
@@ -17,6 +16,7 @@ from pymem.ressources.structure import (
     MODULEINFO,
     SYSTEM_INFO,
 )
+from typing_extensions import TYPE_CHECKING, Any, TypeAlias
 
 from pymhf.utils.winapi import (
     IMAGE_DOS_HEADER,
