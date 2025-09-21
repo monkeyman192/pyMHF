@@ -7,6 +7,80 @@ from typing import Protocol
 import pymem
 import pymem.ressources.structure
 
+MAX_EXE_NAME_SIZE = 1024
+WS_EX_LAYERED = 0x00080000  # layered window
+GWL_EXSTYLE = -20  # "extended window style"
+
+LWA_COLORKEY = 0x00000001
+LWA_ALPHA = 0x00000002
+
+IMAGE_DOS_SIGNATURE = 0x5A4D
+IMAGE_NT_SIGNATURE = 0x00004550
+
+IMAGE_SIZEOF_SHORT_NAME = 8
+
+IMAGE_SCN_MEM_WRITE = 0x80000000
+IMAGE_SCN_MEM_EXECUTE = 0x20000000
+
+
+class IMAGE_DOS_HEADER(ctypes.Structure):
+    _fields_ = [
+        ("e_magic", wintypes.WORD),
+        ("e_cblp", wintypes.WORD),
+        ("e_cp", wintypes.WORD),
+        ("e_crlc", wintypes.WORD),
+        ("e_cparhdr", wintypes.WORD),
+        ("e_minalloc", wintypes.WORD),
+        ("e_maxalloc", wintypes.WORD),
+        ("e_ss", wintypes.WORD),
+        ("e_sp", wintypes.WORD),
+        ("e_csum", wintypes.WORD),
+        ("e_ip", wintypes.WORD),
+        ("e_cs", wintypes.WORD),
+        ("e_lfarlc", wintypes.WORD),
+        ("e_ovno", wintypes.WORD),
+        ("e_res", wintypes.WORD * 4),
+        ("e_oemid", wintypes.WORD),
+        ("e_oeminfo", wintypes.WORD),
+        ("e_res2", wintypes.WORD * 10),
+        ("e_lfanew", wintypes.LONG),
+    ]
+
+
+class IMAGE_FILE_HEADER(ctypes.Structure):
+    _fields_ = [
+        ("Machine", wintypes.WORD),
+        ("NumberOfSections", wintypes.WORD),
+        ("TimeDateStamp", wintypes.DWORD),
+        ("PointerToSymbolTable", wintypes.DWORD),
+        ("NumberOfSymbols", wintypes.DWORD),
+        ("SizeOfOptionalHeader", wintypes.WORD),
+        ("Characteristics", wintypes.WORD),
+    ]
+
+
+class IMAGE_SECTION_HEADER(ctypes.Structure):
+    class _Misc(ctypes.Union):
+        _fields_ = [
+            ("PhysicalAddress", wintypes.DWORD),
+            ("VirtualSize", wintypes.DWORD),
+        ]
+
+    _anonymous_ = ("Misc",)
+    _fields_ = [
+        ("Name", wintypes.BYTE * IMAGE_SIZEOF_SHORT_NAME),
+        ("Misc", _Misc),
+        ("VirtualAddress", wintypes.DWORD),
+        ("SizeOfRawData", wintypes.DWORD),
+        ("PointerToRawData", wintypes.DWORD),
+        ("PointerToRelocations", wintypes.DWORD),
+        ("PointerToLinenumbers", wintypes.DWORD),
+        ("NumberOfRelocations", wintypes.WORD),
+        ("NumberOfLinenumbers", wintypes.WORD),
+        ("Characteristics", wintypes.DWORD),
+    ]
+
+
 GetModuleFileNameExA = ctypes.windll.psapi.GetModuleFileNameExA
 GetModuleFileNameExA.restype = wintypes.DWORD
 GetModuleFileNameExA.argtypes = [
@@ -58,12 +132,30 @@ VirtualQuery.argtypes = [
 VirtualQuery.restype = ctypes.c_size_t
 
 
-MAX_EXE_NAME_SIZE = 1024
-WS_EX_LAYERED = 0x00080000  # layered window
-GWL_EXSTYLE = -20  # "extended window style"
+ReadProcessMemory = ctypes.windll.kernel32.ReadProcessMemory
+ReadProcessMemory.argtypes = [
+    wintypes.HANDLE,
+    wintypes.LPCVOID,
+    wintypes.LPVOID,
+    ctypes.c_size_t,
+    ctypes.POINTER(ctypes.c_size_t),
+]
+ReadProcessMemory.restype = wintypes.BOOL
 
-LWA_COLORKEY = 0x00000001
-LWA_ALPHA = 0x00000002
+
+GetSystemInfo = ctypes.windll.kernel32.GetSystemInfo
+GetSystemInfo.argtypes = [ctypes.POINTER(pymem.ressources.structure.SYSTEM_INFO)]
+GetSystemInfo.restype = None
+
+
+VirtualQueryEx = ctypes.windll.kernel32.VirtualQueryEx
+VirtualQueryEx.argtypes = [
+    wintypes.HANDLE,
+    wintypes.LPCVOID,
+    ctypes.POINTER(pymem.ressources.structure.MEMORY_BASIC_INFORMATION),
+    ctypes.c_size_t,
+]
+VirtualQueryEx.restype = ctypes.c_size_t
 
 
 def get_exe_path_from_pid(proc: pymem.Pymem) -> str:

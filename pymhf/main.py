@@ -324,7 +324,7 @@ def run_module(
                     binary_hash = hash_bytes_from_file(f)
             except PermissionError:
                 print(f"Cannot open {binary_path!r} to hash it. Trying to read from memory...")
-                binary_hash = hash_bytes_from_memory(binary_path)
+                binary_hash = hash_bytes_from_memory(pm_binary)
             print(f"Exe hash is: {binary_hash}")
         else:
             binary_hash = 0
