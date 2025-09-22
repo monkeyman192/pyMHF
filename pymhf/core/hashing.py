@@ -16,7 +16,7 @@ from pymem.ressources.structure import (
     MODULEINFO,
     SYSTEM_INFO,
 )
-from typing_extensions import TYPE_CHECKING, Any, TypeAlias
+from typing_extensions import TYPE_CHECKING, Any, TypeAlias, Union
 
 from pymhf.utils.winapi import (
     IMAGE_DOS_HEADER,
@@ -40,7 +40,7 @@ else:
     CDataLike = Any
 
 
-def _is_hashable_page(mbi: MEMORY_BASIC_INFORMATION32 | MEMORY_BASIC_INFORMATION64) -> bool:
+def _is_hashable_page(mbi: Union[MEMORY_BASIC_INFORMATION32, MEMORY_BASIC_INFORMATION64]) -> bool:
     """Check if a memory page is suitable for hashing. The page must not change during runtime and/or
     between runs."""
     if mbi.State != MEMORY_STATE.MEM_COMMIT:
@@ -64,7 +64,7 @@ def _read_bytes_into(
     pm_binary: pymem.Pymem,
     address: int,
     out_obj: CDataLike,
-    size: int | None = None,
+    size: Union[int, None] = None,
     out_bytes_read: ctypes.c_size_t = ctypes.c_size_t(),
     raise_on_err: bool = True,
 ) -> bool:
