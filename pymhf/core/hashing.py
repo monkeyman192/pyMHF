@@ -16,7 +16,7 @@ from pymem.ressources.structure import (
     MODULEINFO,
     SYSTEM_INFO,
 )
-from typing_extensions import TYPE_CHECKING, Any, TypeAlias, Union
+from typing_extensions import Union, cast
 
 from pymhf.utils.winapi import (
     IMAGE_DOS_HEADER,
@@ -29,15 +29,6 @@ from pymhf.utils.winapi import (
     GetSystemInfo,
     VirtualQueryEx,
 )
-
-if TYPE_CHECKING:
-    from ctypes import _CData, _Pointer, _SimpleCData
-
-    CDataLike: TypeAlias = (
-        _CData | _SimpleCData | _Pointer[Any] | ctypes.Structure | ctypes.Union | ctypes.Array[Any]
-    )
-else:
-    CDataLike = Any
 
 
 def _is_hashable_page(mbi: Union[MEMORY_BASIC_INFORMATION32, MEMORY_BASIC_INFORMATION64]) -> bool:
@@ -58,33 +49,6 @@ def _is_hashable_page(mbi: Union[MEMORY_BASIC_INFORMATION32, MEMORY_BASIC_INFORM
     if not (mbi.Protect & (MEMORY_PROTECTION.PAGE_EXECUTE | MEMORY_PROTECTION.PAGE_EXECUTE_READ)):
         return False
     return True
-
-
-def _read_bytes_into(
-    pm_binary: pymem.Pymem,
-    address: int,
-    out_obj: CDataLike,
-    size: Union[int, None] = None,
-    out_bytes_read: ctypes.c_size_t = ctypes.c_size_t(),
-    raise_on_err: bool = True,
-) -> bool:
-    """Read bytes from the process memory into a `ctypes` object."""
-    if size is None:
-        size = ctypes.sizeof(out_obj)
-
-    try:
-        data = pm_binary.read_bytes(address, size)
-
-        buffer = (ctypes.c_char * len(data)).from_buffer_copy(data)
-        ctypes.memmove(ctypes.byref(out_obj), buffer, len(data))
-
-        out_bytes_read.value = len(data)
-        return True
-    except Exception as e:
-        out_bytes_read.value = 0
-        if raise_on_err:
-            raise OSError(f"Failed to read memory at 0x{address:X}") from e
-        return False
 
 
 def _get_page_size() -> int:
@@ -111,23 +75,19 @@ def _get_main_module(pm_binary: pymem.Pymem) -> MODULEINFO:
 
     return main_module
 
-
 def _get_sections_info(pm_binary: pymem.Pymem, address: int) -> tuple[int, int]:
     """Get the base address and number of sections in the PE file at the given address."""
-    dos_header = IMAGE_DOS_HEADER()
-    _read_bytes_into(pm_binary, address, dos_header)
+    dos_header = cast(IMAGE_DOS_HEADER, pm_binary.read_ctype(address, IMAGE_DOS_HEADER()))    
     if dos_header.e_magic != IMAGE_DOS_SIGNATURE:
         raise ValueError(f"Invalid DOS header magic for address 0x{address:X}")
 
     address += dos_header.e_lfanew
-    signature = wintypes.DWORD()
-    _read_bytes_into(pm_binary, address, signature)
-    if signature.value != IMAGE_NT_SIGNATURE:
+    signature = pm_binary.read_ctype(address, wintypes.DWORD())
+    if signature != IMAGE_NT_SIGNATURE:
         raise ValueError(f"Invalid PE header signature for address 0x{address:X}")
 
     address += ctypes.sizeof(wintypes.DWORD)
-    file_header = IMAGE_FILE_HEADER()
-    _read_bytes_into(pm_binary, address, file_header)
+    file_header = cast(IMAGE_FILE_HEADER, pm_binary.read_ctype(address, IMAGE_FILE_HEADER()))
 
     num_sections = int(file_header.NumberOfSections)
     opt_header_size = int(file_header.SizeOfOptionalHeader)
@@ -146,8 +106,7 @@ def _get_read_only_sections(
     sections = []
     for i in range(num_sections):
         section_address = sections_base + i * ctypes.sizeof(IMAGE_SECTION_HEADER)
-        section_header = IMAGE_SECTION_HEADER()
-        _read_bytes_into(pm_binary, section_address, section_header)
+        section_header = cast(IMAGE_SECTION_HEADER, pm_binary.read_ctype(section_address, IMAGE_SECTION_HEADER()))
 
         characteristics = section_header.Characteristics
         if not (characteristics & IMAGE_SCN_MEM_EXECUTE) or (characteristics & IMAGE_SCN_MEM_WRITE):
@@ -213,7 +172,6 @@ def hash_bytes_from_memory(pm_binary: pymem.Pymem, _bufsize: int = 2**18) -> str
     page_size = _get_page_size()
     digest = hashlib.sha1()
     buffer = (ctypes.c_ubyte * _bufsize)()
-    bytes_read = ctypes.c_size_t()
     for rva, size, name in sections:
         start = base_address + rva
         end = start + size
@@ -238,22 +196,15 @@ def hash_bytes_from_memory(pm_binary: pymem.Pymem, _bufsize: int = 2**18) -> str
             current = address
             while current < region_end:
                 to_read = min(_bufsize, region_end - current)
-                res = _read_bytes_into(
-                    pm_binary,
-                    current,
-                    buffer,
-                    to_read,
-                    bytes_read,
-                    raise_on_err=False,
-                )
-                if not res or bytes_read.value == 0:
+                buffer = pm_binary.read_bytes(current, to_read)
+                if len(buffer) == 0:
                     current = (current + page_size) & ~(page_size - 1)
                     if current < address:
                         current = address + page_size
                     continue
 
-                digest.update(memoryview(buffer)[: bytes_read.value])
-                current += bytes_read.value
+                digest.update(memoryview(buffer)[:len(buffer)])
+                current += len(buffer)
 
             address = region_end
 
