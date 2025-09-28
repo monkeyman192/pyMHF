@@ -18,11 +18,11 @@ import pymem.ressources.kernel32
 import pyrun_injected.dllinject as dllinject
 
 from pymhf.core._types import LoadTypeEnum, pymhfConfig
+from pymhf.core.hashing import hash_bytes_from_file, hash_bytes_from_memory
 from pymhf.core.importing import parse_file_for_mod
 from pymhf.core.log_handling import open_log_console
 from pymhf.core.process import start_process
 from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol
-from pymhf.core.hashing import hash_bytes_from_file, hash_bytes_from_memory
 from pymhf.utils.config import canonicalize_setting
 from pymhf.utils.parse_toml import read_pymhf_settings
 from pymhf.utils.winapi import get_exe_path_from_pid
