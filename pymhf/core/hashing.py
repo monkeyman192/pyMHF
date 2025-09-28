@@ -75,9 +75,10 @@ def _get_main_module(pm_binary: pymem.Pymem) -> MODULEINFO:
 
     return main_module
 
+
 def _get_sections_info(pm_binary: pymem.Pymem, address: int) -> tuple[int, int]:
     """Get the base address and number of sections in the PE file at the given address."""
-    dos_header = cast(IMAGE_DOS_HEADER, pm_binary.read_ctype(address, IMAGE_DOS_HEADER()))    
+    dos_header = cast(IMAGE_DOS_HEADER, pm_binary.read_ctype(address, IMAGE_DOS_HEADER()))
     if dos_header.e_magic != IMAGE_DOS_SIGNATURE:
         raise ValueError(f"Invalid DOS header magic for address 0x{address:X}")
 
@@ -106,7 +107,9 @@ def _get_read_only_sections(
     sections = []
     for i in range(num_sections):
         section_address = sections_base + i * ctypes.sizeof(IMAGE_SECTION_HEADER)
-        section_header = cast(IMAGE_SECTION_HEADER, pm_binary.read_ctype(section_address, IMAGE_SECTION_HEADER()))
+        section_header = cast(
+            IMAGE_SECTION_HEADER, pm_binary.read_ctype(section_address, IMAGE_SECTION_HEADER())
+        )
 
         characteristics = section_header.Characteristics
         if not (characteristics & IMAGE_SCN_MEM_EXECUTE) or (characteristics & IMAGE_SCN_MEM_WRITE):
@@ -203,7 +206,7 @@ def hash_bytes_from_memory(pm_binary: pymem.Pymem, _bufsize: int = 2**18) -> str
                         current = address + page_size
                     continue
 
-                digest.update(memoryview(buffer)[:len(buffer)])
+                digest.update(memoryview(buffer)[: len(buffer)])
                 current += len(buffer)
 
             address = region_end
