@@ -8,6 +8,7 @@ import time
 import webbrowser
 from functools import partial
 from signal import SIGTERM
+from threading import Event
 from typing import Optional
 
 import psutil
@@ -30,6 +31,11 @@ from pymhf.utils.winapi import get_exe_path_from_pid
 CWD = op.dirname(__file__)
 PYMHF_DIR = op.dirname(CWD)
 APPDATA_DIR = os.environ.get("APPDATA", op.expanduser("~"))
+
+# Flag indicating whether to kill our own pid.
+# This should generally be true except when running tests otherwise it will kill the test runner.
+REMOVE_SELF = True
+END_EVENT = Event()
 
 
 class WrappedProcess:
@@ -67,7 +73,7 @@ def _wait_until_process_running(target: str):
 
 
 def get_process_when_ready(
-    cmd: str,
+    cmd: list[str],
     target: str,
     required_assemblies: Optional[list[str]] = None,
     is_steam: bool = True,
@@ -86,12 +92,14 @@ def get_process_when_ready(
             raise ProcessLookupError("Steam not running! For now, start it yourself and try again...")
 
     run = True
+    found_pid = None
     if parent_process is not None:
         if is_steam:
             # For steam games, if we have the game ID then the cmd will be
             # steam://rungameid/{game id} which we need to invoke this way.
             print("Running from steam")
-            webbrowser.open(cmd)
+            # We can only run the first argument in the list with steam unfortunately...
+            webbrowser.open(cmd[0])
         else:
             subprocess.run(cmd)
         while run:
@@ -101,7 +109,7 @@ def get_process_when_ready(
                         if child.name() == target:
                             target_process = WrappedProcess(proc=child)
                 else:
-                    binary = pymem.Pymem(target)
+                    binary = pymem.Pymem(target, exact_match=True)
                     modules = list(pymem.process.enum_process_module(binary.process_handle))
                     if len(modules) > 0 and required_assemblies is not None:
                         if set(required_assemblies) <= set(x.name for x in modules):
@@ -115,13 +123,16 @@ def get_process_when_ready(
                 pass
     else:
         creationflags = 0x4 if start_paused else 0
-        process_handle, thread_handle, pid, tid = start_process(  # noqa
+        process_handle, thread_handle, found_pid, tid = start_process(  # noqa
             cmd, creationflags=creationflags
         )
         target_process = WrappedProcess(thread_handle=thread_handle)
 
     if target_process is not None:
-        binary = pymem.Pymem(target)
+        if found_pid is not None:
+            binary = pymem.Pymem(found_pid)
+        else:
+            binary = pymem.Pymem(target, exact_match=True)
         injected = dllinject.pyRunner(binary)
         if start_paused:
             target_process.suspend()
@@ -131,14 +142,28 @@ def get_process_when_ready(
         return None, None
 
 
-def load_mod_file(filepath):
-    """Load an individual file as a mod."""
+def load_mod_file(filepath: str, config_overrides: Optional[pymhfConfig] = None):
+    """Load an individual file as a mod.
+
+    Parameters
+    ----------
+    filepath
+        The relative or absolute filepath to a single python file to be loaded as a mod.
+        It is generally recommended to pass an absolute path as it will be more reliable.
+    config_overrides
+        An optional dictionary containing values which will override any existing config values read from the
+        specified file.
+    """
     pymhf_settings = read_pymhf_settings(filepath, True)
+    if config_overrides:
+        pymhf_settings.update(config_overrides)
     run_module(filepath, pymhf_settings, None, None)
 
 
 def load_module(plugin_name: str, module_path: str):
-    """Load the module."""
+    """Load a module.
+    This should be used when loading an entire folder or a plugin based on name.
+    """
     config_dir = op.join(APPDATA_DIR, "pymhf", plugin_name)
     local_cfg_file = op.join(config_dir, "pymhf.local.toml")
     if op.exists(local_cfg_file):
@@ -182,9 +207,17 @@ def run_module(
     injected = None
     binary_exe = config.get("exe", None)
     required_assemblies = []
+    cmd: list[str] = []
     required_assemblies = config.get("required_assemblies", [])
     start_exe = config.get("start_exe", True)
-    to_load_pid = config.get("pid", None)
+    cmd_args = config.get("args", [])
+    if not isinstance(cmd_args, list):
+        print(f"Warning: The provided args value {cmd_args!r} is not valid. It must be a list.")
+        cmd_args = []
+    # Ensure each value is a string.
+    for i, _arg in enumerate(cmd_args):
+        cmd_args[i] = str(_arg)
+    to_load_pid: Optional[int] = config.get("pid", None)
     interactive_console = config.get("interactive_console", True)
     logging_config = config.get("logging", {}) or {}
     show_log_window = logging_config.get("shown", True)
@@ -210,34 +243,42 @@ def run_module(
 
     is_steam = False
     if steam_gameid:
-        cmd = f"steam://rungameid/{steam_gameid}"
+        cmd = [f"steam://rungameid/{steam_gameid}"]
         is_steam = True
     elif binary_exe is not None:
         if op.isabs(binary_exe):
-            cmd = binary_path = binary_exe
+            binary_path = binary_exe
+            cmd = [binary_path]
             # We only need the binary_exe to be the name from here on.
             binary_exe = op.basename(binary_exe)
         else:
-            if start_exe is True:
-                raise ValueError(
-                    "[tool.pymhf].exe must be a full path if no steam_gameid is provided and start_exe is not"
-                    " true"
-                )
+            # Try and create the path relative to the provided module path.
+            _trial_path = op.realpath(op.join(_module_path, binary_exe))
+            if op.exists(_trial_path):
+                binary_path = _trial_path
+                cmd = [binary_path]
+                binary_exe = op.basename(binary_path)
             else:
-                pass
+                if start_exe is True:
+                    raise ValueError(
+                        "[tool.pymhf].exe must be a full path or path relative to the running script if no "
+                        "steam_gameid is provided and start_exe is not true"
+                    )
+                else:
+                    pass
 
     if start_exe and binary_exe is not None:
         # Check to see fi the binary is already running... Just in case.
         # If it is, we use it, otherwise start it.
         try:
-            pm_binary = pymem.Pymem(binary_exe)
+            pm_binary = pymem.Pymem(binary_exe, exact_match=True)
             print(f"Found an already running instance of {binary_exe!r}")
             injected = dllinject.pyRunner(pm_binary)
             print("Python injected")
             proc = None
-        except pymem.exception.ProcessNotFound:
+        except (pymem.exception.ProcessNotFound, pymem.exception.CouldNotOpenProcess):
             injected, proc = get_process_when_ready(
-                cmd,
+                cmd + cmd_args,
                 binary_exe,
                 required_assemblies,
                 is_steam,
@@ -247,13 +288,12 @@ def run_module(
         # If we aren't starting the exe then by the time we have run we expect the process to already exist,
         # so just find it with pymem.
         if binary_exe is not None:
-            pm_binary = pymem.Pymem(binary_exe)
+            pm_binary = pymem.Pymem(binary_exe, exact_match=True)
             injected = dllinject.pyRunner(pm_binary)
             print("Python injected")
             proc = None
         else:
-            pm_binary = pymem.Pymem()
-            pm_binary.open_process_from_id(to_load_pid)
+            pm_binary = pymem.Pymem(to_load_pid)  # type: ignore  (pymem has the wrong type...)
             injected = dllinject.pyRunner(pm_binary)
             print("Python injected")
             proc = None
@@ -338,8 +378,10 @@ def run_module(
                     except Exception:
                         # If we can't kill it, it's probably already dead. Just continue.
                         pass
+            END_EVENT.set()
             # Finally, send a SIGTERM to ourselves...
-            os.kill(os.getpid(), SIGTERM)
+            if REMOVE_SELF:
+                os.kill(os.getpid(), SIGTERM)
 
         # Wait some time for the data to be written to memory only if we are starting the process ourselves.
         if start_exe:
@@ -438,6 +480,11 @@ sys.path = {saved_path}
 
             # Inject our preinject script.
             injected_data_list.append(dllinject.StringType(op.join(CWD, "_preinject.py"), True))
+
+            # Allocate a boolean value which will be set to True by the injected code once it has completed.
+            sentinel_addr = pm_binary.allocate(4)
+            pm_binary.write_bool(sentinel_addr, False)
+
             # Inject the common NMS variables which are required for general use.
             internals_str = f"""
 pymhf.core._internal.MODULE_PATH = {module_path!r}
@@ -454,6 +501,7 @@ pymhf.core._internal.LOAD_TYPE = {load_type.value!r}
 pymhf.core._internal.MOD_SAVE_DIR = {mod_save_dir!r}
 pymhf.core._internal.INCLUDED_ASSEMBLIES = {included_assemblies!r}
 pymhf.core._internal.CACHE_DIR = {cache_dir!r}
+pymhf.core._internal._SENTINEL_PTR = {sentinel_addr!r}
                 """
             injected_data_list.append(dllinject.StringType(internals_str, False))
         except Exception as e:
@@ -468,35 +516,20 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
         fut.add_done_callback(lambda x: close_callback(x))
         futures.append(fut)
 
-        # Wait for a user input to start the process.
-        # TODO: Send a signal back up from the process to trigger this automatically.
+        # Wait for the injected process to indicate that it's ready to go.
         if start_paused and start_exe is not False:
-            try:
-                #     # print("Checking to see if we are ready to run...")
-                #     # client_completed = asyncio.Future()
-                #     # client_factory = partial(
-                #     #     TerminalProtocol,
-                #     #     message=READY_ASK_SEQUENCE,
-                #     #     future=client_completed
-                #     # )
-                #     # print("A")
-                #     # factory_coroutine = loop.create_connection(
-                #     #     client_factory,
-                #     #     '127.0.0.1',
-                #     #     6770,
-                #     # )
-                #     # print("B")
-                #     # loop.run_until_complete(factory_coroutine)
-                #     # print("C")
-                #     # loop.run_until_complete(client_completed)
-
-                input("Press something to start binary")
-            except KeyboardInterrupt:
-                # Kill the injected code so that we don't wait forever for the future to end.
-                kill_injected_code(loop)
-                raise
+            while True:
+                try:
+                    if pm_binary.read_bool(sentinel_addr) is True:
+                        print("pyMHF injection complete!")
+                        break
+                except KeyboardInterrupt:
+                    # Kill the injected code even though we are still waiting for it to start up.
+                    kill_injected_code(loop)
+                    raise
             if proc is not None:
                 proc.resume()
+                print("Press CTRL+C to exit the process:\n")
 
         if interactive_console:
             print("pyMHF interactive python command prompt")
@@ -506,7 +539,7 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
             # Might need to modify the WrappedProcess object to always create the pstuil.Process object to
             # make it work easier...
 
-            # TODO: This should become False when we exit form the program...
+            # TODO: This should become False when we exit from the program...
             while True:
                 try:
                     input_ = input(">>> ")
@@ -524,10 +557,9 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
             kill_injected_code(loop)
         else:
             while True:
-                # TODO: Maybe make this a bit more sane...
+                # Wait until the end event is triggered. As soon as it is this loop will exit.
                 try:
-                    input_ = input("Type 'exit' or press CTRL+C to exit the process:\n")
-                    if input_.lower() == "exit":
+                    if END_EVENT.wait(2) is True:
                         break
                 except KeyboardInterrupt:
                     break
@@ -554,23 +586,21 @@ pymhf.core._internal.CACHE_DIR = {cache_dir!r}
             pass
         if executor is not None:
             executor.shutdown(wait=False)
-        try:
-            with open(op.join(CWD, "end.py"), "r") as f:
-                close_shellcode = f.read()
-            pm_binary.inject_python_shellcode(close_shellcode)
-            print("Just injected the close command?")
-            # Kill the process.
-        except Exception:
-            pass
-        finally:
-            print("Forcibly shutting down process")
-            time.sleep(1)
-            for _pid in {pm_binary.process_id, log_pid}:
-                if _pid:
-                    try:
-                        os.kill(_pid, SIGTERM)
-                        print(f"Just killed process {_pid}")
-                    except Exception:
-                        # If we can't kill it, it's probably already dead. Just continue.
-                        print(f"Failed to kill process {_pid}. It was likely already dead...")
-                        pass
+
+        # Have a short nap and then finish trying to clean up.
+        time.sleep(0.5)
+        if REMOVE_SELF:
+            pids = {pm_binary.process_id, log_pid}
+        else:
+            pids = {
+                log_pid,
+            }
+        for _pid in pids:
+            if _pid:
+                try:
+                    os.kill(_pid, SIGTERM)
+                    print(f"Just killed process {_pid}")
+                except Exception:
+                    # If we can't kill it, it's probably already dead. Just continue.
+                    print(f"Failed to kill process {_pid}. It was likely already dead...")
+                    pass

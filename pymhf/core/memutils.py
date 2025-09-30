@@ -237,7 +237,7 @@ def pattern_to_bytes(patt: str) -> bytes:
 def _get_binary_info(binary: str) -> Optional[tuple[int, MODULEINFO]]:
     if binary not in cache.hm_cache:
         try:
-            pm_process = pymem.Pymem(_internal.EXE_NAME)
+            pm_process = pymem.Pymem(_internal.EXE_NAME, exact_match=True)
             handle = pm_process.process_handle
             if ((module := cache.module_map.get(binary)) is None) or (handle is None):
                 return None

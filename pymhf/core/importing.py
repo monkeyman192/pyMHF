@@ -86,8 +86,9 @@ def import_file(fpath: str) -> Optional[ModuleType]:
             module.__name__ = module_name
             module.__spec__ = spec
             sys.modules[module_name] = module
-            spec.loader.exec_module(module)
-            return module
+            if spec.loader:
+                spec.loader.exec_module(module)
+                return module
         else:
             print("failed")
     except Exception:
