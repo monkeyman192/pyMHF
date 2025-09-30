@@ -527,6 +527,10 @@ pymhf.core._internal._SENTINEL_PTR = {sentinel_addr!r}
                     # Kill the injected code even though we are still waiting for it to start up.
                     kill_injected_code(loop)
                     raise
+                except pymem.exception.MemoryReadError:
+                    # In this case the process has probably already died for some reason...
+                    # Set END_EVENT so that we just initiate the shutdown process.
+                    END_EVENT.set()
             if proc is not None:
                 proc.resume()
                 print("Press CTRL+C to exit the process:\n")
