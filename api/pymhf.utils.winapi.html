@@ -281,6 +281,7 @@
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.calling.html">pymhf.core.calling module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.errors.html">pymhf.core.errors module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.functions.html">pymhf.core.functions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.core.hashing.html">pymhf.core.hashing module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.hooking.html">pymhf.core.hooking module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.importing.html">pymhf.core.importing module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.log_handling.html">pymhf.core.log_handling module</a></li>
@@ -381,6 +382,252 @@
                   
   <section id="module-pymhf.utils.winapi">
 <span id="pymhf-utils-winapi-module"></span><h1>pymhf.utils.winapi module<a class="headerlink" href="#module-pymhf.utils.winapi" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.utils.winapi.</span></span><span class="sig-name descname"><span class="pre">IMAGE_DOS_HEADER</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.Structure" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_cblp">
+<span class="sig-name descname"><span class="pre">e_cblp</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_cblp" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_cp">
+<span class="sig-name descname"><span class="pre">e_cp</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_cp" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_cparhdr">
+<span class="sig-name descname"><span class="pre">e_cparhdr</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_cparhdr" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_crlc">
+<span class="sig-name descname"><span class="pre">e_crlc</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_crlc" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_cs">
+<span class="sig-name descname"><span class="pre">e_cs</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_cs" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_csum">
+<span class="sig-name descname"><span class="pre">e_csum</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_csum" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_ip">
+<span class="sig-name descname"><span class="pre">e_ip</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_ip" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_lfanew">
+<span class="sig-name descname"><span class="pre">e_lfanew</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_lfanew" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_lfarlc">
+<span class="sig-name descname"><span class="pre">e_lfarlc</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_lfarlc" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_magic">
+<span class="sig-name descname"><span class="pre">e_magic</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_magic" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_maxalloc">
+<span class="sig-name descname"><span class="pre">e_maxalloc</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_maxalloc" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_minalloc">
+<span class="sig-name descname"><span class="pre">e_minalloc</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_minalloc" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_oemid">
+<span class="sig-name descname"><span class="pre">e_oemid</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_oemid" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_oeminfo">
+<span class="sig-name descname"><span class="pre">e_oeminfo</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_oeminfo" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_ovno">
+<span class="sig-name descname"><span class="pre">e_ovno</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_ovno" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_res">
+<span class="sig-name descname"><span class="pre">e_res</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_res" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_res2">
+<span class="sig-name descname"><span class="pre">e_res2</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_res2" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_sp">
+<span class="sig-name descname"><span class="pre">e_sp</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_sp" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_DOS_HEADER.e_ss">
+<span class="sig-name descname"><span class="pre">e_ss</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_DOS_HEADER.e_ss" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_FILE_HEADER">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.utils.winapi.</span></span><span class="sig-name descname"><span class="pre">IMAGE_FILE_HEADER</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_FILE_HEADER" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.Structure" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_FILE_HEADER.Characteristics">
+<span class="sig-name descname"><span class="pre">Characteristics</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_FILE_HEADER.Characteristics" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_FILE_HEADER.Machine">
+<span class="sig-name descname"><span class="pre">Machine</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_FILE_HEADER.Machine" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_FILE_HEADER.NumberOfSections">
+<span class="sig-name descname"><span class="pre">NumberOfSections</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_FILE_HEADER.NumberOfSections" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_FILE_HEADER.NumberOfSymbols">
+<span class="sig-name descname"><span class="pre">NumberOfSymbols</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_FILE_HEADER.NumberOfSymbols" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_FILE_HEADER.PointerToSymbolTable">
+<span class="sig-name descname"><span class="pre">PointerToSymbolTable</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_FILE_HEADER.PointerToSymbolTable" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_FILE_HEADER.SizeOfOptionalHeader">
+<span class="sig-name descname"><span class="pre">SizeOfOptionalHeader</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_FILE_HEADER.SizeOfOptionalHeader" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_FILE_HEADER.TimeDateStamp">
+<span class="sig-name descname"><span class="pre">TimeDateStamp</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_FILE_HEADER.TimeDateStamp" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_SECTION_HEADER">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.utils.winapi.</span></span><span class="sig-name descname"><span class="pre">IMAGE_SECTION_HEADER</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_SECTION_HEADER" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.Structure" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_SECTION_HEADER.Characteristics">
+<span class="sig-name descname"><span class="pre">Characteristics</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_SECTION_HEADER.Characteristics" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_SECTION_HEADER.Misc">
+<span class="sig-name descname"><span class="pre">Misc</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_SECTION_HEADER.Misc" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_SECTION_HEADER.Name">
+<span class="sig-name descname"><span class="pre">Name</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_SECTION_HEADER.Name" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_SECTION_HEADER.NumberOfLinenumbers">
+<span class="sig-name descname"><span class="pre">NumberOfLinenumbers</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_SECTION_HEADER.NumberOfLinenumbers" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_SECTION_HEADER.NumberOfRelocations">
+<span class="sig-name descname"><span class="pre">NumberOfRelocations</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_SECTION_HEADER.NumberOfRelocations" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_SECTION_HEADER.PhysicalAddress">
+<span class="sig-name descname"><span class="pre">PhysicalAddress</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_SECTION_HEADER.PhysicalAddress" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_SECTION_HEADER.PointerToLinenumbers">
+<span class="sig-name descname"><span class="pre">PointerToLinenumbers</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_SECTION_HEADER.PointerToLinenumbers" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_SECTION_HEADER.PointerToRawData">
+<span class="sig-name descname"><span class="pre">PointerToRawData</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_SECTION_HEADER.PointerToRawData" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_SECTION_HEADER.PointerToRelocations">
+<span class="sig-name descname"><span class="pre">PointerToRelocations</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_SECTION_HEADER.PointerToRelocations" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_SECTION_HEADER.SizeOfRawData">
+<span class="sig-name descname"><span class="pre">SizeOfRawData</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_SECTION_HEADER.SizeOfRawData" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_SECTION_HEADER.VirtualAddress">
+<span class="sig-name descname"><span class="pre">VirtualAddress</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_SECTION_HEADER.VirtualAddress" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.utils.winapi.IMAGE_SECTION_HEADER.VirtualSize">
+<span class="sig-name descname"><span class="pre">VirtualSize</span></span><a class="headerlink" href="#pymhf.utils.winapi.IMAGE_SECTION_HEADER.VirtualSize" title="Link to this definition">#</a></dt>
+<dd><p>Structure/Union member</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="pymhf.utils.winapi.MemoryInfo">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.utils.winapi.</span></span><span class="sig-name descname"><span class="pre">MemoryInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.utils.winapi.MemoryInfo" title="Link to this definition">#</a></dt>

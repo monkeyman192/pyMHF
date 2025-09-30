@@ -10,6 +10,7 @@ Submodules
    pymhf.core.calling
    pymhf.core.errors
    pymhf.core.functions
+   pymhf.core.hashing
    pymhf.core.hooking
    pymhf.core.importing
    pymhf.core.log_handling

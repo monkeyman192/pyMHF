@@ -1,0 +1,7 @@
+pymhf.core.hashing module
+=========================
+
+.. automodule:: pymhf.core.hashing
+   :members:
+   :show-inheritance:
+   :undoc-members:
