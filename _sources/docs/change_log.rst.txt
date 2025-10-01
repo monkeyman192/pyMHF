@@ -5,7 +5,11 @@ Current (0.1.17.dev)
 --------------------
 
 - Further improved partial structs to allow nesting references to themselves as a type (must be "indirect", ie. the type of a pointer, or dynamic array for example).
-- Added a fallback method to calculate the binary hash in case opening the file fails. Thanks to [@sparrow](https://github.com/samjviana) for implementing this.
+- Added a fallback method to calculate the binary hash in case opening the file fails. Thanks to `@sparrow <https://github.com/samjviana>`_ for implementing this.
+- Fixed some inssues around running python files directly with ``pymhf run``
+- Added the option to pass command line arguments to the function when ``pymhf`` starts the process itself.
+- Added the ``config_overrides`` argument to :py:func:`~pymhf.main.load_mod_file` to allow overriding the static config values.
+- Implemented the functionality so that if ``start_paused`` is True, the program will start automatically once injection is completed (no need for manual input any more).
 
 0.1.16 (16/08/2025)
 -------------------

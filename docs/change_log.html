@@ -362,7 +362,11 @@
 <h2>Current (0.1.17.dev)<a class="headerlink" href="#current-0-1-17-dev" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Further improved partial structs to allow nesting references to themselves as a type (must be “indirect”, ie. the type of a pointer, or dynamic array for example).</p></li>
-<li><p>Added a fallback method to calculate the binary hash in case opening the file fails. Thanks to [&#64;sparrow](<a class="github reference external" href="https://github.com/samjviana">samjviana</a>) for implementing this.</p></li>
+<li><p>Added a fallback method to calculate the binary hash in case opening the file fails. Thanks to <a class="reference external" href="https://github.com/samjviana">&#64;sparrow</a> for implementing this.</p></li>
+<li><p>Fixed some inssues around running python files directly with <code class="docutils literal notranslate"><span class="pre">pymhf</span> <span class="pre">run</span></code></p></li>
+<li><p>Added the option to pass command line arguments to the function when <code class="docutils literal notranslate"><span class="pre">pymhf</span></code> starts the process itself.</p></li>
+<li><p>Added the <code class="docutils literal notranslate"><span class="pre">config_overrides</span></code> argument to <a class="reference internal" href="../api/pymhf.main.html#pymhf.main.load_mod_file" title="pymhf.main.load_mod_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_mod_file</span></code></a> to allow overriding the static config values.</p></li>
+<li><p>Implemented the functionality so that if <code class="docutils literal notranslate"><span class="pre">start_paused</span></code> is True, the program will start automatically once injection is completed (no need for manual input any more).</p></li>
 </ul>
 </section>
 <section id="id1">
