@@ -19,6 +19,7 @@ LOAD_TYPE: LoadTypeEnum = LoadTypeEnum.INVALID
 MOD_SAVE_DIR: str = ""
 INCLUDED_ASSEMBLIES: dict[str, str] = {}
 CACHE_DIR: str = ""
+_SENTINEL_PTR: int = 0
 
 _executor: ThreadPoolExecutor = None  # type: ignore
 

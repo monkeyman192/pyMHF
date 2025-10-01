@@ -13,3 +13,6 @@ mods
 docs/api/*.rst
 # Explicitly keep this file as we aren't generating it automatically.
 !docs/api/index.rst
+
+# Generated binaries for testing
+*.exe

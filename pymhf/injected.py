@@ -68,6 +68,13 @@ try:
 
     _internal.LOAD_TYPE = LoadTypeEnum(_internal.LOAD_TYPE)
 
+    # Assign the sentinel and load it from the provided address which is allocated in this process by the
+    # parent process. If the main process isn't actually waiting on this it won't ever be read, but it's
+    # simpler to just allocate it anyway.
+    sentinel = ctypes.c_bool(False)
+    if _internal._SENTINEL_PTR:
+        sentinel = ctypes.c_bool.from_address(_internal._SENTINEL_PTR)
+
     _module_path = _internal.MODULE_PATH
     if op.isfile(_module_path):
         _module_path = op.dirname(_module_path)
@@ -201,7 +208,7 @@ try:
 
     executor = ThreadPoolExecutor(2, thread_name_prefix="pyMHF_Internal_Executor")
 
-    binary = pymem.Pymem(_internal.EXE_NAME)
+    binary = pymem.Pymem(_internal.EXE_NAME, exact_match=True)
     cache.module_map = {x.name: x for x in pymem.process.enum_process_module(binary.process_handle)}
 
     # Read the imports
@@ -294,6 +301,11 @@ try:
         futures.append(executor.submit(gui.run))
 
     logging.info(f"Serving on executor {server.sockets[0].getsockname()}")
+
+    # Finally, before we run forever, set the sentinel value to True so that if the main process was waiting
+    # for the injected code to complete before starting the process it can now resume it.
+    sentinel.value = True
+
     loop.run_forever()
 
     # Close the server.

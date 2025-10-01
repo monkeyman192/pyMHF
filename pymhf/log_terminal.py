@@ -107,9 +107,8 @@ class LogRecordSocketReceiver(socketserver.ThreadingTCPServer):
             print("Ending logging server...")
 
 
-def main(path: str):
+def main(logdir: str):
     formatter = logging.Formatter("%(asctime)s %(name)-24s %(levelname)-6s %(message)s")
-    logdir = op.join(path, "..", "logs")
     os.makedirs(logdir, exist_ok=True)
     # TODO: Need to make this strip the ANSI escape chars from the written log
     file_handler = logging.FileHandler(

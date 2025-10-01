@@ -1,6 +1,7 @@
 import _winapi
 import ctypes
 import ctypes.wintypes
+from subprocess import list2cmdline
 
 kernel32 = ctypes.WinDLL("kernel32.dll")
 
@@ -27,7 +28,7 @@ class SECURITY_ATTRIBUTES(ctypes.Structure):
     ]
 
 
-def start_process(binary_path: str, creationflags: int = 0x0):
+def start_process(args: list[str], creationflags: int = 0x0):
     # Start an executable similarly to subprocess.Popen
     # The functionality here is ripped directly from that implementation,
     # however we don't discard the thread_handle here so that we may use it
@@ -37,14 +38,15 @@ def start_process(binary_path: str, creationflags: int = 0x0):
     thread_attr = SECURITY_ATTRIBUTES()
     thread_attr.bInheritHandle = True
     # Start the process the internal way to get the thread handle.
+    cmd_line = list2cmdline(args)
     handle_process, handle_thread, pid, tid = _winapi.CreateProcess(
         None,
-        binary_path,
+        cmd_line,
         ctypes.byref(proc_attr),
         ctypes.byref(thread_attr),
         False,
         creationflags,
-        None,
+        None,  # type: ignore (it says it wants a dict, but complains if it actually gets one...)
         None,
         None,
     )

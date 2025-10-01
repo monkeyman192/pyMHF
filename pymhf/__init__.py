@@ -225,6 +225,8 @@ def run():
     if op.isfile(plugin_name) and op.exists(plugin_name):
         # In this case we are running in stand-alone mode
         standalone = True
+        if plugin_name.endswith(".py"):
+            plugin_name = op.realpath(plugin_name)
 
     if op.isdir(plugin_name) and op.exists(plugin_name):
         # In this case we are running a library directly from pymhf.

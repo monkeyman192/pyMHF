@@ -18,7 +18,7 @@ on:
 jobs:
   lint_testing:
     name: Lint and test code
-    runs-on: Windows-latest
+    runs-on: Windows-2025
     strategy:
       matrix:
         py_ver: [
@@ -44,11 +44,18 @@ jobs:
         run: |
           uv run ruff check ./pymhf ./tests
           uv run ruff format --check ./pymhf ./tests
+      - name: Install compiler
+        id: install_gpp
+        uses: rlalik/setup-cpp-compiler@master
+        with:
+          compiler: g++-14.2.0
+      - name: Build test binaries
+        run: g++ ./tests/programs/src/app.cpp -Wall -o ./tests/programs/app.exe
       - name: Run unit tests
         run: uv run pytest ./tests
   build:
     name: Build wheel and docs
-    runs-on: Windows-latest
+    runs-on: Windows-2025
     needs:
       - lint_testing
     steps:

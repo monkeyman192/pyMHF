@@ -21,6 +21,7 @@ class pymhfConfig(TypedDict):
     exe: NotRequired[str]
     pid: NotRequired[int]
     steam_guid: NotRequired[int]
+    args: NotRequired[list[str]]
     required_assemblies: NotRequired[list[str]]
     start_paused: NotRequired[bool]
     default_mod_save_dir: NotRequired[str]
