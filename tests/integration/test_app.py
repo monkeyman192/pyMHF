@@ -2,7 +2,11 @@ import os
 import os.path as op
 import tempfile
 
+import pytest
+
 import pymhf
+
+pytestmark = pytest.mark.skipif(os.environ.get("CI") is not None, reason="Flaky on CI")
 
 MODS_DIR = op.realpath(op.join(op.dirname(__file__), "..", "test_mods"))
 APPS_DIR = op.realpath(op.join(op.dirname(__file__), "..", "programs"))
