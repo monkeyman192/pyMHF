@@ -16,6 +16,10 @@ class c_enum32(ctypes.c_int32, Generic[IE]):
 
     _enum_type: Type[IE]
 
+    @classmethod
+    def _members(cls):
+        return list(cls._enum_type.__members__.keys())
+
     @property
     def _enum_value(self) -> IE:
         return self._enum_type(self.value)

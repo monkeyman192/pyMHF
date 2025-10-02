@@ -37,7 +37,7 @@ class WidgetType(Enum):
 
 class Widgets(TypedDict):
     buttons: dict[str, Union[int, str]]
-    comboboxes: dict[str, Union[int, str]]
+    comboboxes: dict[str, list[tuple[Union[int, str], WidgetType]]]
     variables: dict[str, list[tuple[Union[int, str], WidgetType]]]
 
 

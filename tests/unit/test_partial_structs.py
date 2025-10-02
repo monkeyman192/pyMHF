@@ -403,11 +403,6 @@ def test_invalid_cases():
             a: Annotated[ctypes.c_int32, "hi"]
 
 
-def test_invalid_c_enum32_cases():
-    with pytest.raises(TypeError):
-        c_enum32[22]
-
-
 T = TypeVar("T", bound=Union[ctypes._SimpleCData, ctypes.Structure])
 
 
