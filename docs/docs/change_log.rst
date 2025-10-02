@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Current (0.1.17.dev)
+Current (0.2.0.dev)
 --------------------
 
 - Further improved partial structs to allow nesting references to themselves as a type (must be "indirect", ie. the type of a pointer, or dynamic array for example).
