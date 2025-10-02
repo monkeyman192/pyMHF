@@ -1,8 +1,12 @@
 Change Log
 ==========
 
-Current (0.2.0.dev)
+0.2.0 (02/10/2025)
 --------------------
+
+This release makes a milstone in stability and functionality for pyMHF.
+The API for hooking functions should be considered "stable" from this point onwards and is unlikely to change significantly in the future (I hope!).
+Next release set will focus on UI/UX as well as utilities, both in terms of the GUI and in the code.
 
 - Further improved partial structs to allow nesting references to themselves as a type (must be "indirect", ie. the type of a pointer, or dynamic array for example).
 - Added a fallback method to calculate the binary hash in case opening the file fails. Thanks to `@sparrow <https://github.com/samjviana>`_ for implementing this.
