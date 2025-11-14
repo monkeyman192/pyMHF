@@ -1,11 +1,11 @@
 import ctypes
 import types
-from typing import TYPE_CHECKING, Any, Generator, Generic, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generator, Generic, Type, TypeVar
+
+from pymhf.extensions.ctypes import CTYPES
 
 if TYPE_CHECKING:
     from ctypes import _Pointer
-
-CTYPES = Union[ctypes._SimpleCData, ctypes.Structure, ctypes._Pointer]
 
 T = TypeVar("T", bound=CTYPES)
 N = TypeVar("N", bound=int)
@@ -48,7 +48,7 @@ class _vb_val(ctypes.Structure, Generic[T]):
 
 
 class _vector(ctypes.Structure, Generic[T]):
-    _template_type: T
+    _template_type: Type[T]
     if TYPE_CHECKING:
         _first: _Pointer[Any]
         _last: _Pointer[Any]
@@ -188,25 +188,3 @@ class std:
 #                 ("_elements", type_ * size),
 #             ]
 #             return _cls
-
-
-if __name__ == "__main__":
-    data = bytearray(b"\x01\x02\x00\x00\x07\x00\x00\x00")
-    pear = std.pair[ctypes.c_uint32, ctypes.c_int32]
-    k = pear.from_buffer(data)
-    print(k.first)
-    print(k.second)
-    harry = std.array[ctypes.c_ubyte, 6]
-    d = harry.from_buffer(data)
-    for i in d:
-        print(i)
-    print("setting")
-    d[3] = 9
-    for i in d:
-        print(i)
-
-    # print("AAAAAAAAA")
-    # arry = STD.ARRAY(ctypes.c_ubyte, 6)
-    # pp = arry.from_buffer(data)
-    # for i in pp:
-    #     print(i)
