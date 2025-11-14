@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Current (0.2.1.dev)
+-------------------
+
+- Fixed an issue where `ctypes.Union` types weren't accepted as a valid function argument type.
+
 0.2.0 (02/10/2025)
 --------------------
 

@@ -283,6 +283,7 @@
 <li class="toctree-l1"><a class="reference internal" href="mod_states.html">Mod States</a></li>
 <li class="toctree-l1"><a class="reference internal" href="inter_mod_functionality.html">Inter-mod functionality</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Partial Structs</a></li>
+
 <li class="toctree-l1"><a class="reference internal" href="single_file_mods.html">Single-file mods</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extension_types.html">Extension types</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="libraries/index.html">Creating modding API’s with pyMHF</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -397,6 +398,41 @@ If the <code class="docutils literal notranslate"><span class="pre">offset</span
 </div>
 <p>This adds any extra padding bytes to the end of the definition so that if the struct appears in an array for example it will be deserialized correctly.</p>
 </section>
+</section>
+<section id="inheritence">
+<h1>Inheritence<a class="headerlink" href="#inheritence" title="Link to this heading">#</a></h1>
+<p>It is possible to have a partial struct as the base class of another like so:</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial_struct</span><span class="p">,</span> <span class="n">Field</span>
+
+<span class="nd">@partial_struct</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Base</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+    <span class="n">a</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">,</span> <span class="mh">0x0</span><span class="p">]</span>
+    <span class="n">b</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">,</span> <span class="mh">0x8</span><span class="p">]</span>
+
+<span class="nd">@partial_struct</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Parent</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">c</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">,</span> <span class="mh">0x10</span><span class="p">]</span>
+    <span class="n">d</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span>
+</pre></div>
+</div>
+<p>In this case, if we look at the <code class="docutils literal notranslate"><span class="pre">_fields_</span></code> attribute of the <code class="docutils literal notranslate"><span class="pre">Parent</span></code> class it will be generated like so:</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="n">_fields_</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">),</span>  <span class="c1"># Offset = 0x0</span>
+    <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">),</span>    <span class="c1"># Offset = 0x4</span>
+    <span class="p">(</span><span class="s2">&quot;_padding_0x9&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ubyte</span> <span class="o">*</span> <span class="mi">7</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">),</span>    <span class="c1"># Offset = 0x10</span>
+    <span class="p">(</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">),</span>    <span class="c1"># Offset = 0x14</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>From this we can see that (as with c++), the base class will have its fields serialized before the parent class.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The offsets for parent classes MUST be relative to the start of the entire struct, NOT from the start of the definition after the base class(es).
+This can be clearly seen in the above example.</p>
+</div>
 <section id="advantages">
 <h2>Advantages<a class="headerlink" href="#advantages" title="Link to this heading">#</a></h2>
 <p>There are 2 main advantages to using partial structs:</p>
