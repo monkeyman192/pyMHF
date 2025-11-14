@@ -3,7 +3,7 @@ import logging
 import sys
 from gc import get_referents
 from types import FunctionType, ModuleType
-from typing import Iterable, Literal, Optional, Type, TypeVar, Union, overload
+from typing import Literal, Optional, Sequence, Type, TypeVar, Union, overload
 
 import pymem
 import pymem.pattern
@@ -11,6 +11,7 @@ from pymem.ressources.structure import MODULEINFO
 
 import pymhf.core._internal as _internal
 import pymhf.core.caching as cache
+from pymhf.extensions.ctypes import CTYPES
 
 __all__ = ["getsize", "get_addressof", "map_struct", "find_pattern_in_binary"]
 
@@ -36,7 +37,6 @@ ctypes.pythonapi.PyMemoryView_FromMemory.restype = ctypes.py_object
 
 # TypeVar for the map_struct so that we can correctly get the returned type to
 # be the same as the input type.
-CTYPES = Union[ctypes._SimpleCData, ctypes.Structure, ctypes._Pointer, ctypes.Array]
 Struct = TypeVar("Struct", bound=CTYPES)
 
 
@@ -62,7 +62,7 @@ def getsize(obj):
     return size, _len
 
 
-def chunks(lst: Iterable, n: int):
+def chunks(lst: Union[Sequence, ctypes.Array], n: int):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i : i + n]
@@ -153,7 +153,7 @@ def get_addressof(obj: CTYPES) -> int:
     If obj is a pointer, this will return the address pointed to."""
     try:
         # If it's a pointer, this is the branch that is used.
-        return ctypes.cast(obj, ctypes.c_void_p).value
+        return ctypes.cast(obj, ctypes.c_void_p).value or 0
     except Exception:
         # TODO: Get correct error type.
         # Otherwise fallback to the usual method.
@@ -290,7 +290,12 @@ def find_pattern_in_binary(
     patt = pattern_to_bytes(pattern)
     _offset = pymem.pattern.pattern_scan_module(handle, module, patt, return_multiple=return_multiple)
     if _offset:
+        if return_multiple:
+            logger.error("Getting multiple offsets not currently supported. Falling back to first value.")
+            _offset = _offset[0]
         _offset = _offset - module.lpBaseOfDll
+    else:
+        return None
     # Cache even if there is no result (so we don't repeatedly look for it when it's not there in case there
     # is an issue.)
     logger.debug(f"Found {pattern} at 0x{_offset:X} for binary {binary}")

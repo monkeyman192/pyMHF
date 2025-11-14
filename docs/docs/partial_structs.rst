@@ -50,6 +50,45 @@ It is also possible to specify the total size of the struct in bytes by assignin
 
 This adds any extra padding bytes to the end of the definition so that if the struct appears in an array for example it will be deserialized correctly.
 
+Inheritence
+===========
+
+It is possible to have a partial struct as the base class of another like so:
+
+.. code-block:: py
+
+    import ctypes
+    from typing import Annotated
+    from pymhf.utils.partial_struct import partial_struct, Field
+
+    @partial_struct
+    class Base(ctypes.Structure):
+        a: Annotated[ctypes.c_uint32, 0x0]
+        b: Annotated[ctypes.c_bool, 0x8]
+
+    @partial_struct
+    class Parent(Base):
+        c: Annotated[ctypes.c_uint32, 0x10]
+        d: ctypes.c_uint32
+
+In this case, if we look at the ``_fields_`` attribute of the ``Parent`` class it will be generated like so:
+
+.. code-block:: py
+
+    _fields_ = [
+        ("a", ctypes.c_uint32),  # Offset = 0x0
+        ("b", ctypes.c_bool),    # Offset = 0x4
+        ("_padding_0x9", ctypes.c_ubyte * 7),
+        ("c", ctypes.c_uint32),    # Offset = 0x10
+        ("d", ctypes.c_uint32),    # Offset = 0x14
+    ]
+
+From this we can see that (as with c++), the base class will have its fields serialized before the parent class.
+
+.. note::
+    The offsets for parent classes MUST be relative to the start of the entire struct, NOT from the start of the definition after the base class(es).
+    This can be clearly seen in the above example.
+
 Advantages
 ----------
 

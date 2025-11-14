@@ -1,14 +1,12 @@
 import ctypes
 import inspect
-from _ctypes import _Pointer
 from functools import lru_cache
-from typing import Any, Callable, NamedTuple, Optional, Union, get_args
+from typing import Any, Callable, NamedTuple, Optional, get_args
 
 from typing_extensions import get_type_hints
 
 from pymhf.core._types import FUNCDEF
-
-CTYPES = Union[ctypes._SimpleCData, ctypes.Structure, ctypes._Pointer, _Pointer]
+from pymhf.extensions.ctypes import CTYPES
 
 
 class ArgData(NamedTuple):
@@ -84,7 +82,10 @@ def _get_funcdef(func: Callable) -> FuncDef:
                         defaults[name] = default_val
                     argtypes.append(ArgData(name, argtype))
                 else:
-                    raise TypeError(f"Invalid type {argtype!r} for argument {name!r}")
+                    raise TypeError(
+                        f"Invalid type {argtype!r} for argument {name!r}. It must be a subclass of one of "
+                        f"{get_args(CTYPES)}"
+                    )
             else:
                 _missing.append(name)
     if _missing:
