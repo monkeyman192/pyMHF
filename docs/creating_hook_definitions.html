@@ -367,12 +367,12 @@
 <li><p>It also enables calling the function or method directly (more on that below).</p></li>
 <li><p>Finally, the decorators transform the function or method into a decorator which can be applied to the method in our mod which we wish to use as a detour.</p></li>
 </ol>
-<p>Because of this first point, the decorated function MUST have correct type hints. If they are not correct, then the hook will likely fail, produce incorrect results, or even cause the program to crash.</p>
+<p>Because of this first point, the decorated function MUST have correct type hints. If they are not correct, then the hook will likely fail, produce incorrect results, or even cause the program to crash. See <a class="reference internal" href="#function-type-hints"><span class="std std-ref">Function type hints</span></a> for more details.</p>
 <p>The best way to see how these decorators are used is with a few code examples.</p>
 <section id="imported-function-hooks">
 <h2><em>Imported function</em> hooks<a class="headerlink" href="#imported-function-hooks" title="Link to this heading">#</a></h2>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">imported_hook_mod.py</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">imported_hook_mod.py</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
 <div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes.wintypes</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">wintypes</span>
 <span class="linenos"> 2</span><span class="kn">from</span><span class="w"> </span><span class="nn">logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">getLogger</span>
 <span class="linenos"> 3</span>
@@ -390,7 +390,7 @@
 <span class="linenos">15</span>    <span class="n">lpNumberOfBytesRead</span><span class="p">:</span> <span class="n">wintypes</span><span class="o">.</span><span class="n">LPDWORD</span><span class="p">,</span>
 <span class="linenos">16</span>    <span class="n">lpOverlapped</span><span class="p">:</span> <span class="n">wintypes</span><span class="o">.</span><span class="n">LPVOID</span><span class="p">,</span>
 <span class="linenos">17</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">wintypes</span><span class="o">.</span><span class="n">BOOL</span><span class="p">:</span>
-<span class="linenos">18</span>    <span class="k">pass</span>
+<span class="linenos">18</span>    <span class="o">...</span>
 <span class="linenos">19</span>
 <span class="linenos">20</span>
 <span class="linenos">21</span><span class="k">class</span><span class="w"> </span><span class="nc">ReadFileMod</span><span class="p">(</span><span class="n">Mod</span><span class="p">):</span>
@@ -406,8 +406,8 @@
 <section id="exported-function-hooks">
 <h2><em>Exported function</em> hooks<a class="headerlink" href="#exported-function-hooks" title="Link to this heading">#</a></h2>
 <p>Exported functions are those which are provided by the binary itself. There are often not many, and often less which may be useful, but if you get lucky there may be some where are useful to hook or even call.</p>
-<div class="literal-block-wrapper docutils container" id="id2">
-<span id="exported-hook-mod-code"></span><div class="code-block-caption"><span class="caption-text">exported_hook_mod.py</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
+<div class="literal-block-wrapper docutils container" id="id3">
+<span id="exported-hook-mod-code"></span><div class="code-block-caption"><span class="caption-text">exported_hook_mod.py</span><a class="headerlink" href="#id3" title="Link to this code">#</a></div>
 <div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="linenos"> 3</span>
@@ -434,7 +434,7 @@
 <span class="linenos">24</span>        <span class="n">in_pExternalSources</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
 <span class="linenos">25</span>        <span class="n">in_PlayingID</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
 <span class="linenos">26</span>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint64</span><span class="p">:</span>
-<span class="linenos">27</span>        <span class="k">pass</span>
+<span class="linenos">27</span>        <span class="o">...</span>
 <span class="linenos">28</span>
 <span class="linenos">29</span>
 <span class="linenos">30</span><span class="k">class</span><span class="w"> </span><span class="nc">AudioNames</span><span class="p">(</span><span class="n">Mod</span><span class="p">):</span>
@@ -476,8 +476,8 @@ The mod will also provide a button which, when pressed will play the last played
 <p>If your binary never changes (ie. is never updated by the developers etc), then use <code class="docutils literal notranslate"><span class="pre">offset</span></code> as it’s trivial to obtain for every single function in a binary.
 If the binary receives updates, then the <code class="docutils literal notranslate"><span class="pre">signature</span></code> is the only option as <code class="docutils literal notranslate"><span class="pre">offset</span></code> values will change as the binary does.</p>
 </div>
-<div class="literal-block-wrapper docutils container" id="id3">
-<div class="code-block-caption"><span class="caption-text">normal_hook_mod.py</span><a class="headerlink" href="#id3" title="Link to this code">#</a></div>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">normal_hook_mod.py</span><a class="headerlink" href="#id4" title="Link to this code">#</a></div>
 <div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Optional</span>
@@ -506,7 +506,7 @@ If the binary receives updates, then the <code class="docutils literal notransla
 <span class="linenos">26</span>        <span class="n">event</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">_Pointer</span><span class="p">[</span><span class="n">TkAudioID</span><span class="p">],</span>
 <span class="linenos">27</span>        <span class="nb">object</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int64</span><span class="p">,</span>
 <span class="linenos">28</span>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">:</span>
-<span class="linenos">29</span>        <span class="k">pass</span>
+<span class="linenos">29</span>        <span class="o">...</span>
 <span class="linenos">30</span>
 <span class="linenos">31</span>
 <span class="linenos">32</span><span class="k">class</span><span class="w"> </span><span class="nc">AudioNames</span><span class="p">(</span><span class="n">Mod</span><span class="p">):</span>
@@ -567,8 +567,8 @@ The <code class="docutils literal notranslate"><span class="pre">static_function
 <p>The <code class="docutils literal notranslate"><span class="pre">static_function_hook</span></code> and <code class="docutils literal notranslate"><span class="pre">function_hook</span></code> decorators both have an <code class="docutils literal notranslate"><span class="pre">overload_id</span></code> argument which is used to uniquely identify the overload (this will be required later when we want to call or hook this function).
 The methods also need the <code class="docutils literal notranslate"><span class="pre">typing.overload</span></code> decorator. Note that pyMHF actually monkeypatches this decorator so that it doesn’t remove information from the original function that we need.</p>
 <p>To hook or call a function with an overload, append <code class="docutils literal notranslate"><span class="pre">.overload(overload_id:</span> <span class="pre">str)</span></code> to the original function. This will refer to the overloaded function.</p>
-<div class="literal-block-wrapper docutils container" id="id4">
-<div class="code-block-caption"><span class="caption-text">overloaded_mod.py</span><a class="headerlink" href="#id4" title="Link to this code">#</a></div>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">overloaded_mod.py</span><a class="headerlink" href="#id5" title="Link to this code">#</a></div>
 <div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">overload</span>
@@ -602,7 +602,7 @@ The methods also need the <code class="docutils literal notranslate"><span class
 <span class="linenos">31</span>        <span class="nb">object</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int64</span><span class="p">,</span>
 <span class="linenos">32</span>        <span class="n">attenuationScale</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span>
 <span class="linenos">33</span>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">:</span>
-<span class="linenos">34</span>        <span class="k">pass</span>
+<span class="linenos">34</span>        <span class="o">...</span>
 <span class="linenos">35</span>
 <span class="linenos">36</span>    <span class="nd">@function_hook</span><span class="p">(</span><span class="s2">&quot;48 83 EC ? 33 C9 4C 8B D2 89 4C 24 ? 49 8B C0 48 89 4C 24 ? 45 33 C9&quot;</span><span class="p">,</span> <span class="n">overload_id</span><span class="o">=</span><span class="s2">&quot;normal&quot;</span><span class="p">)</span>
 <span class="linenos">37</span>    <span class="nd">@overload</span>
@@ -612,7 +612,7 @@ The methods also need the <code class="docutils literal notranslate"><span class
 <span class="linenos">41</span>        <span class="n">event</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">_Pointer</span><span class="p">[</span><span class="n">TkAudioID</span><span class="p">],</span>
 <span class="linenos">42</span>        <span class="nb">object</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int64</span><span class="p">,</span>
 <span class="linenos">43</span>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">:</span>
-<span class="linenos">44</span>        <span class="k">pass</span>
+<span class="linenos">44</span>        <span class="o">...</span>
 <span class="linenos">45</span>
 <span class="linenos">46</span>
 <span class="linenos">47</span><span class="k">class</span><span class="w"> </span><span class="nc">AudioNames</span><span class="p">(</span><span class="n">Mod</span><span class="p">):</span>
@@ -701,11 +701,25 @@ Once you start to realise that the functions are actually associated with some c
 Depending on whether you mark the hooks as <code class="docutils literal notranslate"><span class="pre">before</span></code> or <code class="docutils literal notranslate"><span class="pre">after</span></code> hook you may get some functionality. See <a class="reference internal" href="writing_mods.html#writing-mods-hooking-functionality"><span class="std std-ref">here</span></a> for more details.</p>
 </section>
 <section id="function-type-hints">
-<h3>Function type hints<a class="headerlink" href="#function-type-hints" title="Link to this heading">#</a></h3>
+<span id="id1"></span><h3>Function type hints<a class="headerlink" href="#function-type-hints" title="Link to this heading">#</a></h3>
 <p>As mentioned at the start of this document, it is critical that the functions which are decorated with these two decorators have correct and complete type hints.
-These types MUST be either a ctypes plain type (eg. <code class="docutils literal notranslate"><span class="pre">ctypes.c_uint32</span></code>), a ctypes pointer to some type, or a class which inherits from <code class="docutils literal notranslate"><span class="pre">ctypes.Structure</span></code>. Note that the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.Structure" title="pymhf.core.hooking.Structure"><code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></a> inherits from this so a type inheriting from this type is also permissible.
-Further, you will have seen above that none of these functions have any actual body. This is because even when we call this function, we don’t actually execute the code contained within it.
-Because of this it’s recommended that you simply add <code class="docutils literal notranslate"><span class="pre">pass</span></code> to the body of the function as above.
+These types MUST be either a ctypes plain type (eg. <code class="docutils literal notranslate"><span class="pre">ctypes.c_uint32</span></code>), a ctypes pointer to some type, or a class which inherits from <code class="docutils literal notranslate"><span class="pre">ctypes.Structure</span></code>. Note that the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.Structure" title="pymhf.core.hooking.Structure"><code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></a> inherits from this so a type inheriting from this type is also permissible.</p>
+<p>To improve type hinting, it is however possible to specify the type using <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated">typing.Annotated</a>.
+For example, instead of writing</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="nd">@function_hook</span><span class="p">(</span><span class="s2">&quot;AB CD EF&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">AwardMoney</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">this</span><span class="p">:</span> <span class="s2">&quot;ctypes._Pointer[Obj]&quot;</span><span class="p">,</span> <span class="n">liChange</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint64</span><span class="p">:</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>We can type</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="nd">@function_hook</span><span class="p">(</span><span class="s2">&quot;AB CD EF&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">AwardMoney</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">this</span><span class="p">:</span> <span class="s2">&quot;ctypes._Pointer[Obj]&quot;</span><span class="p">,</span> <span class="n">liChange</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int32</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint64</span><span class="p">:</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>This has the benefit that when we call this method from an instance of the <code class="docutils literal notranslate"><span class="pre">Obj</span></code> class our type checker will not complain about being passed an integer (which python will transparently convert to its <code class="docutils literal notranslate"><span class="pre">ctypes</span></code> counterpart anyway).</p>
+<p>Further, you will have seen above that none of these functions have any actual body. This is because even when we call this function, we don’t actually execute the code contained within it.
+Because of this it’s recommended that you simply add <code class="docutils literal notranslate"><span class="pre">...</span></code> to the body of the function as above. We use the Ellipses (<code class="docutils literal notranslate"><span class="pre">...</span></code>) instead of <code class="docutils literal notranslate"><span class="pre">pass</span></code> since it keeps type checkers happier and is more consistent with how type stubs are represented in python (which is essentially what we are defining).
 Any docstrings which are included as part of the body will be shown in your IDE of choice, so if you are writing a library it’s recommended that you add docstrings if convenient so that users may know what the function does.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>

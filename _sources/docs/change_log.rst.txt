@@ -5,6 +5,7 @@ Current (0.2.1.dev)
 -------------------
 
 - Fixed an issue where `ctypes.Union` types weren't accepted as a valid function argument type.
+- Added the ability to specify the type of a function argument using ``typing.Annotated`` to improve type hinting in libraries.
 
 0.2.0 (02/10/2025)
 --------------------
