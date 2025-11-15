@@ -1,14 +1,14 @@
 Change Log
 ==========
 
-Current (0.2.1.dev)
--------------------
+0.2.1 (15/11/2025)
+------------------
 
 - Fixed an issue where `ctypes.Union` types weren't accepted as a valid function argument type.
 - Added the ability to specify the type of a function argument using ``typing.Annotated`` to improve type hinting in libraries.
 
 0.2.0 (02/10/2025)
---------------------
+------------------
 
 This release makes a milstone in stability and functionality for pyMHF.
 The API for hooking functions should be considered "stable" from this point onwards and is unlikely to change significantly in the future (I hope!).
