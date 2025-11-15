@@ -1,7 +1,7 @@
 import ctypes
 import inspect
 from functools import lru_cache
-from typing import Any, Callable, NamedTuple, Optional, get_args
+from typing import Any, Callable, NamedTuple, Optional, _AnnotatedAlias, get_args
 
 from typing_extensions import get_type_hints
 
@@ -61,7 +61,7 @@ def _get_funcdef(func: Callable) -> FuncDef:
     This is wrapped in an lru_cache so that if multiple detours use the same function, it will only be
     analysed once."""
     func_params = inspect.signature(func).parameters
-    func_type_hints = get_type_hints(func)
+    func_type_hints = get_type_hints(func, include_extras=True)
     _restype = func_type_hints.pop("return", type(None))
     if _restype is type(None):
         restype = None
@@ -76,6 +76,16 @@ def _get_funcdef(func: Callable) -> FuncDef:
         if name != "self":
             if name in func_type_hints:
                 argtype = func_type_hints[name]
+                # Check if the type is an annotation. If it is, then extract the actual type.
+                if isinstance(argtype, _AnnotatedAlias):
+                    if len(meta := argtype.__metadata__) == 1:
+                        argtype = meta[0]
+                    else:
+                        raise TypeError(
+                            f"Invalid annotation {meta!r} for argument {name!r}. For Annotated types they "
+                            "must have their 'python' type and their 'ctype' like "
+                            "`Annotated[int, ctypes.c_int32]`."
+                        )
                 if issubclass(argtype, get_args(CTYPES)):
                     default_val = param.default
                     if default_val != inspect.Signature.empty:

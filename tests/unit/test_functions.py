@@ -1,5 +1,6 @@
 import ctypes
 import re
+from typing import Annotated
 
 import pytest
 from typing_extensions import Self
@@ -53,8 +54,7 @@ def test_get_funcdef_function():
     """Test getting the FuncDef for functions."""
 
     # Function with normal args and a None return.
-    def func(x: ctypes.c_uint32, y: ctypes.c_uint64 = 1234) -> None:
-        pass
+    def func(x: ctypes.c_uint32, y: Annotated[int, ctypes.c_uint64] = 1234) -> None: ...
 
     fd = _get_funcdef(func)
     assert fd.restype is None
@@ -63,8 +63,7 @@ def test_get_funcdef_function():
     assert fd.defaults == {"y": 1234}
 
     # Function with no args.
-    def func2() -> ctypes.c_uint32:
-        pass
+    def func2() -> ctypes.c_uint32: ...
 
     fd = _get_funcdef(func2)
     assert fd.restype == ctypes.c_uint32
@@ -76,8 +75,7 @@ def test_get_funcdef_function():
         _fields_ = []
 
     # Function with an argument which is a pointer.
-    def func3(id_: ctypes._Pointer[ID]) -> ctypes.c_bool:
-        pass
+    def func3(id_: ctypes._Pointer[ID]) -> ctypes.c_bool: ...
 
     fd = _get_funcdef(func3)
     assert fd.restype == ctypes.c_bool
@@ -87,24 +85,21 @@ def test_get_funcdef_function():
 
     # Function with mixed stringified and non-stringified args.
     # (emulates `from __future__ import annotations`)
-    def func4(a: "ctypes.c_int32" = 42, b: ctypes.c_uint16 = 4):
-        pass
+    def func4(a: "ctypes.c_int32", b: Annotated[int, ctypes.c_uint16] = 4): ...
 
     fd = _get_funcdef(func4)
     assert fd.restype is None
     assert fd.arg_names == ["a", "b"]
     assert fd.arg_types == [ctypes.c_int32, ctypes.c_uint16]
-    assert fd.defaults == {"a": 42, "b": 4}
+    assert fd.defaults == {"b": 4}
 
     # Function with an invalid argument types.
-    def func5(a: int):
-        pass
+    def func5(a: int): ...
 
     with pytest.raises(TypeError, match=re.escape("Invalid type <class 'int'> for argument 'a'")):
         _get_funcdef(func5)
 
-    def func6(a, b: ctypes.c_int64):
-        pass
+    def func6(a, b: ctypes.c_int64): ...
 
     with pytest.raises(
         TypeError,
@@ -112,8 +107,7 @@ def test_get_funcdef_function():
     ):
         _get_funcdef(func6)
 
-    def func7() -> int:
-        pass
+    def func7() -> int: ...
 
     with pytest.raises(
         TypeError,
@@ -128,32 +122,32 @@ def test_get_funcdef_method():
     class MyClass:
         def thing(self):
             # Very boring method with no args or return value.
-            pass
+            ...
 
-        def thing2(self, x: ctypes.c_uint32, y: ctypes.c_uint16 = 7) -> ctypes.c_uint32:
+        def thing2(self, x: ctypes.c_uint32, y: Annotated[int, ctypes.c_uint16] = 7) -> ctypes.c_uint32:
             # Fairly boring method with some args and a default value.
-            pass
+            ...
 
         @staticmethod
-        def thing3(x: ctypes.c_float = 999):
+        def thing3(x: Annotated[float, ctypes.c_float] = 999):
             # Static method.
-            pass
+            ...
 
         def thing4(self: Self, x: "ctypes.c_uint32"):
             # Valid "stringified" type.
-            pass
+            ...
 
         def thing5(self, x: "int"):
             # Invalid "stringified" type.
-            pass
+            ...
 
         def thing6(self, x: ctypes.c_uint32, y=7, z=None) -> ctypes.c_uint32:
             # Argument missing type hint.
-            pass
+            ...
 
         def thing7(self) -> "int":
             # Invalid "stringified" return type.
-            pass
+            ...
 
     fd = _get_funcdef(MyClass.thing)
     assert fd.restype is None
