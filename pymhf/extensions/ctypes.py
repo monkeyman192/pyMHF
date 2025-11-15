@@ -2,15 +2,12 @@
 
 import ctypes
 import types
-from _ctypes import _Pointer
 from enum import IntEnum
 from typing import Generic, Type, TypeVar, Union
 
 _cenum_type_cache = {}
 
 IE = TypeVar("IE", bound=IntEnum)
-
-CTYPES = Union[ctypes._SimpleCData, ctypes.Structure, ctypes._Pointer, _Pointer, ctypes.Union, ctypes.Array]
 
 
 class c_enum32(ctypes.c_int32, Generic[IE]):
@@ -56,3 +53,14 @@ class c_enum32(ctypes.c_int32, Generic[IE]):
             _cls._enum_type = enum_type
             _cenum_type_cache[enum_type] = _cls
             return _cls
+
+
+CTYPES = Union[
+    ctypes._SimpleCData,
+    ctypes.Structure,
+    ctypes._Pointer,
+    ctypes._Pointer_orig,  # The original, un-monkeypatched ctypes._Pointer object
+    ctypes.Array,
+    ctypes.Union,
+    c_enum32,
+]

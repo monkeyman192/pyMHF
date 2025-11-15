@@ -11,7 +11,7 @@ These decorators do a few things when applied:
 2. It also enables calling the function or method directly (more on that below).
 3. Finally, the decorators transform the function or method into a decorator which can be applied to the method in our mod which we wish to use as a detour.
 
-Because of this first point, the decorated function MUST have correct type hints. If they are not correct, then the hook will likely fail, produce incorrect results, or even cause the program to crash.
+Because of this first point, the decorated function MUST have correct type hints. If they are not correct, then the hook will likely fail, produce incorrect results, or even cause the program to crash. See :ref:`function_type_hints` for more details.
 
 The best way to see how these decorators are used is with a few code examples.
 
@@ -39,7 +39,7 @@ The best way to see how these decorators are used is with a few code examples.
         lpNumberOfBytesRead: wintypes.LPDWORD,
         lpOverlapped: wintypes.LPVOID,
     ) -> wintypes.BOOL:
-        pass
+        ...
 
 
     class ReadFileMod(Mod):
@@ -88,7 +88,7 @@ Exported functions are those which are provided by the binary itself. There are 
             in_pExternalSources: ctypes.c_uint64 = 0,
             in_PlayingID: ctypes.c_uint32 = 0,
         ) -> ctypes.c_uint64:
-            pass
+            ...
 
 
     class AudioNames(Mod):
@@ -164,7 +164,7 @@ Defining functions to hook is done in much the same way as above, however, we si
             event: ctypes._Pointer[TkAudioID],
             object: ctypes.c_int64,
         ) -> ctypes.c_bool:
-            pass
+            ...
 
 
     class AudioNames(Mod):
@@ -266,7 +266,7 @@ To hook or call a function with an overload, append ``.overload(overload_id: str
             object: ctypes.c_int64,
             attenuationScale: ctypes.c_float,
         ) -> ctypes.c_bool:
-            pass
+            ...
 
         @function_hook("48 83 EC ? 33 C9 4C 8B D2 89 4C 24 ? 49 8B C0 48 89 4C 24 ? 45 33 C9", overload_id="normal")
         @overload
@@ -276,7 +276,7 @@ To hook or call a function with an overload, append ``.overload(overload_id: str
             event: ctypes._Pointer[TkAudioID],
             object: ctypes.c_int64,
         ) -> ctypes.c_bool:
-            pass
+            ...
 
 
     class AudioNames(Mod):
@@ -363,13 +363,35 @@ Using ``before`` and ``after`` methods
 The ``.before`` and ``.after`` method of the functions decorated by the ``function_hook`` or ``static_function_hook`` is required to be used when using this as a decorator to tell pyMHF whether to run the detour before or after the original function. If this is not included then an error will be raised.
 Depending on whether you mark the hooks as ``before`` or ``after`` hook you may get some functionality. See :ref:`here <writing_mods_hooking_functionality>` for more details.
 
+.. _function_type_hints:
+
 Function type hints
 ^^^^^^^^^^^^^^^^^^^
 
 As mentioned at the start of this document, it is critical that the functions which are decorated with these two decorators have correct and complete type hints.
 These types MUST be either a ctypes plain type (eg. ``ctypes.c_uint32``), a ctypes pointer to some type, or a class which inherits from ``ctypes.Structure``. Note that the :class:`~pymhf.core.hooking.Structure` inherits from this so a type inheriting from this type is also permissible.
+
+To improve type hinting, it is however possible to specify the type using `typing.Annotated <https://docs.python.org/3/library/typing.html#typing.Annotated>`_.
+For example, instead of writing
+
+.. code-block:: py
+
+    @function_hook("AB CD EF")
+    def AwardMoney(self, this: "ctypes._Pointer[Obj]", liChange: ctypes.c_int32) -> ctypes.c_uint64:
+        ...
+
+We can type
+
+.. code-block:: py
+
+    @function_hook("AB CD EF")
+    def AwardMoney(self, this: "ctypes._Pointer[Obj]", liChange: Annotated[int, ctypes.c_int32]) -> ctypes.c_uint64:
+        ...
+
+This has the benefit that when we call this method from an instance of the ``Obj`` class our type checker will not complain about being passed an integer (which python will transparently convert to its ``ctypes`` counterpart anyway).
+
 Further, you will have seen above that none of these functions have any actual body. This is because even when we call this function, we don't actually execute the code contained within it.
-Because of this it's recommended that you simply add ``pass`` to the body of the function as above.
+Because of this it's recommended that you simply add ``...`` to the body of the function as above. We use the Ellipses (``...``) instead of ``pass`` since it keeps type checkers happier and is more consistent with how type stubs are represented in python (which is essentially what we are defining).
 Any docstrings which are included as part of the body will be shown in your IDE of choice, so if you are writing a library it's recommended that you add docstrings if convenient so that users may know what the function does.
 
 .. warning::

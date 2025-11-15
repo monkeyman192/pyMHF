@@ -1,23 +1,13 @@
 import ctypes
 import inspect
 from dataclasses import dataclass
-from typing import Optional, Type, TypeVar, Union, _AnnotatedAlias, get_args
+from typing import Optional, Type, TypeVar, _AnnotatedAlias, get_args
 
 from typing_extensions import get_type_hints
 
-from pymhf.extensions.ctypes import c_enum32
+from pymhf.extensions.ctypes import CTYPES
 
 _T = TypeVar("_T", bound=Type[ctypes.Structure])
-
-CTYPES = Union[
-    ctypes._SimpleCData,
-    ctypes.Structure,
-    ctypes._Pointer,
-    ctypes._Pointer_orig,  # The original, un-monkeypatched ctypes._Pointer object
-    ctypes.Array,
-    ctypes.Union,
-    c_enum32,
-]
 
 
 @dataclass
