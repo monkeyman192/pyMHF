@@ -1,0 +1,7 @@
+pymhf.gui.widget\_data module
+=============================
+
+.. automodule:: pymhf.gui.widget_data
+   :members:
+   :show-inheritance:
+   :undoc-members:

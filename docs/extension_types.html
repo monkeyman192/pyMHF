@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/extension_types';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -292,6 +292,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="gui/index.html">GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui/custom_widgets.html">Custom Widgets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/gui.html">Automatic-GUI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/hex_view.html">Hex View</a></li>
 </ul>
@@ -366,11 +367,43 @@
 </div>
 <section id="ctypes-extensions">
 <h2>ctypes extensions<a class="headerlink" href="#ctypes-extensions" title="Link to this heading">#</a></h2>
+<section id="c-char-p32">
+<h3><a class="reference internal" href="../api/pymhf.extensions.ctypes.html#pymhf.extensions.ctypes.c_char_p32" title="pymhf.extensions.ctypes.c_char_p32"><code class="xref py py-class docutils literal notranslate"><span class="pre">c_char_p32</span></code></a><a class="headerlink" href="#c-char-p32" title="Link to this heading">#</a></h3>
+<p>This class is a wrapper around the <code class="docutils literal notranslate"><span class="pre">ctypes.c_uint32</span></code> type to emulate the <code class="docutils literal notranslate"><span class="pre">ctypes.c_char_p</span></code> type. This is required because using <code class="docutils literal notranslate"><span class="pre">ctypes.c_char_p</span></code> as the type of a function argument can cause issues when the hooked function is called.</p>
+</section>
+<section id="c-char-p64">
+<h3><a class="reference internal" href="../api/pymhf.extensions.ctypes.html#pymhf.extensions.ctypes.c_char_p64" title="pymhf.extensions.ctypes.c_char_p64"><code class="xref py py-class docutils literal notranslate"><span class="pre">c_char_p64</span></code></a><a class="headerlink" href="#c-char-p64" title="Link to this heading">#</a></h3>
+<p>This class is a wrapper around the <code class="docutils literal notranslate"><span class="pre">ctypes.c_uint64</span></code> type to emulate the <code class="docutils literal notranslate"><span class="pre">ctypes.c_char_p</span></code> type. This is required because using <code class="docutils literal notranslate"><span class="pre">ctypes.c_char_p</span></code> as the type of a function argument can cause issues when the hooked function is called.</p>
+<p>Both of these above types have the <code class="docutils literal notranslate"><span class="pre">__str__</span></code> method defined on them, so the values can be logged directly (see example below).
+The <code class="docutils literal notranslate"><span class="pre">value</span></code> property of these classes is still the original integer in case that is needed for passing in to other functions.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.extensions.ctypes</span><span class="w"> </span><span class="kn">import</span> <span class="n">c_char_p64</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">static_function_hook</span>
+
+<span class="nd">@static_function_hook</span><span class="p">(</span><span class="s2">&quot;48 89 5C 24 ? 48 89 7C 24 ? 48 8B 05&quot;</span><span class="p">)</span>
+<span class="nd">@staticmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">GetLookup</span><span class="p">(</span><span class="n">lpacName</span><span class="p">:</span> <span class="n">c_char_p64</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint64</span><span class="p">:</span>
+    <span class="o">...</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ExampleMod</span><span class="p">(</span><span class="n">Mod</span><span class="p">):</span>
+    <span class="nd">@GetLookup</span><span class="o">.</span><span class="n">before</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_lookup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lpacName</span><span class="p">:</span> <span class="n">c_char_p64</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Got the lookup </span><span class="si">{</span><span class="n">lpacName</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="c-enum16">
+<h3><a class="reference internal" href="../api/pymhf.extensions.ctypes.html#pymhf.extensions.ctypes.c_enum16" title="pymhf.extensions.ctypes.c_enum16"><code class="xref py py-class docutils literal notranslate"><span class="pre">c_enum16</span></code></a><a class="headerlink" href="#c-enum16" title="Link to this heading">#</a></h3>
+<p>This class is a wrapper around the <code class="docutils literal notranslate"><span class="pre">ctypes.c_int32</span></code> type, but it’s able to be subscripted to provide a concrete type based on the <code class="docutils literal notranslate"><span class="pre">IntEnum</span></code> used.</p>
+</section>
 <section id="c-enum32">
 <h3><a class="reference internal" href="../api/pymhf.extensions.ctypes.html#pymhf.extensions.ctypes.c_enum32" title="pymhf.extensions.ctypes.c_enum32"><code class="xref py py-class docutils literal notranslate"><span class="pre">c_enum32</span></code></a><a class="headerlink" href="#c-enum32" title="Link to this heading">#</a></h3>
-<p>This class is a wrapper around the <code class="docutils literal notranslate"><span class="pre">ctypes.c_uint32</span></code> type, but it’s able to be subscripted to provide a concrete type based on the <code class="docutils literal notranslate"><span class="pre">IntEnum</span></code> used.</p>
+<p>This class is a wrapper around the <code class="docutils literal notranslate"><span class="pre">ctypes.c_int32</span></code> type, but it’s able to be subscripted to provide a concrete type based on the <code class="docutils literal notranslate"><span class="pre">IntEnum</span></code> used.</p>
 <p>For example, consider the following code:</p>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial_struct</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial_struct</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.extensions.ctypes</span><span class="w"> </span><span class="kn">import</span> <span class="n">c_enum32</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntEnum</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
@@ -458,7 +491,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>

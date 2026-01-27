@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/creating_hook_definitions';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -292,6 +292,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="gui/index.html">GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui/custom_widgets.html">Custom Widgets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/gui.html">Automatic-GUI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/hex_view.html">Hex View</a></li>
 </ul>
@@ -373,7 +374,7 @@
 <h2><em>Imported function</em> hooks<a class="headerlink" href="#imported-function-hooks" title="Link to this heading">#</a></h2>
 <div class="literal-block-wrapper docutils container" id="id2">
 <div class="code-block-caption"><span class="caption-text">imported_hook_mod.py</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes.wintypes</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">wintypes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes.wintypes</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">wintypes</span>
 <span class="linenos"> 2</span><span class="kn">from</span><span class="w"> </span><span class="nn">logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">getLogger</span>
 <span class="linenos"> 3</span>
 <span class="linenos"> 4</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
@@ -408,7 +409,7 @@
 <p>Exported functions are those which are provided by the binary itself. There are often not many, and often less which may be useful, but if you get lucky there may be some where are useful to hook or even call.</p>
 <div class="literal-block-wrapper docutils container" id="id3">
 <span id="exported-hook-mod-code"></span><div class="code-block-caption"><span class="caption-text">exported_hook_mod.py</span><a class="headerlink" href="#id3" title="Link to this code">#</a></div>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="linenos"> 3</span>
 <span class="linenos"> 4</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
@@ -478,7 +479,7 @@ If the binary receives updates, then the <code class="docutils literal notransla
 </div>
 <div class="literal-block-wrapper docutils container" id="id4">
 <div class="code-block-caption"><span class="caption-text">normal_hook_mod.py</span><a class="headerlink" href="#id4" title="Link to this code">#</a></div>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="linenos"> 4</span>
@@ -569,7 +570,7 @@ The methods also need the <code class="docutils literal notranslate"><span class
 <p>To hook or call a function with an overload, append <code class="docutils literal notranslate"><span class="pre">.overload(overload_id:</span> <span class="pre">str)</span></code> to the original function. This will refer to the overloaded function.</p>
 <div class="literal-block-wrapper docutils container" id="id5">
 <div class="code-block-caption"><span class="caption-text">overloaded_mod.py</span><a class="headerlink" href="#id5" title="Link to this code">#</a></div>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">overload</span>
 <span class="linenos"> 4</span>
@@ -706,13 +707,13 @@ Depending on whether you mark the hooks as <code class="docutils literal notrans
 These types MUST be either a ctypes plain type (eg. <code class="docutils literal notranslate"><span class="pre">ctypes.c_uint32</span></code>), a ctypes pointer to some type, or a class which inherits from <code class="docutils literal notranslate"><span class="pre">ctypes.Structure</span></code>. Note that the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.Structure" title="pymhf.core.hooking.Structure"><code class="xref py py-class docutils literal notranslate"><span class="pre">Structure</span></code></a> inherits from this so a type inheriting from this type is also permissible.</p>
 <p>To improve type hinting, it is however possible to specify the type using <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated">typing.Annotated</a>.
 For example, instead of writing</p>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="nd">@function_hook</span><span class="p">(</span><span class="s2">&quot;AB CD EF&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@function_hook</span><span class="p">(</span><span class="s2">&quot;AB CD EF&quot;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">AwardMoney</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">this</span><span class="p">:</span> <span class="s2">&quot;ctypes._Pointer[Obj]&quot;</span><span class="p">,</span> <span class="n">liChange</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint64</span><span class="p">:</span>
     <span class="o">...</span>
 </pre></div>
 </div>
 <p>We can type</p>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="nd">@function_hook</span><span class="p">(</span><span class="s2">&quot;AB CD EF&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@function_hook</span><span class="p">(</span><span class="s2">&quot;AB CD EF&quot;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">AwardMoney</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">this</span><span class="p">:</span> <span class="s2">&quot;ctypes._Pointer[Obj]&quot;</span><span class="p">,</span> <span class="n">liChange</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int32</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint64</span><span class="p">:</span>
     <span class="o">...</span>
 </pre></div>
@@ -741,7 +742,7 @@ Internally pyMHF does fix this issue so if this line isn’t included your code 
 <p>Often when calling a function from the binary you’ll need to pass in a pointer to a class which may be populated with some data.
 pyMHF makes this easy by providing the <a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.Structure.new_empty" title="pymhf.core.hooking.Structure.new_empty"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Structure.new_empty()</span></code></a> classmethod class which will allocate enough memory for the structure as per its definition and return an instance of the class bound to this memory region.</p>
 <p>We can see how to use this below:</p>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">Structure</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial_struct</span>
@@ -838,7 +839,7 @@ pyMHF makes this easy by providing the <a class="reference internal" href="../ap
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>

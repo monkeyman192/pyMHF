@@ -39,12 +39,12 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf.gui.hexview';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pymhf.utils namespace" href="pymhf.utils.html" />
+    <link rel="next" title="pymhf.gui.widget_data module" href="pymhf.gui.widget_data.html" />
     <link rel="prev" title="pymhf.gui.gui module" href="pymhf.gui.gui.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -300,6 +300,8 @@
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.decorators.html">pymhf.gui.decorators module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.gui.html">pymhf.gui.gui module</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">pymhf.gui.hexview module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widget_data.html">pymhf.gui.widget_data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widgets.html">pymhf.gui.widgets module</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="pymhf.utils.html">pymhf.utils namespace</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -384,33 +386,33 @@
 <span id="pymhf-gui-hexview-module"></span><h1>pymhf.gui.hexview module<a class="headerlink" href="#module-pymhf.gui.hexview" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pymhf.gui.hexview.CachedMemoryData">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.gui.hexview.</span></span><span class="sig-name descname"><span class="pre">CachedMemoryData</span></span><a class="headerlink" href="#pymhf.gui.hexview.CachedMemoryData" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.gui.hexview.</span></span><span class="sig-name descname"><span class="pre">CachedMemoryData</span></span><a class="headerlink" href="#pymhf.gui.hexview.CachedMemoryData" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.gui.hexview.CachedMemoryData.address">
-<span class="sig-name descname"><span class="pre">address</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#pymhf.gui.hexview.CachedMemoryData.address" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">address</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#pymhf.gui.hexview.CachedMemoryData.address" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.gui.hexview.CachedMemoryData.base_address">
-<span class="sig-name descname"><span class="pre">base_address</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#pymhf.gui.hexview.CachedMemoryData.base_address" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">base_address</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#pymhf.gui.hexview.CachedMemoryData.base_address" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.gui.hexview.CachedMemoryData.data">
-<span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.14)"><span class="pre">bytes</span></a></em><a class="headerlink" href="#pymhf.gui.hexview.CachedMemoryData.data" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">data</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.14)"><span class="pre">bytes</span></a></span><a class="headerlink" href="#pymhf.gui.hexview.CachedMemoryData.data" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.gui.hexview.CachedMemoryData.timestamp">
-<span class="sig-name descname"><span class="pre">timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.14)"><span class="pre">datetime</span></a></em><a class="headerlink" href="#pymhf.gui.hexview.CachedMemoryData.timestamp" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">timestamp</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.14)"><span class="pre">datetime</span></a></span><a class="headerlink" href="#pymhf.gui.hexview.CachedMemoryData.timestamp" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pymhf.gui.hexview.HexView">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.gui.hexview.</span></span><span class="sig-name descname"><span class="pre">HexView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.hexview.HexView" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.gui.hexview.</span></span><span class="sig-name descname"><span class="pre">HexView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.hexview.HexView" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.gui.hexview.HexView.add_snapshot">
@@ -440,6 +442,16 @@ If the memory at the provided address was unable to be read or captured this wil
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.gui.hexview.HexView.base_address">
+<span class="sig-name descname"><span class="pre">base_address</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#pymhf.gui.hexview.HexView.base_address" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.gui.hexview.HexView.data">
+<span class="sig-name descname"><span class="pre">data</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.14)"><span class="pre">bytes</span></a></span><a class="headerlink" href="#pymhf.gui.hexview.HexView.data" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.gui.hexview.HexView.load_address">
@@ -495,11 +507,11 @@ If the memory at the provided address was unable to be read or captured this wil
       </div>
     </a>
     <a class="right-next"
-       href="pymhf.utils.html"
+       href="pymhf.gui.widget_data.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">pymhf.utils namespace</p>
+        <p class="prev-next-title">pymhf.gui.widget_data module</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -542,7 +554,7 @@ If the memory at the provided address was unable to be read or captured this wil
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>

@@ -13,7 +13,7 @@ From code
 
 pyMHF may also be invoked from code in the case of a more complex situation (eg, needing to hook some dynamically generated subprocess).
 
-.. code-block:: py
+.. code-block:: python
 
     import os.path as op
     from subprocess import Popen

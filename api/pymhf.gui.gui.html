@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf.gui.gui';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -300,6 +300,8 @@
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.decorators.html">pymhf.gui.decorators module</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">pymhf.gui.gui module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.hexview.html">pymhf.gui.hexview module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widget_data.html">pymhf.gui.widget_data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widgets.html">pymhf.gui.widgets module</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="pymhf.utils.html">pymhf.utils namespace</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -384,18 +386,8 @@
 <span id="pymhf-gui-gui-module"></span><h1>pymhf.gui.gui module<a class="headerlink" href="#module-pymhf.gui.gui" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pymhf.gui.gui.GUI">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.gui.gui.</span></span><span class="sig-name descname"><span class="pre">GUI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.ModManager" title="pymhf.core.mod_loader.ModManager"><span class="pre">ModManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pymhfConfig</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.gui.gui.</span></span><span class="sig-name descname"><span class="pre">GUI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.ModManager" title="pymhf.core.mod_loader.ModManager"><span class="pre">ModManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pymhfConfig</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="pymhf.gui.gui.GUI.add_button">
-<span class="sig-name descname"><span class="pre">add_button</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ButtonProtocol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.add_button" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pymhf.gui.gui.GUI.add_combobox">
-<span class="sig-name descname"><span class="pre">add_combobox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ComboBoxProtocol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.add_combobox" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.gui.gui.GUI.add_details_tab">
 <span class="sig-name descname"><span class="pre">add_details_tab</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.add_details_tab" title="Link to this definition">#</a></dt>
@@ -414,19 +406,9 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.gui.gui.GUI.add_tab">
-<span class="sig-name descname"><span class="pre">add_tab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.add_tab" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">add_tab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.add_tab" title="Link to this definition">#</a></dt>
 <dd><p>Add the mod as a new tab in the GUI.</p>
 </dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pymhf.gui.gui.GUI.add_variable">
-<span class="sig-name descname"><span class="pre">add_variable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">getter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">VariableProtocol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.add_variable" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pymhf.gui.gui.GUI.add_variable_gui_elements">
-<span class="sig-name descname"><span class="pre">add_variable_gui_elements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">getter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">VariableProtocol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.add_variable_gui_elements" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.gui.gui.GUI.add_window">
@@ -440,7 +422,12 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.gui.gui.GUI.change_tab">
-<span class="sig-name descname"><span class="pre">change_tab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sender</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.change_tab" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">change_tab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.change_tab" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.gui.gui.GUI.diff_widgets">
+<span class="sig-name descname"><span class="pre">diff_widgets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_widgets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.extensions.cpptypes.html#pymhf.extensions.cpptypes.std.list" title="pymhf.extensions.cpptypes.std.list"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.GUIElementProtocol" title="pymhf.gui.widget_data.GUIElementProtocol"><span class="pre">GUIElementProtocol</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.WidgetData" title="pymhf.gui.widget_data.WidgetData"><span class="pre">WidgetData</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.GroupWidgetData" title="pymhf.gui.widget_data.GroupWidgetData"><span class="pre">GroupWidgetData</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_widgets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.extensions.cpptypes.html#pymhf.extensions.cpptypes.std.list" title="pymhf.extensions.cpptypes.std.list"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.GUIElementProtocol" title="pymhf.gui.widget_data.GUIElementProtocol"><span class="pre">GUIElementProtocol</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.WidgetData" title="pymhf.gui.widget_data.WidgetData"><span class="pre">WidgetData</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.GroupWidgetData" title="pymhf.gui.widget_data.GroupWidgetData"><span class="pre">GroupWidgetData</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pymhf.extensions.cpptypes.html#pymhf.extensions.cpptypes.std.list" title="pymhf.extensions.cpptypes.std.list"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="pymhf.extensions.cpptypes.html#pymhf.extensions.cpptypes.std.list" title="pymhf.extensions.cpptypes.std.list"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pymhf.gui.gui.GUI.diff_widgets" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -448,9 +435,14 @@
 <span class="sig-name descname"><span class="pre">exit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.exit" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.gui.gui.GUI.handle_diff_row">
+<span class="sig-name descname"><span class="pre">handle_diff_row</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.handle_diff_row" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.gui.gui.GUI.hex_view">
-<span class="sig-name descname"><span class="pre">hex_view</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="pymhf.gui.hexview.html#pymhf.gui.hexview.HexView" title="pymhf.gui.hexview.HexView"><span class="pre">HexView</span></a></em><a class="headerlink" href="#pymhf.gui.gui.GUI.hex_view" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">hex_view</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="pymhf.gui.hexview.html#pymhf.gui.hexview.HexView" title="pymhf.gui.hexview.HexView"><span class="pre">HexView</span></a></span><a class="headerlink" href="#pymhf.gui.gui.GUI.hex_view" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -459,39 +451,14 @@
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pymhf.gui.gui.GUI.reload_buttons">
-<span class="sig-name descname"><span class="pre">reload_buttons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">widgets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pymhf.gui.gui.Widgets" title="pymhf.gui.gui.Widgets"><span class="pre">Widgets</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.reload_buttons" title="Link to this definition">#</a></dt>
-<dd><p>Reload all the buttons. Any new buttons will be added, any old ones will be removed, and any that
-remain will be reconfigured to point to the new bound method with any modified parameters (such as
-button label.)</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pymhf.gui.gui.GUI.reload_comboboxes">
-<span class="sig-name descname"><span class="pre">reload_comboboxes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">widgets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pymhf.gui.gui.Widgets" title="pymhf.gui.gui.Widgets"><span class="pre">Widgets</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.reload_comboboxes" title="Link to this definition">#</a></dt>
-<dd><p>Reload all the comboboxes. Any new combos will be added, any old ones will be removed, and any that
-remain will be reconfigured to point to the new bound method with any modified parameters (such as
-combo label and items).</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="pymhf.gui.gui.GUI.reload_tab">
-<span class="sig-name descname"><span class="pre">reload_tab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.reload_tab" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">reload_tab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.reload_tab" title="Link to this definition">#</a></dt>
 <dd><p>Reload the tab for the specific mod.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pymhf.gui.gui.GUI.reload_variables">
-<span class="sig-name descname"><span class="pre">reload_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">widgets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pymhf.gui.gui.Widgets" title="pymhf.gui.gui.Widgets"><span class="pre">Widgets</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.reload_variables" title="Link to this definition">#</a></dt>
-<dd><p>Reload all variables associated with a mod.
-Note that this will not work for changing an existing variables’ type.
-To do this, remove (comment out) the property, reload the mod, and then uncomment, change the type and
-reload again to have it add it back.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="pymhf.gui.gui.GUI.remove_tab">
-<span class="sig-name descname"><span class="pre">remove_tab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.remove_tab" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">remove_tab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.GUI.remove_tab" title="Link to this definition">#</a></dt>
 <dd><p>Remove the tab associated with the provided class.</p>
 </dd></dl>
 
@@ -518,51 +485,62 @@ reload again to have it add it back.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="pymhf.gui.gui.WidgetType">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.gui.gui.</span></span><span class="sig-name descname"><span class="pre">WidgetType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.WidgetType" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<dt class="sig sig-object py" id="pymhf.gui.gui.VariableData">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.gui.gui.</span></span><span class="sig-name descname"><span class="pre">VariableData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">pymhf.core.mod_loader.Mod</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.VariableType" title="pymhf.gui.widget_data.VariableType"><span class="pre">pymhf.gui.widget_data.VariableType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_setter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.gui.VariableData" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="pymhf.gui.gui.WidgetType.BUTTON">
-<span class="sig-name descname"><span class="pre">BUTTON</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#pymhf.gui.gui.WidgetType.BUTTON" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="pymhf.gui.gui.VariableData.has_setter">
+<span class="sig-name descname"><span class="pre">has_setter</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#pymhf.gui.gui.VariableData.has_setter" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="pymhf.gui.gui.WidgetType.COMBOBOX">
-<span class="sig-name descname"><span class="pre">COMBOBOX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#pymhf.gui.gui.WidgetType.COMBOBOX" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="pymhf.gui.gui.VariableData.mod">
+<span class="sig-name descname"><span class="pre">mod</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="pymhf.core.mod_loader.html#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a></span><a class="headerlink" href="#pymhf.gui.gui.VariableData.mod" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="pymhf.gui.gui.WidgetType.TEXT">
-<span class="sig-name descname"><span class="pre">TEXT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#pymhf.gui.gui.WidgetType.TEXT" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="pymhf.gui.gui.VariableData.variable_name">
+<span class="sig-name descname"><span class="pre">variable_name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#pymhf.gui.gui.VariableData.variable_name" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="pymhf.gui.gui.WidgetType.VARIABLE">
-<span class="sig-name descname"><span class="pre">VARIABLE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#pymhf.gui.gui.WidgetType.VARIABLE" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="pymhf.gui.gui.VariableData.variable_type">
+<span class="sig-name descname"><span class="pre">variable_type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.VariableType" title="pymhf.gui.widget_data.VariableType"><span class="pre">VariableType</span></a></span><a class="headerlink" href="#pymhf.gui.gui.VariableData.variable_type" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.gui.gui.WidgetDiff">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.gui.gui.</span></span><span class="sig-name descname"><span class="pre">WidgetDiff</span></span><a class="headerlink" href="#pymhf.gui.gui.WidgetDiff" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.gui.gui.WidgetDiff.type">
+<span class="sig-name descname"><span class="pre">type</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#pymhf.gui.gui.WidgetDiff.type" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pymhf.gui.gui.Widgets">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.gui.gui.</span></span><span class="sig-name descname"><span class="pre">Widgets</span></span><a class="headerlink" href="#pymhf.gui.gui.Widgets" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.gui.gui.</span></span><span class="sig-name descname"><span class="pre">Widgets</span></span><a class="headerlink" href="#pymhf.gui.gui.Widgets" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.gui.gui.Widgets.buttons">
-<span class="sig-name descname"><span class="pre">buttons</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pymhf.gui.gui.Widgets.buttons" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pymhf.gui.gui.Widgets.comboboxes">
-<span class="sig-name descname"><span class="pre">comboboxes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#pymhf.gui.gui.WidgetType" title="pymhf.gui.gui.WidgetType"><span class="pre">WidgetType</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pymhf.gui.gui.Widgets.comboboxes" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">buttons</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.GUIElementProtocol" title="pymhf.gui.widget_data.GUIElementProtocol"><span class="pre">GUIElementProtocol</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.ButtonWidgetData" title="pymhf.gui.widget_data.ButtonWidgetData"><span class="pre">ButtonWidgetData</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pymhf.gui.gui.Widgets.buttons" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.gui.gui.Widgets.variables">
-<span class="sig-name descname"><span class="pre">variables</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#pymhf.gui.gui.WidgetType" title="pymhf.gui.gui.WidgetType"><span class="pre">WidgetType</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pymhf.gui.gui.Widgets.variables" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">variables</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.GUIElementProtocol" title="pymhf.gui.widget_data.GUIElementProtocol"><span class="pre">GUIElementProtocol</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.VariableWidgetData" title="pymhf.gui.widget_data.VariableWidgetData"><span class="pre">VariableWidgetData</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pymhf.gui.gui.Widgets.variables" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.gui.gui.get_id">
+<span class="sig-prename descclassname"><span class="pre">pymhf.gui.gui.</span></span><span class="sig-name descname"><span class="pre">get_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">widget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.GUIElementProtocol" title="pymhf.gui.widget_data.GUIElementProtocol"><span class="pre">GUIElementProtocol</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.WidgetData" title="pymhf.gui.widget_data.WidgetData"><span class="pre">WidgetData</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="pymhf.gui.widget_data.html#pymhf.gui.widget_data.GroupWidgetData" title="pymhf.gui.widget_data.GroupWidgetData"><span class="pre">GroupWidgetData</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#pymhf.gui.gui.get_id" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pymhf.gui.gui.toggle_on_top">
@@ -638,7 +616,7 @@ reload again to have it add it back.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>

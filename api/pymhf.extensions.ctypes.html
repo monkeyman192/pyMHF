@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf.extensions.ctypes';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -300,6 +300,8 @@
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.decorators.html">pymhf.gui.decorators module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.gui.html">pymhf.gui.gui module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.hexview.html">pymhf.gui.hexview module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widget_data.html">pymhf.gui.widget_data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widgets.html">pymhf.gui.widgets module</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="pymhf.utils.html">pymhf.utils namespace</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -383,14 +385,47 @@
   <section id="module-pymhf.extensions.ctypes">
 <span id="pymhf-extensions-ctypes-module"></span><h1>pymhf.extensions.ctypes module<a class="headerlink" href="#module-pymhf.extensions.ctypes" title="Link to this heading">#</a></h1>
 <dl class="py class">
+<dt class="sig sig-object py" id="pymhf.extensions.ctypes.c_char_p32">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.extensions.ctypes.</span></span><span class="sig-name descname"><span class="pre">c_char_p32</span></span><a class="headerlink" href="#pymhf.extensions.ctypes.c_char_p32" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.c_ulong" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">c_ulong</span></code></a></p>
+<p>This is a thin wrapper around the uint32 type because python has issues having char* &lt;-&gt; c_char_p as
+the function argument type and then accessing the value.
+This class avoids the issue by casting the underlying integer value to a <code class="docutils literal notranslate"><span class="pre">ctypes.c_char_p</span></code> and getting
+the value of this.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.extensions.ctypes.c_char_p64">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.extensions.ctypes.</span></span><span class="sig-name descname"><span class="pre">c_char_p64</span></span><a class="headerlink" href="#pymhf.extensions.ctypes.c_char_p64" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.c_ulonglong" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">c_ulonglong</span></code></a></p>
+<p>This is a thin wrapper around the uint64 type because python has issues having char* &lt;-&gt; c_char_p as
+the function argument type and then accessing the value.
+This class avoids the issue by casting the underlying integer value to a <code class="docutils literal notranslate"><span class="pre">ctypes.c_char_p</span></code> and getting
+the value of this.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.extensions.ctypes.c_enum16">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.extensions.ctypes.</span></span><span class="sig-name descname"><span class="pre">c_enum16</span></span><a class="headerlink" href="#pymhf.extensions.ctypes.c_enum16" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.c_short" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">c_short</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">IE</span></code>]</p>
+<p>c_int16 wrapper for enums. This doesn’t have the full set of features an enum would normally have,
+but just enough to make it useful.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pymhf.extensions.ctypes.c_enum16.name">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#pymhf.extensions.ctypes.c_enum16.name" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="pymhf.extensions.ctypes.c_enum32">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.extensions.ctypes.</span></span><span class="sig-name descname"><span class="pre">c_enum32</span></span><a class="headerlink" href="#pymhf.extensions.ctypes.c_enum32" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.extensions.ctypes.</span></span><span class="sig-name descname"><span class="pre">c_enum32</span></span><a class="headerlink" href="#pymhf.extensions.ctypes.c_enum32" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.c_long" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">c_long</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">IE</span></code>]</p>
 <p>c_int32 wrapper for enums. This doesn’t have the full set of features an enum would normally have,
 but just enough to make it useful.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="pymhf.extensions.ctypes.c_enum32.name">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></em><a class="headerlink" href="#pymhf.extensions.ctypes.c_enum32.name" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#pymhf.extensions.ctypes.c_enum32.name" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -464,7 +499,7 @@ but just enough to make it useful.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>

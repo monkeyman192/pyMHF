@@ -39,13 +39,13 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/gui/gui';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Hex View" href="hex_view.html" />
-    <link rel="prev" title="GUI" href="index.html" />
+    <link rel="prev" title="Custom Widgets" href="custom_widgets.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -292,6 +292,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">GUI</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="custom_widgets.html">Custom Widgets</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Automatic-GUI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hex_view.html">Hex View</a></li>
 </ul>
@@ -371,39 +372,42 @@
 <p>This decorator is to be applied to a method which takes no arguments.
 The method will be called when the button is pressed in the gui.</p>
 </section>
-<section id="gui-combobox-text-str-items-list-str">
-<h3><a class="reference internal" href="../../api/pymhf.gui.decorators.html#pymhf.gui.decorators.gui_combobox" title="pymhf.gui.decorators.gui_combobox"><code class="xref py py-func docutils literal notranslate"><span class="pre">gui_combobox(text:</span> <span class="pre">str,</span> <span class="pre">items:</span> <span class="pre">list[str]</span> <span class="pre">=</span> <span class="pre">[])</span></code></a><a class="headerlink" href="#gui-combobox-text-str-items-list-str" title="Link to this heading">#</a></h3>
-<p>This decorator is to be applied to a method which takes no arguments.
-The method should have the arguments <code class="docutils literal notranslate"><span class="pre">sender</span></code> and <code class="docutils literal notranslate"><span class="pre">app_data</span></code>. <code class="docutils literal notranslate"><span class="pre">app_data</span></code> is the value of the combobox that is selected.
-The method will be called when an element of the combobox is selected.</p>
-</section>
 </section>
 <section id="value-elements">
 <h2>Value elements<a class="headerlink" href="#value-elements" title="Link to this heading">#</a></h2>
 <p>Each of these is applied to a property, however the <code class="docutils literal notranslate"><span class="pre">&#64;property</span></code> decorator needs to applied later than this decorator (ie. the <code class="docutils literal notranslate"><span class="pre">&#64;property</span></code> decorator should be on top of this one.)
+If you forget to add the <code class="docutils literal notranslate"><span class="pre">&#64;property</span></code> decorator on top of the function, the widget will be rendered in the GUI but it will have the value looking something like the string <code class="docutils literal notranslate"><span class="pre">&lt;Bound</span> <span class="pre">method</span> <span class="pre">...&gt;</span></code>.
 If the property has a setter then the gui field created will be editable, otherwise it will not be, and for settable properties, changing the entry value will call the setter.</p>
 <p>Note that these functions will take any of the extra arguments as listed in the link except the following:
 <code class="docutils literal notranslate"><span class="pre">tag</span></code>, <code class="docutils literal notranslate"><span class="pre">source</span></code>, <code class="docutils literal notranslate"><span class="pre">user_data</span></code>, <code class="docutils literal notranslate"><span class="pre">callback</span></code>, <code class="docutils literal notranslate"><span class="pre">use_internal_label</span></code>.
 These arguments are reserved by pyMHF for our own purposes and any values provided to the decorator will be ignored/removed.</p>
-<section id="integer-label-str-kwargs">
-<h3><a class="reference internal" href="../../api/pymhf.gui.decorators.html#pymhf.gui.decorators.INTEGER" title="pymhf.gui.decorators.INTEGER"><code class="xref py py-func docutils literal notranslate"><span class="pre">INTEGER(label:</span> <span class="pre">str,</span> <span class="pre">**kwargs)</span></code></a><a class="headerlink" href="#integer-label-str-kwargs" title="Link to this heading">#</a></h3>
-<p>Create an integer entry field which can take extra arguments.
-To see what extra arguments are available, see the DearPyGUI documentation <a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_input_int">here</a>.</p>
-</section>
 <section id="boolean-label-str-kwargs">
 <h3><a class="reference internal" href="../../api/pymhf.gui.decorators.html#pymhf.gui.decorators.BOOLEAN" title="pymhf.gui.decorators.BOOLEAN"><code class="xref py py-func docutils literal notranslate"><span class="pre">BOOLEAN(label:</span> <span class="pre">str,</span> <span class="pre">**kwargs)</span></code></a><a class="headerlink" href="#boolean-label-str-kwargs" title="Link to this heading">#</a></h3>
-<p>Create an boolean entry field in the form of a checkbox which can take extra arguments.
+<p>Create a boolean entry field in the form of a checkbox which can take extra arguments.
 To see what extra arguments are available, see the DearPyGUI documentation <a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_checkbox">here</a>.</p>
+</section>
+<section id="integer-label-str-is-slider-bool-false-kwargs">
+<h3><a class="reference internal" href="../../api/pymhf.gui.decorators.html#pymhf.gui.decorators.INTEGER" title="pymhf.gui.decorators.INTEGER"><code class="xref py py-func docutils literal notranslate"><span class="pre">INTEGER(label:</span> <span class="pre">str,</span> <span class="pre">is_slider:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">**kwargs)</span></code></a><a class="headerlink" href="#integer-label-str-is-slider-bool-false-kwargs" title="Link to this heading">#</a></h3>
+<p>Create an integer entry field which can take extra arguments.
+To see what extra arguments are available, see the DearPyGUI documentation <a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_input_int">here</a>.
+If <code class="docutils literal notranslate"><span class="pre">is_slider</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, a slider will be used to render the widget instead. The allowed extra argument for this case can be found <a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_slider_int">here</a>.</p>
+</section>
+<section id="float-label-str-is-slider-bool-false-kwargs">
+<h3><a class="reference internal" href="../../api/pymhf.gui.decorators.html#pymhf.gui.decorators.FLOAT" title="pymhf.gui.decorators.FLOAT"><code class="xref py py-func docutils literal notranslate"><span class="pre">FLOAT(label:</span> <span class="pre">str,</span> <span class="pre">is_slider:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">**kwargs)</span></code></a><a class="headerlink" href="#float-label-str-is-slider-bool-false-kwargs" title="Link to this heading">#</a></h3>
+<p>Create a float entry field which can take extra arguments.
+Internally this uses double precision when interfacing with DearPyGUI to minimise loss of accuracy.
+To see what extra arguments are available, see the DearPyGUI documentation <a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_input_double">here</a>.
+If <code class="docutils literal notranslate"><span class="pre">is_slider</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, a slider will be used to render the widget instead. The allowed extra argument for this case can be found <a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_slider_double">here</a>.</p>
 </section>
 <section id="string-label-str-kwargs">
 <h3><a class="reference internal" href="../../api/pymhf.gui.decorators.html#pymhf.gui.decorators.STRING" title="pymhf.gui.decorators.STRING"><code class="xref py py-func docutils literal notranslate"><span class="pre">STRING(label:</span> <span class="pre">str,</span> <span class="pre">**kwargs)</span></code></a><a class="headerlink" href="#string-label-str-kwargs" title="Link to this heading">#</a></h3>
-<p>Create an string entry field which can take extra arguments.
+<p>Create a string entry field which can take extra arguments.
 To see what extra arguments are available, see the DearPyGUI documentation <a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_input_text">here</a>.</p>
 </section>
-<section id="float-label-str-kwargs">
-<h3><a class="reference internal" href="../../api/pymhf.gui.decorators.html#pymhf.gui.decorators.FLOAT" title="pymhf.gui.decorators.FLOAT"><code class="xref py py-func docutils literal notranslate"><span class="pre">FLOAT(label:</span> <span class="pre">str,</span> <span class="pre">**kwargs)</span></code></a><a class="headerlink" href="#float-label-str-kwargs" title="Link to this heading">#</a></h3>
-<p>Create an float entry field which can take extra arguments.
-To see what extra arguments are available, see the DearPyGUI documentation <a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_input_double">here</a>.</p>
+<section id="enum-label-str-kwargs">
+<h3><a class="reference internal" href="../../api/pymhf.gui.decorators.html#pymhf.gui.decorators.ENUM" title="pymhf.gui.decorators.ENUM"><code class="xref py py-func docutils literal notranslate"><span class="pre">ENUM(label:</span> <span class="pre">str,</span> <span class="pre">**kwargs)</span></code></a><a class="headerlink" href="#enum-label-str-kwargs" title="Link to this heading">#</a></h3>
+<p>Create an enum entry field which can take extra arguments.
+To see what extra arguments are available, see the DearPyGUI documentation <a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_combo">here</a>.</p>
 </section>
 </section>
 <section id="accessing-the-gui-via-code">
@@ -425,12 +429,12 @@ To see what extra arguments are available, see the DearPyGUI documentation <a cl
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="index.html"
+       href="custom_widgets.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">GUI</p>
+        <p class="prev-next-title">Custom Widgets</p>
       </div>
     </a>
     <a class="right-next"
@@ -481,7 +485,7 @@ To see what extra arguments are available, see the DearPyGUI documentation <a cl
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>

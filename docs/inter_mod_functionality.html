@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/inter_mod_functionality';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -292,6 +292,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="gui/index.html">GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui/custom_widgets.html">Custom Widgets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/gui.html">Automatic-GUI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/hex_view.html">Hex View</a></li>
 </ul>
@@ -364,7 +365,7 @@ pyMHF provides a convenient way for one mod to access the properties and methods
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
 <p>To access other mods we use the <code class="xref py py-data docutils literal notranslate"><span class="pre">mod_manager</span></code>:</p>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">from</span> <span class="n">pymhf</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">mod_loader</span> <span class="kn">import</span><span class="w"> </span><span class="nn">mod_manager</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">from</span> <span class="n">pymhf</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">mod_loader</span> <span class="kn">import</span><span class="w"> </span><span class="nn">mod_manager</span>
 </pre></div>
 </div>
 <p>This class is an instance of the <a class="reference internal" href="../api/pymhf.core.mod_loader.html#pymhf.core.mod_loader.ModManager" title="pymhf.core.mod_loader.ModManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModManager</span></code></a> class, and has a special method assigned to it so that the <code class="docutils literal notranslate"><span class="pre">mod_manager</span></code> object can be indexed by the <code class="docutils literal notranslate"><span class="pre">type</span></code> of the mod you wish to access.
@@ -376,7 +377,7 @@ This is seen more clearly below in the example.</p>
 <p>A simple example is given below:</p>
 <div class="literal-block-wrapper docutils container" id="id1">
 <div class="code-block-caption"><span class="caption-text">mod1.py</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.mod_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModState</span>
@@ -407,7 +408,7 @@ The above mod won’t hook anything, but it will add a numeric field to its mod 
 <p>We’ll have a second mod in the same folder as the above:</p>
 <div class="literal-block-wrapper docutils container" id="id2">
 <div class="code-block-caption"><span class="caption-text">mod2.py</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">on_key_pressed</span>
@@ -516,7 +517,7 @@ Currently, for this to work the folder must contain the <code class="docutils li
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>

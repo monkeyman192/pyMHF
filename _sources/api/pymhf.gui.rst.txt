@@ -10,6 +10,8 @@ Submodules
    pymhf.gui.decorators
    pymhf.gui.gui
    pymhf.gui.hexview
+   pymhf.gui.widget_data
+   pymhf.gui.widgets
 
 Module contents
 ---------------

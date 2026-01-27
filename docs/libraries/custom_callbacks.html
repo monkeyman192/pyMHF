@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/libraries/custom_callbacks';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -292,6 +292,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../gui/index.html">GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../gui/custom_widgets.html">Custom Widgets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../gui/gui.html">Automatic-GUI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../gui/hex_view.html">Hex View</a></li>
 </ul>
@@ -366,7 +367,7 @@
 <p>The best way to see this is by an example taken from the NMS.py source code:</p>
 <div class="literal-block-wrapper docutils container" id="id1">
 <div class="code-block-caption"><span class="caption-text">decorators.py</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetourTime</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetourTime</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">main_loop</span><span class="p">:</span>
     <span class="nd">@staticmethod</span>
@@ -399,7 +400,7 @@ If this isn’t provided then the fallback time will be <code class="docutils li
 <p>These above custom callbacks can then be applied to some function in a mod like so:</p>
 <div class="literal-block-wrapper docutils container" id="id2">
 <div class="code-block-caption"><span class="caption-text">main_loop_mod.py</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">main_loop</span><span class="p">,</span> <span class="n">on_fully_booted</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
 
@@ -422,7 +423,7 @@ If this isn’t provided then the fallback time will be <code class="docutils li
 <p>It is recommended that theses are implemented in “internal” mods which can be defined like so:</p>
 <div class="literal-block-wrapper docutils container" id="id3">
 <div class="code-block-caption"><span class="caption-text">internal_mod.py</span><a class="headerlink" href="#id3" title="Link to this code">#</a></div>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
 <span class="linenos"> 2</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetourTime</span>
 <span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.gui.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">no_gui</span>
 <span class="linenos"> 4</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">hook_manager</span>
@@ -543,7 +544,7 @@ This is the connection between the previous two code blocks.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>

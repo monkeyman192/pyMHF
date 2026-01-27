@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/partial_structs';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -292,6 +292,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="gui/index.html">GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui/custom_widgets.html">Custom Widgets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/gui.html">Automatic-GUI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/hex_view.html">Hex View</a></li>
 </ul>
@@ -363,7 +364,7 @@
 Often this would then require adding many <code class="docutils literal notranslate"><span class="pre">unknown</span></code> fields or adding padding bytes manually.</p>
 <p>pyMHF aims to simplify this process by providing the <code class="docutils literal notranslate"><span class="pre">partial_struct</span></code> class decorator, as well as the <code class="docutils literal notranslate"><span class="pre">Field</span></code> type which is used to annotate the type of field.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">Field</span></code> class is defined as follows:</p>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Field</span><span class="p">:</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span>
     <span class="n">offset</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -374,7 +375,7 @@ If the <code class="docutils literal notranslate"><span class="pre">offset</span
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
 <p>Below is an example of a struct which we have mapped out that we know has a 32 bit int at the start, 12 bytes of unknown contents, and then another 32 bit int.</p>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial_struct</span><span class="p">,</span> <span class="n">Field</span>
 
@@ -385,7 +386,7 @@ If the <code class="docutils literal notranslate"><span class="pre">offset</span
 </pre></div>
 </div>
 <p>It is also possible to specify the total size of the struct in bytes by assigning the <code class="docutils literal notranslate"><span class="pre">_total_size_</span></code> attribute to the class like so:</p>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial_struct</span><span class="p">,</span> <span class="n">Field</span>
 
@@ -402,7 +403,7 @@ If the <code class="docutils literal notranslate"><span class="pre">offset</span
 <section id="inheritence">
 <h1>Inheritence<a class="headerlink" href="#inheritence" title="Link to this heading">#</a></h1>
 <p>It is possible to have a partial struct as the base class of another like so:</p>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial_struct</span><span class="p">,</span> <span class="n">Field</span>
 
@@ -418,7 +419,7 @@ If the <code class="docutils literal notranslate"><span class="pre">offset</span
 </pre></div>
 </div>
 <p>In this case, if we look at the <code class="docutils literal notranslate"><span class="pre">_fields_</span></code> attribute of the <code class="docutils literal notranslate"><span class="pre">Parent</span></code> class it will be generated like so:</p>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="n">_fields_</span> <span class="o">=</span> <span class="p">[</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">_fields_</span> <span class="o">=</span> <span class="p">[</span>
     <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">),</span>  <span class="c1"># Offset = 0x0</span>
     <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">),</span>    <span class="c1"># Offset = 0x4</span>
     <span class="p">(</span><span class="s2">&quot;_padding_0x9&quot;</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ubyte</span> <span class="o">*</span> <span class="mi">7</span><span class="p">),</span>
@@ -432,6 +433,23 @@ If the <code class="docutils literal notranslate"><span class="pre">offset</span
 <p class="admonition-title">Note</p>
 <p>The offsets for parent classes MUST be relative to the start of the entire struct, NOT from the start of the definition after the base class(es).
 This can be clearly seen in the above example.</p>
+</div>
+<p>In the above example, if we knew the size of the child class, we could also type it as follows and get the same result.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial_struct</span><span class="p">,</span> <span class="n">Field</span>
+
+<span class="nd">@partial_struct</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Base</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+    <span class="n">_total_size_</span> <span class="o">=</span> <span class="mh">0x10</span>
+    <span class="n">a</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">,</span> <span class="mh">0x0</span><span class="p">]</span>
+    <span class="n">b</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">,</span> <span class="mh">0x8</span><span class="p">]</span>
+
+<span class="nd">@partial_struct</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Parent</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">c</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">]</span>
+    <span class="n">d</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span>
+</pre></div>
 </div>
 <section id="advantages">
 <h2>Advantages<a class="headerlink" href="#advantages" title="Link to this heading">#</a></h2>
@@ -510,7 +528,7 @@ This can be clearly seen in the above example.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>

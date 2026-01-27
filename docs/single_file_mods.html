@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/single_file_mods';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -292,6 +292,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="gui/index.html">GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui/custom_widgets.html">Custom Widgets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/gui.html">Automatic-GUI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/hex_view.html">Hex View</a></li>
 </ul>
@@ -366,7 +367,7 @@ To accomodate this, pyMHF can run a single file containing a mod.</p>
 <p>Below is an example single-file mod for the game No Man’s Sky:</p>
 <div class="literal-block-wrapper docutils container" id="id1">
 <div class="code-block-caption"><span class="caption-text">example_mod.py</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="c1"># /// script</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># /// script</span>
 <span class="c1"># dependencies = [&quot;pymhf&quot;]</span>
 <span class="c1">#</span>
 <span class="c1"># [tool.pymhf]</span>
@@ -418,7 +419,7 @@ Replace <cite>script.py</cite> with the name of the script as it was saved.</p>
 <p>If the game is being ran via steam, replace <code class="docutils literal notranslate"><span class="pre">steam_gameid</span></code> with the value found in steam, and set <code class="docutils literal notranslate"><span class="pre">exe</span></code> to be the name of the game binary.
 If the game or program is not run through steam, remove the <code class="docutils literal notranslate"><span class="pre">steam_gameid</span></code> value and instead set <code class="docutils literal notranslate"><span class="pre">exe</span></code> and the absolute path to the binary.</p>
 <p>Note that by default the GUI will not be installed by <code class="docutils literal notranslate"><span class="pre">uv</span></code> and is only available on 64-bit installations of Python due to DearPyGui lacking support for 32-bit. If you want the GUI to be included, add the <code class="docutils literal notranslate"><span class="pre">[gui]</span></code> extra to your script dependecies metadata, like so:</p>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="c1"># /// script</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># /// script</span>
 <span class="c1"># dependencies = [&quot;pymhf[gui]&quot;]</span>
 <span class="c1">#</span>
 <span class="o">...</span> <span class="p">(</span><span class="n">truncated</span><span class="p">)</span>
@@ -493,7 +494,7 @@ If the game or program is not run through steam, remove the <code class="docutil
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>

@@ -8,7 +8,7 @@ pyMHF aims to simplify this process by providing the ``partial_struct`` class de
 
 The ``Field`` class is defined as follows:
 
-.. code-block:: py
+.. code-block:: python
 
     @dataclass
     class Field:
@@ -23,7 +23,7 @@ Usage
 
 Below is an example of a struct which we have mapped out that we know has a 32 bit int at the start, 12 bytes of unknown contents, and then another 32 bit int.
 
-.. code-block:: py
+.. code-block:: python
 
     import ctypes
     from typing import Annotated
@@ -36,7 +36,7 @@ Below is an example of a struct which we have mapped out that we know has a 32 b
 
 It is also possible to specify the total size of the struct in bytes by assigning the ``_total_size_`` attribute to the class like so:
 
-.. code-block:: py
+.. code-block:: python
 
     import ctypes
     from typing import Annotated
@@ -55,7 +55,7 @@ Inheritence
 
 It is possible to have a partial struct as the base class of another like so:
 
-.. code-block:: py
+.. code-block:: python
 
     import ctypes
     from typing import Annotated
@@ -73,7 +73,7 @@ It is possible to have a partial struct as the base class of another like so:
 
 In this case, if we look at the ``_fields_`` attribute of the ``Parent`` class it will be generated like so:
 
-.. code-block:: py
+.. code-block:: python
 
     _fields_ = [
         ("a", ctypes.c_uint32),  # Offset = 0x0
@@ -88,6 +88,25 @@ From this we can see that (as with c++), the base class will have its fields ser
 .. note::
     The offsets for parent classes MUST be relative to the start of the entire struct, NOT from the start of the definition after the base class(es).
     This can be clearly seen in the above example.
+
+In the above example, if we knew the size of the child class, we could also type it as follows and get the same result.
+
+.. code-block:: python
+
+    import ctypes
+    from typing import Annotated
+    from pymhf.utils.partial_struct import partial_struct, Field
+
+    @partial_struct
+    class Base(ctypes.Structure):
+        _total_size_ = 0x10
+        a: Annotated[ctypes.c_uint32, 0x0]
+        b: Annotated[ctypes.c_bool, 0x8]
+
+    @partial_struct
+    class Parent(Base):
+        c: Annotated[ctypes.c_uint32]
+        d: ctypes.c_uint32
 
 Advantages
 ----------

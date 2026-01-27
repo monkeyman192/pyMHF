@@ -10,7 +10,7 @@ For more general information regarding providing the data required for a mod see
 
 Below is an example single-file mod for the game No Man's Sky:
 
-.. code-block:: py
+.. code-block:: python
     :caption: example_mod.py
 
     # /// script
@@ -75,7 +75,7 @@ If the game or program is not run through steam, remove the ``steam_gameid`` val
 
 Note that by default the GUI will not be installed by ``uv`` and is only available on 64-bit installations of Python due to DearPyGui lacking support for 32-bit. If you want the GUI to be included, add the ``[gui]`` extra to your script dependecies metadata, like so:
 
-.. code-block:: py
+.. code-block:: python
 
     # /// script
     # dependencies = ["pymhf[gui]"]

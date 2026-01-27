@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/mod_states';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -292,6 +292,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="gui/index.html">GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui/custom_widgets.html">Custom Widgets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/gui.html">Automatic-GUI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gui/hex_view.html">Hex View</a></li>
 </ul>
@@ -372,7 +373,7 @@ We want to store this address as it will not change throughout the lifetime of t
 <p>By setting the mod up as shown below we can experiment with adding extra hooks, or using the data we got from that initial function hook without having to restart the process every time.</p>
 <div class="literal-block-wrapper docutils container" id="id1">
 <div class="code-block-caption"><span class="caption-text">mod1.py</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.mod_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModState</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">manual_hook</span>
@@ -400,7 +401,7 @@ We want to store this address as it will not change throughout the lifetime of t
 <p>For example, we could implement a vector type as such:</p>
 <div class="literal-block-wrapper docutils container" id="id2">
 <div class="code-block-caption"><span class="caption-text">vector_type.py</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.mod_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModState</span>
@@ -496,7 +497,7 @@ We want to store this address as it will not change throughout the lifetime of t
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>

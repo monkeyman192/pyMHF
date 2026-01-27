@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf.core.mod_loader';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -300,6 +300,8 @@
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.decorators.html">pymhf.gui.decorators module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.gui.html">pymhf.gui.gui module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.hexview.html">pymhf.gui.hexview module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widget_data.html">pymhf.gui.widget_data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widgets.html">pymhf.gui.widgets module</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="pymhf.utils.html">pymhf.utils namespace</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -384,27 +386,27 @@
 <span id="pymhf-core-mod-loader-module"></span><h1>pymhf.core.mod_loader module<a class="headerlink" href="#module-pymhf.core.mod_loader" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pymhf.core.mod_loader.Mod">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.mod_loader.</span></span><span class="sig-name descname"><span class="pre">Mod</span></span><a class="headerlink" href="#pymhf.core.mod_loader.Mod" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.core.mod_loader.</span></span><span class="sig-name descname"><span class="pre">Mod</span></span><a class="headerlink" href="#pymhf.core.mod_loader.Mod" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.core.mod_loader.Mod.get_members">
 <span class="sig-name descname"><span class="pre">get_members</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predicate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.mod_loader.Mod.get_members" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pymhf.core.mod_loader.Mod.pymhf_gui">
-<span class="sig-name descname"><span class="pre">pymhf_gui</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="pymhf.gui.gui.html#pymhf.gui.gui.GUI" title="pymhf.gui.gui.GUI"><span class="pre">GUI</span></a></em><a class="headerlink" href="#pymhf.core.mod_loader.Mod.pymhf_gui" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pymhf.core.mod_loader.ModManager">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.mod_loader.</span></span><span class="sig-name descname"><span class="pre">ModManager</span></span><a class="headerlink" href="#pymhf.core.mod_loader.ModManager" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.core.mod_loader.</span></span><span class="sig-name descname"><span class="pre">ModManager</span></span><a class="headerlink" href="#pymhf.core.mod_loader.ModManager" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.core.mod_loader.ModManager.hook_manager">
+<span class="sig-name descname"><span class="pre">hook_manager</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="pymhf.core.hooking.html#pymhf.core.hooking.HookManager" title="pymhf.core.hooking.HookManager"><span class="pre">HookManager</span></a></span><a class="headerlink" href="#pymhf.core.mod_loader.ModManager.hook_manager" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.core.mod_loader.ModManager.instantiate_mod">
-<span class="sig-name descname"><span class="pre">instantiate_mod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pymhf.core.mod_loader.ModManager.instantiate_mod" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">instantiate_mod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.gui.gui.html#pymhf.gui.gui.WidgetDiff.type" title="pymhf.gui.gui.WidgetDiff.type"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pymhf.core.mod_loader.Mod" title="pymhf.core.mod_loader.Mod"><span class="pre">Mod</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#pymhf.core.mod_loader.ModManager.instantiate_mod" title="Link to this definition">#</a></dt>
 <dd><p>Register all the functions within the mod as hooks.</p>
 </dd></dl>
 
@@ -419,42 +421,53 @@
 <dt class="sig sig-object py" id="pymhf.core.mod_loader.ModManager.load_mod_folder">
 <span class="sig-name descname"><span class="pre">load_mod_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deep_search</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pymhf.core.mod_loader.ModManager.load_mod_folder" title="Link to this definition">#</a></dt>
 <dd><p>Load the mod folder.</p>
-<section id="params">
-<h2>Params<a class="headerlink" href="#params" title="Link to this heading">#</a></h2>
-<dl class="simple">
-<dt>folder</dt><dd><p>The path of the folder to be loaded. All mod files within this directory will be loaded and
-installed.</p>
-</dd>
-<dt>bind</dt><dd><p>Whether or not to actual bind and initialize the hooks within the mod.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>folder</strong> – The path of the folder to be loaded. All mod files within this directory will be loaded and
+installed.</p></li>
+<li><p><strong>bind</strong> – Whether or not to actual bind and initialize the hooks within the mod.
 This should almost always be True except when loading the internal mods initially since it’s not
 necessary.
 If this function is called with False, then it MUST be called again with True before the hooks
-are enabled.</p>
+are enabled.</p></li>
+<li><p><strong>deep_search</strong> – Whether to search down into sub-folders.</p></li>
+</ul>
 </dd>
-<dt>deep_search</dt><dd><p>Whether to search down into sub-folders.</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>A tuple of 2 ints. The first value is the number of mods loaded, and the second is the number of hooks</em></p></li>
+<li><p><em>loaded.</em></p></li>
+</ul>
+</p>
 </dd>
 </dl>
-</section>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.core.mod_loader.ModManager.load_single_mod">
-<span class="sig-name descname"><span class="pre">load_single_mod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.mod_loader.ModManager.load_single_mod" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">load_single_mod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pymhf.core.mod_loader.ModManager.load_single_mod" title="Link to this definition">#</a></dt>
 <dd><p>Load a single mod file.</p>
-<section id="id1">
-<h2>Params<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
-<dl class="simple">
-<dt>folder</dt><dd><p>The path of the folder to be loaded. All mod files within this directory will be loaded and
-installed.</p>
-</dd>
-<dt>bind</dt><dd><p>Whether or not to actual bind and initialize the hooks within the mod.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>folder</strong> – The path of the folder to be loaded. All mod files within this directory will be loaded and
+installed.</p></li>
+<li><p><strong>bind</strong> – Whether or not to actual bind and initialize the hooks within the mod.
 This should almost always be True except when loading the internal mods initially since it’s not
 necessary.
 If this function is called with False, then it MUST be called again with True before the hooks
-are enabled.</p>
+are enabled.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>A tuple of 2 ints. The first value is the number of mods loaded, and the second is the number of hooks</em></p></li>
+<li><p><em>loaded.</em></p></li>
+</ul>
+</p>
 </dd>
 </dl>
-</section>
 </dd></dl>
 
 <dl class="py method">
@@ -467,7 +480,7 @@ are enabled.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pymhf.core.mod_loader.ModState">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.mod_loader.</span></span><span class="sig-name descname"><span class="pre">ModState</span></span><a class="headerlink" href="#pymhf.core.mod_loader.ModState" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.core.mod_loader.</span></span><span class="sig-name descname"><span class="pre">ModState</span></span><a class="headerlink" href="#pymhf.core.mod_loader.ModState" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></a></p>
 <p>A class which is used as a base class to indicate that the class is to be used as a mod state.</p>
 <p>Mod State classes will persist across mod reloads so any variables set in it
@@ -500,7 +513,7 @@ Note that this will be a json file saved within the <code class="docutils litera
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pymhf.core.mod_loader.StructDecoder">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.mod_loader.</span></span><span class="sig-name descname"><span class="pre">StructDecoder</span></span><a class="headerlink" href="#pymhf.core.mod_loader.StructDecoder" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.core.mod_loader.</span></span><span class="sig-name descname"><span class="pre">StructDecoder</span></span><a class="headerlink" href="#pymhf.core.mod_loader.StructDecoder" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/json.html#json.JSONDecoder" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">JSONDecoder</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.core.mod_loader.StructDecoder.object_hook">
@@ -511,11 +524,11 @@ Note that this will be a json file saved within the <code class="docutils litera
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pymhf.core.mod_loader.StructEncoder">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.mod_loader.</span></span><span class="sig-name descname"><span class="pre">StructEncoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipkeys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_ascii</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_circular</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_nan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separators</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.mod_loader.StructEncoder" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.core.mod_loader.</span></span><span class="sig-name descname"><span class="pre">StructEncoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipkeys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_ascii</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_circular</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_nan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separators</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.mod_loader.StructEncoder" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/json.html#json.JSONEncoder" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">JSONEncoder</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.core.mod_loader.StructEncoder.default">
-<span class="sig-name descname"><span class="pre">default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.mod_loader.StructEncoder.default" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.mod_loader.StructEncoder.default" title="Link to this definition">#</a></dt>
 <dd><p>Implement this method in a subclass such that it returns
 a serializable object for <code class="docutils literal notranslate"><span class="pre">o</span></code>, or calls the base implementation
 (to raise a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>).</p>
@@ -605,7 +618,7 @@ implement default like this:</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>

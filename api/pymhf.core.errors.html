@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf.core.errors';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -300,6 +300,8 @@
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.decorators.html">pymhf.gui.decorators module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.gui.html">pymhf.gui.gui module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.hexview.html">pymhf.gui.hexview module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widget_data.html">pymhf.gui.widget_data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widgets.html">pymhf.gui.widgets module</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="pymhf.utils.html">pymhf.utils namespace</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -384,19 +386,19 @@
 <span id="pymhf-core-errors-module"></span><h1>pymhf.core.errors module<a class="headerlink" href="#module-pymhf.core.errors" title="Link to this heading">#</a></h1>
 <dl class="py exception">
 <dt class="sig sig-object py" id="pymhf.core.errors.HookError">
-<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.errors.</span></span><span class="sig-name descname"><span class="pre">HookError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.errors.HookError" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.core.errors.</span></span><span class="sig-name descname"><span class="pre">HookError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.errors.HookError" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="pymhf.core.errors.NoSaveError">
-<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.errors.</span></span><span class="sig-name descname"><span class="pre">NoSaveError</span></span><a class="headerlink" href="#pymhf.core.errors.NoSaveError" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.core.errors.</span></span><span class="sig-name descname"><span class="pre">NoSaveError</span></span><a class="headerlink" href="#pymhf.core.errors.NoSaveError" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="pymhf.core.errors.UnknownFunctionError">
-<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.core.errors.</span></span><span class="sig-name descname"><span class="pre">UnknownFunctionError</span></span><a class="headerlink" href="#pymhf.core.errors.UnknownFunctionError" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.core.errors.</span></span><span class="sig-name descname"><span class="pre">UnknownFunctionError</span></span><a class="headerlink" href="#pymhf.core.errors.UnknownFunctionError" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
 </dd></dl>
 
@@ -469,7 +471,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>

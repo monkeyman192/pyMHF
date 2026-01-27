@@ -87,7 +87,7 @@ This decorator will cause the detour to only be called once then disabled.
 When applied to a function this decorator will cause the function hook to determine where it was called from.
 To access this information, you can call a function on the detour method itself. This is seen more clearly by example:
 
-.. code-block:: py
+.. code-block:: python
 
     class MyHook(NMSMod):
         @get_caller

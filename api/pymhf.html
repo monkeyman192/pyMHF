@@ -39,8 +39,8 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -300,6 +300,8 @@
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.decorators.html">pymhf.gui.decorators module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.gui.html">pymhf.gui.gui module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.hexview.html">pymhf.gui.hexview module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widget_data.html">pymhf.gui.widget_data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widgets.html">pymhf.gui.widgets module</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="pymhf.utils.html">pymhf.utils namespace</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -399,57 +401,57 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pymhf" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="pymhf.FolderModeEnum">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.</span></span><span class="sig-name descname"><span class="pre">FolderModeEnum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.FolderModeEnum" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.</span></span><span class="sig-name descname"><span class="pre">FolderModeEnum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.FolderModeEnum" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.FolderModeEnum.INVALID">
-<span class="sig-name descname"><span class="pre">INVALID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#pymhf.FolderModeEnum.INVALID" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">INVALID</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></span><a class="headerlink" href="#pymhf.FolderModeEnum.INVALID" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.FolderModeEnum.LIBRARY">
-<span class="sig-name descname"><span class="pre">LIBRARY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#pymhf.FolderModeEnum.LIBRARY" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">LIBRARY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#pymhf.FolderModeEnum.LIBRARY" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.FolderModeEnum.MOD_FOLDER">
-<span class="sig-name descname"><span class="pre">MOD_FOLDER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#pymhf.FolderModeEnum.MOD_FOLDER" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">MOD_FOLDER</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#pymhf.FolderModeEnum.MOD_FOLDER" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.FolderModeEnum.NON_LOCAL">
-<span class="sig-name descname"><span class="pre">NON_LOCAL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#pymhf.FolderModeEnum.NON_LOCAL" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">NON_LOCAL</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#pymhf.FolderModeEnum.NON_LOCAL" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pymhf.ModeEnum">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pymhf.</span></span><span class="sig-name descname"><span class="pre">ModeEnum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.ModeEnum" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.</span></span><span class="sig-name descname"><span class="pre">ModeEnum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.ModeEnum" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.ModeEnum.COMMAND">
-<span class="sig-name descname"><span class="pre">COMMAND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#pymhf.ModeEnum.COMMAND" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">COMMAND</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#pymhf.ModeEnum.COMMAND" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.ModeEnum.CONFIG">
-<span class="sig-name descname"><span class="pre">CONFIG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#pymhf.ModeEnum.CONFIG" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">CONFIG</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#pymhf.ModeEnum.CONFIG" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.ModeEnum.INIT">
-<span class="sig-name descname"><span class="pre">INIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#pymhf.ModeEnum.INIT" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">INIT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="headerlink" href="#pymhf.ModeEnum.INIT" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.ModeEnum.INVALID">
-<span class="sig-name descname"><span class="pre">INVALID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#pymhf.ModeEnum.INVALID" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">INVALID</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></span><a class="headerlink" href="#pymhf.ModeEnum.INVALID" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pymhf.ModeEnum.RUN">
-<span class="sig-name descname"><span class="pre">RUN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#pymhf.ModeEnum.RUN" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">RUN</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#pymhf.ModeEnum.RUN" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -536,7 +538,7 @@ This will take the first argument as the name of a module which has been install
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
     <br/>
   </p>
 </div>
