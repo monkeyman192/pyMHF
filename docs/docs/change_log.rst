@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+Current (0.2.2.dev)
+-------------------
+
+- Deprecated the :py:func:`~pymhf.gui.decorators.gui_combobox` decorator. This is replaced by :py:attr:`~pymhf.gui.decorators.ENUM` which is more native and flexible.
+- Added the ``is_slider`` argument to the :py:attr:`~pymhf.gui.decorators.INTEGER` and :py:attr:`~pymhf.gui.decorators.FLOAT` decorators to allow creating slider fields rather than numerical entry fields.
+- Added a custom widget class which allows mod authors to create completely unique GUI elements which can be bound to the state of the mod - :py:class:`~pymhf.gui.widgets.CustomWidget`. See :doc:`here </docs/gui/custom_widgets>` for the full usage guide.
+- Added the :py:func:`~pymhf.gui.decorators.gui_group` context manager to allow grouping widgets logically in the gui. (`#93 <https://github.com/monkeyman192/pyMHF/issues/93>`_)
+- Added the :py:class:`~pymhf.extensions.ctypes.c_char_p32` and :py:class:`~pymhf.extensions.ctypes.c_char_p64` classes as wrappers for ``ctypes.c_uint32`` and ``ctypes.c_uint64`` types. This is to get around issues with using ``ctypes.c_char_p`` as a argument type to annotate ``char*`` types (the binary being hooked would often crash).
+- If the ``[pymhf].exe`` attribute is specified in the ``pymhf.toml`` as an absolute path, it will be used over the ``steam_gameid``. This is required if one wants to use the ``[pymhf].start_paused`` attribute.
+- Fixed an issue with partial structs inheritence where, if a base class has a `_total_size_` attribute, then the inheriting class would have the wrong offsets for fields.
+- Added the :py:class:`~pymhf.extensions.ctypes.c_enum16` type for creating enums whose value is serialized as a 16bit integer.
+
 0.2.1 (15/11/2025)
 ------------------
 
@@ -19,7 +31,7 @@ Next release set will focus on UI/UX as well as utilities, both in terms of the 
 - Fixed some inssues around running python files directly with ``pymhf run``
 - Added the option to pass command line arguments to the function when ``pymhf`` starts the process itself.
 - Added the ``config_overrides`` argument to :py:func:`~pymhf.main.load_mod_file` to allow overriding the static config values.
-- Implemented the functionality so that if ``start_paused`` is True, the program will start automatically once injection is completed (no need for manual input any more).
+- Implemented the functionality so that if ``[pymhf].start_paused`` is True, the program will start automatically once injection is completed (no need for manual input any more).
 
 0.1.16 (16/08/2025)
 -------------------

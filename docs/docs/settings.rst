@@ -166,7 +166,7 @@ pyMHF has a few "magic" path variables which can be used to make setting up conf
 
 To use the "name" versions of the magic strings, they must be surrounded by braces (ie. ``{EXE_DIR}``) as part of the path.
 
-These path variables get resolved as part of a path, so we can provide a path like so ``{EXE_PATH}/../MyMods`` to place things in a folder called ``MyMods`` in the parent directory of the location of the main binary.
+These path variables get resolved as part of a path, so we can provide a path like so ``{EXE_DIR}/../MyMods`` to place things in a folder called ``MyMods`` in the parent directory of the location of the main binary.
 
 ``EXE_DIR``
 ^^^^^^^^^^^

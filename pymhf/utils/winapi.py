@@ -147,6 +147,30 @@ VirtualQueryEx.argtypes = [
 VirtualQueryEx.restype = ctypes.c_size_t
 
 
+GetFinalPathNameByHandleA = ctypes.windll.kernel32.GetFinalPathNameByHandleA
+GetFinalPathNameByHandleA.argtypes = [
+    wintypes.HANDLE,
+    wintypes.LPSTR,
+    wintypes.DWORD,
+    wintypes.DWORD,
+]
+GetFinalPathNameByHandleA.restype = wintypes.DWORD
+
+
+def get_filepath_from_handle(handle: int) -> str:
+    buffer = ctypes.create_string_buffer(b"", MAX_EXE_NAME_SIZE)
+    res = GetFinalPathNameByHandleA(handle, buffer, MAX_EXE_NAME_SIZE, 0)
+    if res:
+        return buffer.value.decode()
+    if errcode := GetLastError():
+        if errcode == 0x6:
+            # This is ERROR_INVALID_HANDLE
+            raise ValueError(f"ERROR_INVALID_HANDLE (0x6): {handle}")
+        else:
+            raise ValueError(f"There was an error determining the filepath for handle {handle}: {errcode}")
+    return ""
+
+
 def get_exe_path_from_pid(proc: pymem.Pymem) -> str:
     """Get the name of the exe which was run to create the pymem process."""
     name_buffer = ctypes.create_string_buffer(b"", MAX_EXE_NAME_SIZE)

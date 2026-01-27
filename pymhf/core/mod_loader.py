@@ -15,8 +15,8 @@ import traceback
 from abc import ABC
 from dataclasses import fields
 from functools import partial
-from types import ModuleType
-from typing import TYPE_CHECKING, Any, Optional, Type, TypeVar, Union, overload
+from types import MethodType, ModuleType
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Type, TypeVar, Union, cast, overload
 
 import keyboard
 from packaging.version import InvalidVersion
@@ -29,7 +29,13 @@ from pymhf.core.hooking import HookManager
 from pymhf.core.importing import import_file
 from pymhf.core.memutils import get_addressof, map_struct
 from pymhf.core.utils import does_pid_have_focus, saferun
-from pymhf.gui.protocols import ButtonProtocol, ComboBoxProtocol, VariableProtocol
+from pymhf.gui.widget_data import (
+    CustomWidgetData,
+    GroupWidgetData,
+    GUIElementProtocol,
+    VariableWidgetData,
+    WidgetData,
+)
 
 if TYPE_CHECKING:
     from pymhf.gui.gui import GUI
@@ -64,12 +70,16 @@ def _has_hotkey_predicate(value: Any) -> bool:
     return getattr(value, "_hotkey", False)
 
 
+def _gui_widget_predicate(value) -> bool:
+    return getattr(value, "_widget_type", None) is not None
+
+
 def _gui_button_predicate(value) -> bool:
-    return getattr(value, "_is_button", False) and hasattr(value, "_button_text")
+    return getattr(value, "_is_button", False)
 
 
 def _gui_combobox_predicate(value) -> bool:
-    return getattr(value, "_is_combobox", False) and hasattr(value, "_combobox_text")
+    return getattr(value, "_is_combobox", False)
 
 
 def _gui_variable_predicate(value) -> bool:
@@ -85,21 +95,21 @@ def _gui_variable_predicate(value) -> bool:
 
 
 class StructEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, "__json__"):
+    def default(self, o: Any):
+        if hasattr(o, "__json__"):
             return {
-                "struct": obj.__class__.__qualname__,
-                "module": obj.__class__.__module__,
-                "fields": obj.__json__(),
+                "struct": o.__class__.__qualname__,
+                "module": o.__class__.__module__,
+                "fields": o.__json__(),
             }
-        return json.JSONEncoder.default(self, obj)
+        return json.JSONEncoder.default(self, o)
 
 
 class StructDecoder(json.JSONDecoder):
     def __init__(self):
         json.JSONDecoder.__init__(self, object_hook=self.object_hook)
 
-    def object_hook(self, obj: dict):
+    def object_hook(self, obj: dict):  # type: ignore
         if (module := obj.get("module")) is not None:
             if module == "__main__":
                 return globals()[obj["struct"]](**obj["fields"])
@@ -124,6 +134,7 @@ class ModState(ABC):
     """
 
     _save_fields_: tuple[str]
+    __dataclass_fields__: ClassVar[dict[str, Any]]
 
     def save(self, name: str):
         """Save the current mod state to a file.
@@ -185,8 +196,9 @@ class Mod(ABC):
     __pymhf_required_version__: Optional[str] = None
 
     _custom_callbacks: set[CustomTriggerProtocol]
-    pymhf_gui: "GUI"
+    _gui_widgets: list[Union[GUIElementProtocol[WidgetData], GroupWidgetData]]
     _disabled: bool = False
+    _no_gui: bool
 
     def __init__(self):
         self._abc_initialised = True
@@ -194,21 +206,30 @@ class Mod(ABC):
         self.hooks: set[HookProtocol] = self.get_members(_funchook_predicate)
         self._custom_callbacks = self.get_members(_callback_predicate)
         self._hotkey_funcs: set[KeyPressProtocol] = self.get_members(_has_hotkey_predicate)
-        self._gui_buttons: dict[str, ButtonProtocol] = {
-            x[1].__qualname__: x[1] for x in inspect.getmembers(self, _gui_button_predicate)
-        }
-        self._gui_comboboxes: dict[str, ComboBoxProtocol] = {
-            x[1].__qualname__: x[1] for x in inspect.getmembers(self, _gui_combobox_predicate)
-        }
-        # TODO: If this isn't initialised and a call is made to it before it is we have an issue...
-        self.pymhf_gui = None
-        # For variables, unless there is a better way, store just the name so we
-        # can our own special binding of the name to the GUI.
-        self._gui_variables: dict[str, VariableProtocol] = {}
-        for x in inspect.getmembers(self.__class__, _gui_variable_predicate):
-            if x[1].fset is not None:
-                x[1].fget._has_setter = True
-            self._gui_variables[x[0]] = x[1].fget
+
+        # Traverse the mod __dict__ and find all properties and bound methods which are registered as needing
+        # to be bound to a UI element.
+        self._gui_widgets = []
+        group_data: dict[str, GroupWidgetData] = {}
+
+        for obj in type(self).__dict__.values():
+            if isinstance(obj, property):
+                if obj.fget and hasattr(obj.fget, "_widget_data"):
+                    fget = cast(GUIElementProtocol, obj.fget)
+                    if isinstance(fget._widget_data, CustomWidgetData):
+                        func = cast(GUIElementProtocol[CustomWidgetData], MethodType(obj.fget, self))
+                        func._widget_data.is_property = True
+                        func._widget_data.has_setter = obj.fset is not None
+                    else:
+                        func = cast(GUIElementProtocol[VariableWidgetData], MethodType(obj.fget, self))
+                        func._widget_data.has_setter = obj.fset is not None
+                    self._handle_widget_data(func, group_data)
+
+            elif hasattr(obj, "_widget_data"):
+                func = cast(GUIElementProtocol[WidgetData], MethodType(obj, self))
+                self._handle_widget_data(func, group_data)
+
+        self.pymhf_gui: Optional[GUI] = None
 
     @property
     def _mod_name(self):
@@ -216,6 +237,35 @@ class Mod(ABC):
 
     def get_members(self, predicate):
         return {x[1] for x in inspect.getmembers(self, predicate)}
+
+    def _handle_widget_data(
+        self,
+        func: GUIElementProtocol[WidgetData],
+        group_data: dict[str, GroupWidgetData],
+    ):
+        # Read the widget data for the particular function and add it to the widget data for the mod.
+        wd = func._widget_data
+        if wd.group is not None:
+            if (group_id := wd.group.group_id) not in group_data:
+                # Create a new group and if it's a top level one, add it to the gui widgets.
+                group_data[group_id] = GroupWidgetData(
+                    group_id,
+                    wd.group.group_label,
+                    [],
+                )
+                if "." not in group_id:
+                    self._gui_widgets.append(group_data[group_id])
+                # Check to see if the parent is in the group data (it should be!) and add the new
+                # group as a child.
+                if "." in group_id:
+                    if (parent_group_name := ".".join(group_id.split(".")[:-1])) in group_data:
+                        group_data[parent_group_name].child_widgets.append(group_data[group_id])
+                group_data[group_id].child_widgets.append(func)
+            else:
+                # Add to the exiting group
+                group_data[group_id].child_widgets.append(func)
+        else:
+            self._gui_widgets.append(func)
 
 
 ModClass = TypeVar("ModClass", bound=Mod)
@@ -234,6 +284,8 @@ class _Proxy:
 
 
 class ModManager:
+    hook_manager: HookManager
+
     def __init__(self):
         # Internal mapping of mods.
         # TODO: Probably change datatype
@@ -242,8 +294,8 @@ class ModManager:
         self.mods: dict[str, Mod] = {}
         self._mod_hooks: dict[str, list] = {}
         self.mod_states: dict[str, list[tuple[str, ModState]]] = {}
+        # Mod path mapping is to enable dependency checking between mods.
         self._mod_paths: dict[str, ModuleType] = {}
-        self.hook_manager: HookManager = None
         # Keep a mapping of the hotkey callbacks
         self.hotkey_callbacks: dict[tuple[str, str], Any] = {}
 
@@ -297,14 +349,15 @@ class ModManager:
                     f"__pymhf_required_version__ defined on mod {mod.__name__} is not a valid version string"
                 )
                 mod_version = None
-            if mod_version is None or mod_version <= pymhf_version:
-                self._preloaded_mods[mod_name] = mod
-            else:
-                logger.error(
-                    f"Mod {mod.__name__} requires a newer verison of "
-                    f"pyMHF ({mod_version} ≥ {pymhf_version})! "
-                    "Please update"
-                )
+            if pymhf_version:
+                if mod_version is None or mod_version <= pymhf_version:
+                    self._preloaded_mods[mod_name] = mod
+                else:
+                    logger.error(
+                        f"Mod {mod.__name__} requires a newer verison of "
+                        f"pyMHF ({mod_version} ≥ {pymhf_version})! "
+                        "Please update"
+                    )
         else:
             self._preloaded_mods[mod_name] = mod
         # Only get mod states if the mod name doesn't already have a cached
@@ -329,11 +382,11 @@ class ModManager:
 
     # TODO: Can probably move the duplicated functionality between this and the next method into a single
     # function.
-    def load_single_mod(self, fpath: str, bind: bool = True):
+    def load_single_mod(self, fpath: str, bind: bool = True) -> tuple[int, int]:
         """Load a single mod file.
 
-        Params
-        ------
+        Parameters
+        ----------
         folder
             The path of the folder to be loaded. All mod files within this directory will be loaded and
             installed.
@@ -343,6 +396,11 @@ class ModManager:
             necessary.
             If this function is called with False, then it MUST be called again with True before the hooks
             are enabled.
+
+        Returns
+        -------
+        A tuple of 2 ints. The first value is the number of mods loaded, and the second is the number of hooks
+        loaded.
         """
         self.load_mod(fpath)
         # Once all the mods in the folder have been loaded, then parse the mod
@@ -362,8 +420,8 @@ class ModManager:
     def load_mod_folder(self, folder: str, bind: bool = True, deep_search: bool = False) -> tuple[int, int]:
         """Load the mod folder.
 
-        Params
-        ------
+        Parameters
+        ----------
         folder
             The path of the folder to be loaded. All mod files within this directory will be loaded and
             installed.
@@ -375,6 +433,11 @@ class ModManager:
             are enabled.
         deep_search
             Whether to search down into sub-folders.
+
+        Returns
+        -------
+        A tuple of 2 ints. The first value is the number of mods loaded, and the second is the number of hooks
+        loaded.
         """
         for file in os.listdir(folder):
             fullpath = op.join(folder, file)
@@ -506,7 +569,7 @@ class ModManager:
                                     if (
                                         _module := getattr(member_type.__class__, "__module__", None)
                                     ) is not None and isinstance(member_type, ctypes.Structure):
-                                        if _module == module.__spec__.name:
+                                        if module.__spec__ and _module == module.__spec__.name:
                                             # In this case, the instance of the attribute in the ModState was
                                             # defined in the module that is being reloaded. We need to
                                             # re-instantiate it so that we can get any potential changes to

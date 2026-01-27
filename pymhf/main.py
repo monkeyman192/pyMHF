@@ -76,13 +76,13 @@ def get_process_when_ready(
     cmd: list[str],
     target: str,
     required_assemblies: Optional[list[str]] = None,
-    is_steam: bool = True,
     start_paused: bool = False,
 ) -> tuple[Optional[dllinject.pyRunner], Optional[WrappedProcess]]:
     target_process: Optional[WrappedProcess] = None
     parent_process = None
     # If we are running something which is under steam, make sure steam is
     # running first.
+    is_steam = cmd[0].startswith("steam://")
     if is_steam:
         for p in psutil.process_iter(["name", "pid"]):
             if p.name().lower() == "steam.exe":
@@ -241,11 +241,10 @@ def run_module(
     if op.isfile(module_path):
         _module_path = op.dirname(module_path)
 
-    is_steam = False
     if steam_gameid:
         cmd = [f"steam://rungameid/{steam_gameid}"]
-        is_steam = True
-    elif binary_exe is not None:
+    # If there is a binary exe, let it take priority.
+    if binary_exe is not None:
         if op.isabs(binary_exe):
             binary_path = binary_exe
             cmd = [binary_path]
@@ -259,7 +258,9 @@ def run_module(
                 cmd = [binary_path]
                 binary_exe = op.basename(binary_path)
             else:
-                if start_exe is True:
+                # If we get here we want to fail unless we are actually able to load from steam, in which case
+                # we'll use that.
+                if start_exe is True and not steam_gameid:
                     raise ValueError(
                         "[tool.pymhf].exe must be a full path or path relative to the running script if no "
                         "steam_gameid is provided and start_exe is not true"
@@ -281,7 +282,6 @@ def run_module(
                 cmd + cmd_args,
                 binary_exe,
                 required_assemblies,
-                is_steam,
                 start_paused,
             )
     else:
@@ -521,7 +521,7 @@ pymhf.core._internal._SENTINEL_PTR = {sentinel_addr!r}
             while True:
                 try:
                     if pm_binary.read_bool(sentinel_addr) is True:
-                        print("pyMHF injection complete!")
+                        print("pyMHF injection on paused binary complete. Resuming exe.")
                         break
                 except KeyboardInterrupt:
                     # Kill the injected code even though we are still waiting for it to start up.

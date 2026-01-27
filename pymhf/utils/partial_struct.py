@@ -41,20 +41,31 @@ def partial_struct(cls: _T) -> _T:
     if not hasattr(cls, "__annotations__"):
         cls._fields_ = _fields_
         return cls
-    # List of field names to exclude.
-    # These are to ensure that when a partial struct subclasses from another it doesn't get the fields twice.
-    exclude_fields = set()
+
+    # Do some analysis on the closest base class to find the last non-padding bytes and size.
+    subclass_fields = set()
     subclass_size = 0
+
     for subclass in cls.__mro__[1:]:
         if hasattr(subclass, "_fields_"):
             for field in subclass._fields_:
-                exclude_fields.add(field[0])
-            subclass_size += ctypes.sizeof(subclass)
-    # If there are, loop over the annotations and extract the info we need to construct the _fields_.
+                subclass_fields.add(field[0])
+            if hasattr(subclass, "_total_size_"):
+                subclass_size = subclass._total_size_
+            else:
+                subclass_size = ctypes.sizeof(subclass)
+
+    _in_subclass = True
+
     for field_name, annotation in get_type_hints(cls, include_extras=True, localns=_locals).items():
         # Ingore any fields which we have picked up from any subclasses.
-        if field_name in exclude_fields:
+        if _in_subclass and field_name in subclass_fields:
             continue
+        elif _in_subclass:
+            # Fields are always in order. Once we have a name which isn't in the subclass then we swap this
+            # flag and set our current position to be the size of the subclass.
+            _in_subclass = False
+            curr_position = subclass_size
         if not isinstance(annotation, _AnnotatedAlias):
             # In this case it's just the type.
             field_type = annotation
@@ -72,25 +83,25 @@ def partial_struct(cls: _T) -> _T:
             else:
                 field_type = annotation.__origin__
                 field_offset = metadata
-        # Check to make sure that the `field_type` is not a string(as can happen when we have a
-        # self-reference).
-        if isinstance(field_type, str):
-            field_type = getattr(annotation, "__origin__", None)
-            if field_type is None:
-                raise ValueError(
-                    f"The provided metadata {metadata} for field {field_name!r} is invalid. "
-                    "If the type in the `Field` component of the annotation is a string, please ensure the "
-                    "first argument of the Annotation is also the same string so that the type can be "
-                    "resolved."
-                )
+            # Check to make sure that the `field_type` is not a string(as can happen when we have a
+            # self-reference).
+            if isinstance(field_type, str):
+                field_type = getattr(annotation, "__origin__", None)
+                if field_type is None:
+                    raise ValueError(
+                        f"The provided metadata {metadata} for field {field_name!r} is invalid. "
+                        "If the type in the `Field` component of the annotation is a string, please ensure "
+                        "the first argument of the Annotation is also the same string so that the type can "
+                        "be resolved."
+                    )
         if not issubclass(field_type, get_args(CTYPES)):
             raise ValueError(f"The field {field_name!r} has an invalid type: {field_type}")
         if field_offset is not None and not isinstance(field_offset, int):
             raise ValueError(f"The field {field_name!r} has an invalid offset: {field_offset!r}")
         # Correct the field offset by the size of the subclass.
-        if field_offset and field_offset - subclass_size > curr_position:
-            padding_bytes = field_offset - subclass_size - curr_position
-            _fields_.append((f"_padding_{curr_position:X}", ctypes.c_ubyte * padding_bytes))
+        if field_offset and field_offset > curr_position:
+            padding_bytes = field_offset - curr_position
+            _fields_.append((f"_padding_0x{curr_position:X}", ctypes.c_ubyte * padding_bytes))
             curr_position += padding_bytes
         field_alignment = ctypes.alignment(field_type)
         if field_alignment and (curr_position % field_alignment != 0):
@@ -103,6 +114,6 @@ def partial_struct(cls: _T) -> _T:
         curr_position += ctypes.sizeof(field_type)
     if total_size and curr_position < total_size:
         padding_bytes = total_size - curr_position
-        _fields_.append((f"_padding_{curr_position:X}", ctypes.c_ubyte * padding_bytes))
+        _fields_.append((f"_padding_0x{curr_position:X}", ctypes.c_ubyte * padding_bytes))
     cls._fields_ = _fields_
     return cls
