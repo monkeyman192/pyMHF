@@ -1,7 +1,7 @@
 import ctypes
 import inspect
 from functools import lru_cache
-from typing import Any, Callable, NamedTuple, Optional, _AnnotatedAlias, get_args
+from typing import Any, Callable, NamedTuple, Optional, _AnnotatedAlias, get_args, Type
 
 from typing_extensions import get_type_hints
 
@@ -22,7 +22,7 @@ class FuncDef:
         self.defaults = defaults or dict()
 
     @property
-    def arg_types(self) -> list[CTYPES]:
+    def arg_types(self) -> list[Type[CTYPES]]:
         return self._arg_types
 
     @property
