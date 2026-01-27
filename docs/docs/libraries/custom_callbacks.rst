@@ -5,7 +5,7 @@ pyMHF is able to register custom callbacks which are useful for libraries in tha
 
 The best way to see this is by an example taken from the NMS.py source code:
 
-.. code-block:: py
+.. code-block:: python
     :caption: decorators.py
 
     from pymhf.core import DetourTime
@@ -40,7 +40,7 @@ If this isn't provided then the fallback time will be ``DetourTime.NONE`` which 
 
 These above custom callbacks can then be applied to some function in a mod like so:
 
-.. code-block:: py
+.. code-block:: python
     :caption: main_loop_mod.py
 
     import logging
@@ -63,7 +63,7 @@ Now that we have defined the custom callbacks, and we have applied them to some 
 
 It is recommended that theses are implemented in "internal" mods which can be defined like so:
 
-.. code-block:: py
+.. code-block:: python
     :caption: internal_mod.py
     :linenos:
 

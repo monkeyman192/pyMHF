@@ -7,6 +7,8 @@ import sys
 from types import ModuleType
 from typing import Optional
 
+from pymhf.gui.widget_data import ctx_group, ctx_group_counter
+
 logger = logging.getLogger(__name__)
 
 
@@ -75,6 +77,10 @@ def parse_file_for_mod(data: str) -> bool:
 
 def import_file(fpath: str) -> Optional[ModuleType]:
     try:
+        # Ensure the context variables relating to groups are reset before each import to ensure they are
+        # clean before this next import
+        ctx_group.set(None)
+        ctx_group_counter.set(0)
         module_name = _clean_name(op.splitext(op.basename(fpath))[0])
         if op.isdir(fpath):
             # If a directory is passed in, then add __init__.py to it so that

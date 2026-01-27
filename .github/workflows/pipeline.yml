@@ -52,7 +52,7 @@ jobs:
       - name: Build test binaries
         run: g++ ./tests/programs/src/app.cpp -Wall -o ./tests/programs/app.exe
       - name: Run unit tests
-        run: uv run pytest ./tests
+        run: uv run pytest ./tests/unit
   build:
     name: Build wheel and docs
     runs-on: Windows-2025

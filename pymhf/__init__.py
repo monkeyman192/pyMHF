@@ -459,7 +459,7 @@ def run():
             config_choice = CONFIG_SELECT_Q.ask()
             if config_choice == CFG_OPT_BIN_PATH:
                 if (exe_path := EXE_PATH_Q.ask()) is not None:
-                    pymhf_settings["exe_path"] = exe_path
+                    pymhf_settings["exe"] = exe_path
                     if "steam_gameid" in pymhf_settings:
                         del pymhf_settings["steam_gameid"]
                 else:
@@ -467,8 +467,8 @@ def run():
             elif config_choice == CFG_OPT_STEAM_ID:
                 if (steam_id := STEAM_ID_Q.ask()) is not None:
                     pymhf_settings["steam_gameid"] = steam_id
-                    if "exe_path" in pymhf_settings:
-                        del pymhf_settings["exe_path"]
+                    if "exe" in pymhf_settings:
+                        del pymhf_settings["exe"]
                 else:
                     return
             elif config_choice == CFG_OPT_MOD_PATH:

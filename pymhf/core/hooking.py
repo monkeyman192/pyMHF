@@ -199,7 +199,7 @@ class FuncHook(cyminhook.MinHook):
         # If the detour needs the `caller_address` property, add it.
         if getattr(detour, "_get_caller", False) is True:
             # We need to get the type of the class and assign the attribute to the class function itself.
-            detour.__func__.caller_address = lambda: self.caller_address
+            setattr(detour.__func__, "caller_address", lambda: self.caller_address)
 
     def remove_detour(self, detour: HookProtocol):
         """Remove the provided detour from this FuncHook."""
@@ -249,7 +249,7 @@ class FuncHook(cyminhook.MinHook):
 
         try:
             super().__init__(signature=self.signature, target=self.target)
-        except cyminhook._cyminhook.Error as e:  # type: ignore
+        except cyminhook._cyminhook.Error as e:
             if e.status == cyminhook._cyminhook.Status.MH_ERROR_ALREADY_CREATED:
                 logger.error("Hook is already created")
             logger.error(f"Failed to initialize hook {self._name} at 0x{self.target:X}")
@@ -263,16 +263,19 @@ class FuncHook(cyminhook.MinHook):
         ret = None
 
         # Loop over the before detours, keeping the last none-None return value.
+        i = None
         try:
             for i, func in enumerate(self._before_detours):
                 r = func(*args)
                 if r is not None:
                     ret = r
+            i = None
         except Exception:
-            bad_detour = self._before_detours.pop(i)
-            logger.error(f"There was an error with detour {bad_detour}. It has been disabled.")
-            logger.error(traceback.format_exc())
-            self._disabled_detours.add(bad_detour)
+            if i is not None:
+                bad_detour = self._before_detours.pop(i)
+                logger.error(f"There was an error with detour {bad_detour}. It has been disabled.")
+                logger.error(traceback.format_exc())
+                self._disabled_detours.add(bad_detour)
 
         # If we don't have any decorators which NOOP the original function then run as usual.
         if not self._has_noop:
@@ -290,6 +293,8 @@ class FuncHook(cyminhook.MinHook):
 
         # Now loop over the after functions. We'll need to handle the cases of
         # functions which take the `_result_` kwarg, and those that don't.
+        i = None
+        j = None
         try:
             for i, func in enumerate(self._after_detours):
                 after_ret = func(*args)
@@ -298,13 +303,15 @@ class FuncHook(cyminhook.MinHook):
                 after_ret = func(*args, _result_=result)
             j = None
         except Exception:
+            bad_detour = None
             if i is not None:
                 bad_detour = self._after_detours.pop(i)
-            else:
+            elif j is not None:
                 bad_detour = self._after_detours_with_results.pop(j)
-            logger.error(f"There was an error with detour {bad_detour}. It has been disabled.")
-            logger.error(traceback.format_exc())
-            self._disabled_detours.add(bad_detour)
+            if bad_detour is not None:
+                logger.error(f"There was an error with detour {bad_detour}. It has been disabled.")
+                logger.error(traceback.format_exc())
+                self._disabled_detours.add(bad_detour)
 
         if after_ret is not None:
             return after_ret
@@ -739,14 +746,14 @@ class HookManager:
         # Otherwise, try lookup the pattern if we have one.
         elif (hook_pattern := hook._hook_pattern) is not None:
             hook_offset = find_pattern_in_binary(hook_pattern, False, hook_binary)
-        elif hook._is_imported_func_hook:
+        elif hook._is_imported_func_hook and hook._dll_name:
             hook_binary = hook._dll_name.lower()
             if (dll_func_ptrs := _internal.imports.get(hook_binary)) is not None:
-                func_ptr = dll_func_ptrs.get(hook_func_name)
-                # For now, cast the func_ptr object back to the target location in memory.
-                # This is wasteful, but simple for now for testing...
-                hook_offset = ctypes.cast(func_ptr, ctypes.c_void_p).value
-                hook_offset_is_absolute = True
+                if func_ptr := dll_func_ptrs.get(hook_func_name):
+                    # For now, cast the func_ptr object back to the target location in memory.
+                    # This is wasteful, but simple for now for testing...
+                    hook_offset = ctypes.cast(func_ptr, ctypes.c_void_p).value
+                    hook_offset_is_absolute = True
             else:
                 logger.error(f"Cannot find {hook_binary} in the import list")
                 return
@@ -839,11 +846,12 @@ class HookManager:
 
                     rsp_load_bytes = generate_load_stack_pointer_bytes(rsp_buff_addr, jmp_addr, BITS)
                     # Get the original bytes written by minhook so that we can restore them.
+                    len_rsp_load_bytes = len(rsp_load_bytes)
                     orig_bytes = data_at_detour.raw[:0xE]
-                    for i in range(len(rsp_load_bytes)):
+                    for i in range(len_rsp_load_bytes):
                         data_at_detour[i] = rsp_load_bytes[i]
                     for j in range(len(orig_bytes)):
-                        data_at_detour[i + j + 1] = orig_bytes[j]
+                        data_at_detour[len_rsp_load_bytes + j] = orig_bytes[j]
                     logger.info(
                         f"The function {hook_func_id.name} has a modified hook to get the calling address."
                     )

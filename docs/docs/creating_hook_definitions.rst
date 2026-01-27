@@ -18,7 +18,7 @@ The best way to see how these decorators are used is with a few code examples.
 *Imported function* hooks
 -------------------------
 
-.. code-block:: py
+.. code-block:: python
     :caption: imported_hook_mod.py
     :linenos:
 
@@ -58,7 +58,7 @@ Exported functions are those which are provided by the binary itself. There are 
 
 .. _exported_hook_mod_code:
 
-.. code-block:: py
+.. code-block:: python
     :caption: exported_hook_mod.py
     :linenos:
 
@@ -132,7 +132,7 @@ Defining functions to hook is done in much the same way as above, however, we si
     If the binary receives updates, then the ``signature`` is the only option as ``offset`` values will change as the binary does.
 
 
-.. code-block:: py
+.. code-block:: python
     :caption: normal_hook_mod.py
     :linenos:
 
@@ -229,7 +229,7 @@ The methods also need the ``typing.overload`` decorator. Note that pyMHF actuall
 
 To hook or call a function with an overload, append ``.overload(overload_id: str)`` to the original function. This will refer to the overloaded function.
 
-.. code-block:: py
+.. code-block:: python
     :caption: overloaded_mod.py
     :linenos:
 
@@ -374,7 +374,7 @@ These types MUST be either a ctypes plain type (eg. ``ctypes.c_uint32``), a ctyp
 To improve type hinting, it is however possible to specify the type using `typing.Annotated <https://docs.python.org/3/library/typing.html#typing.Annotated>`_.
 For example, instead of writing
 
-.. code-block:: py
+.. code-block:: python
 
     @function_hook("AB CD EF")
     def AwardMoney(self, this: "ctypes._Pointer[Obj]", liChange: ctypes.c_int32) -> ctypes.c_uint64:
@@ -382,7 +382,7 @@ For example, instead of writing
 
 We can type
 
-.. code-block:: py
+.. code-block:: python
 
     @function_hook("AB CD EF")
     def AwardMoney(self, this: "ctypes._Pointer[Obj]", liChange: Annotated[int, ctypes.c_int32]) -> ctypes.c_uint64:
@@ -413,7 +413,7 @@ pyMHF makes this easy by providing the :py:meth:`Structure.new_empty() <pymhf.co
 
 We can see how to use this below:
 
-.. code-block:: py
+.. code-block:: python
 
     import ctypes
     from typing import Annotated

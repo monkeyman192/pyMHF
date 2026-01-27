@@ -9,7 +9,7 @@ Usage
 
 To access other mods we use the :py:data:`~pymhf.core.mod_loader.mod_manager`:
 
-.. code-block:: py
+.. code-block:: python
 
     from from pymhf.core.mod_loader import mod_manager
 
@@ -23,7 +23,7 @@ Example
 
 A simple example is given below:
 
-.. code-block:: py
+.. code-block:: python
     :caption: mod1.py
 
     import logging
@@ -56,7 +56,7 @@ The above mod won't hook anything, but it will add a numeric field to its mod ta
 
 We'll have a second mod in the same folder as the above:
 
-.. code-block:: py
+.. code-block:: python
     :caption: mod2.py
 
     import logging

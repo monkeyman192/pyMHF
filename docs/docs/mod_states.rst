@@ -16,7 +16,7 @@ We want to store this address as it will not change throughout the lifetime of t
 
 By setting the mod up as shown below we can experiment with adding extra hooks, or using the data we got from that initial function hook without having to restart the process every time.
 
-.. code-block:: py
+.. code-block:: python
     :caption: mod1.py
 
     from dataclasses import dataclass
@@ -49,7 +49,7 @@ Generally the types of each field of the ``ModState`` should be a type which is 
 
 For example, we could implement a vector type as such:
 
-.. code-block:: py
+.. code-block:: python
     :caption: vector_type.py
 
     import ctypes

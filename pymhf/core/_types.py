@@ -98,6 +98,8 @@ class HookProtocol(Protocol):
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
 
+    def __func__(self) -> "CallerHookProtocol": ...
+
 
 class CallerHookProtocol(HookProtocol):
     def caller_address(self) -> int:

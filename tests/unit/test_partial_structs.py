@@ -18,7 +18,7 @@ def test_simple_structure():
 
     assert Test._fields_ == [
         ("a", ctypes.c_uint32),
-        ("_padding_4", ctypes.c_ubyte * 0xC),
+        ("_padding_0x4", ctypes.c_ubyte * 0xC),
         ("b", ctypes.c_uint32),
     ]
 
@@ -48,7 +48,7 @@ def test_simple_structure_with_enum():
 
     assert Test._fields_ == [
         ("a", c_enum32[Alphabet]),
-        ("_padding_4", ctypes.c_ubyte * 0xC),
+        ("_padding_0x4", ctypes.c_ubyte * 0xC),
         ("b", ctypes.c_uint32),
     ]
 
@@ -74,9 +74,9 @@ def test_simple_structure_with_total_size():
 
     assert Test._fields_ == [
         ("a", ctypes.c_uint32),
-        ("_padding_4", ctypes.c_ubyte * 0xC),
+        ("_padding_0x4", ctypes.c_ubyte * 0xC),
         ("b", ctypes.c_uint32),
-        ("_padding_14", ctypes.c_ubyte * 0x4),
+        ("_padding_0x14", ctypes.c_ubyte * 0x4),
     ]
 
     data = bytearray(
@@ -108,9 +108,9 @@ def test_nested_structs():
         ("a", ctypes.c_uint32),
         ("b_sub", Test.Sub),
         ("c", ctypes.c_uint32),
-        ("_padding_C", ctypes.c_ubyte * 0x4),
+        ("_padding_0xC", ctypes.c_ubyte * 0x4),
         ("d", ctypes.c_uint32),
-        ("_padding_14", ctypes.c_ubyte * 0x4),
+        ("_padding_0x14", ctypes.c_ubyte * 0x4),
     ]
 
     data = bytearray(
@@ -147,9 +147,9 @@ def test_annotated_struct():
         ("a", ctypes.c_uint32),
         ("b_sub", Sub),
         ("c", Sub),
-        ("_padding_C", ctypes.c_ubyte * 0x4),
+        ("_padding_0xC", ctypes.c_ubyte * 0x4),
         ("d", ctypes.c_uint32),
-        ("_padding_14", ctypes.c_ubyte * 0x4),
+        ("_padding_0x14", ctypes.c_ubyte * 0x4),
     ]
 
     data = bytearray(
@@ -180,7 +180,7 @@ def test_structure_with_pointer():
 
     assert Test._fields_ == [
         ("a", ctypes.c_uint32),
-        ("_padding_4", ctypes.c_ubyte * 0x6),
+        ("_padding_0x4", ctypes.c_ubyte * 0x6),
         ("a_bool", ctypes.c_bool),
         ("b", ctypes.POINTER(ctypes.c_uint32)),
         ("c", ctypes.c_uint32),
@@ -352,6 +352,10 @@ def test_inheritence2():
     data_parent = bytearray(
         b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x06\x00\x00\x00"
     )
+    data_grandparent = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x04\x00"
+        b"\x00\x00\x05\x00\x00\x00\x06\x00\x00\x00\x01\x00\x00\x00"
+    )
 
     base = Base.from_buffer(data_base)
     assert base.a == 1
@@ -367,6 +371,56 @@ def test_inheritence2():
     assert parent.b is True
     assert parent.c == 5
     assert parent.d == 6
+
+    gparent = GrandParent.from_buffer(data_grandparent)
+    assert gparent.a == 1
+    assert gparent.b is True
+    assert gparent.c == 5
+    assert gparent.d == 6
+    assert gparent.e is True
+
+
+def test_total_size_inheritence():
+    # Test the case of a base and parent class having different _total_size_'s.
+    @partial_struct
+    class Base(ctypes.Structure):
+        _total_size_ = 0x10
+
+        a: Annotated[int, Field(ctypes.c_uint32)]
+        b: Annotated[bool, Field(ctypes.c_bool, 0x8)]
+
+    @partial_struct
+    class Parent(Base):
+        _total_size_ = 0x30
+        c: Annotated[ctypes.c_uint32, 0x20]
+        d: ctypes.c_uint32
+
+    # Check the sizes and reading for the base class.
+    data_too_small = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00")
+    with pytest.raises(
+        ValueError, match=re.escape("Buffer size too small (12 instead of at least 16 bytes)")
+    ):
+        Base.from_buffer(data_too_small)
+
+    data_just_right = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00")
+    obj = Base.from_buffer(data_just_right)
+    assert obj.a == 1
+    assert obj.b is True
+
+    print("------------------")
+    print(ctypes.sizeof(Parent))
+    print(Parent._fields_)
+
+    # Check sizes and reading parent class.
+    data_too_small2 = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00"
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00"
+        b"\x01\x00\x00\x00\x02\x00\x00\x00"
+    )
+    with pytest.raises(
+        ValueError, match=re.escape("Buffer size too small (40 instead of at least 48 bytes)")
+    ):
+        Parent.from_buffer(data_too_small2)
 
 
 def test_invalid_cases():
