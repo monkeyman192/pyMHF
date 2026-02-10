@@ -1,8 +1,8 @@
 Change Log
 ==========
 
-Current (0.2.2.dev)
--------------------
+0.2.2 (11/02/2026)
+------------------
 
 - Deprecated the :py:func:`~pymhf.gui.decorators.gui_combobox` decorator. This is replaced by :py:attr:`~pymhf.gui.decorators.ENUM` which is more native and flexible.
 - Added the ``is_slider`` argument to the :py:attr:`~pymhf.gui.decorators.INTEGER` and :py:attr:`~pymhf.gui.decorators.FLOAT` decorators to allow creating slider fields rather than numerical entry fields.
