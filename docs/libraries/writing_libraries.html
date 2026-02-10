@@ -404,6 +404,36 @@ This function MUST take one argument which will be a list of extra commands the 
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">check</span></code> function will receive <code class="docutils literal notranslate"><span class="pre">['--exe=&quot;NMS.exe&quot;']</span></code> as an argument which we can then parse.</p>
 </section>
+<section id="pymhf-rtfunc-entry-point">
+<h3><code class="docutils literal notranslate"><span class="pre">pymhf_rtfunc</span></code> entry-point<a class="headerlink" href="#pymhf-rtfunc-entry-point" title="Link to this heading">#</a></h3>
+<p>Because of how python imports code, it is generally recommended that developers do not include any code which will be run when importing which relies on any particular state.
+Because of this, we need some way to specify functions in the library which are to be run once the code has been injected into the target process, but before any mods are instantiated so that any data can be accessed as soon as possible in the mods.
+To facilitate this, <code class="docutils literal notranslate"><span class="pre">pyMHF</span></code> has the ability to pick up functions which are defined as being run at run-time by the library.</p>
+<p>For example, we may have some function which searches the binary for some data and then assigns it to a variable in a class like so:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">library/data.py</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Data</span><span class="p">:</span>
+    <span class="n">x</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Some code to find the value of x</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="mi">42</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">Data</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>We can now define the following end-point:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.entry-points.pymhf_rtfunc]</span>
+<span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;library.data:data.find_variable&quot;</span>
+</pre></div>
+</div>
+<p>The syntax of this entry-point is very similar to that of normal python entry-points, but this function will be found and then run before any mods are instantiated.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The specified function or method cannot take any arguments.</p>
+</div>
+</section>
 </section>
 </section>
 

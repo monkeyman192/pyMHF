@@ -12,6 +12,9 @@ Current (0.2.2.dev)
 - If the ``[pymhf].exe`` attribute is specified in the ``pymhf.toml`` as an absolute path, it will be used over the ``steam_gameid``. This is required if one wants to use the ``[pymhf].start_paused`` attribute.
 - Fixed an issue with partial structs inheritence where, if a base class has a `_total_size_` attribute, then the inheriting class would have the wrong offsets for fields.
 - Added the :py:class:`~pymhf.extensions.ctypes.c_enum16` type for creating enums whose value is serialized as a 16bit integer.
+- Fixed an issue where the pattern cache wouldn't be able to be created under certain circumstances when running a single-file mode (`#94 <https://github.com/monkeyman192/pyMHF/issues/94>`_).
+- Added the ability to specify runtime callable functions in libraries via an entry-point so that certain functions in the library may be called before mod instantiation occurs. See :doc:`here </docs/libraries/writing_libraries>` for more details.
+- Fixed an issue where single-file mods which imported a library didn't load the specified internal mod directory.
 
 0.2.1 (15/11/2025)
 ------------------
@@ -82,7 +85,7 @@ Next release set will focus on UI/UX as well as utilities, both in terms of the 
 --------------------
 
 - Added the :py:func:`pymhf.gui.decorators.gui_combobox` decorator (partial work on `#15 <https://github.com/monkeyman192/pyMHF/issues/15>`_).
-- Added the ability for mods to access each others' attributes and methods. (`#5 <https://github.com/monkeyman192/pyMHF/issues/5>`_). See :doc:`this page </docs/inter_mod_functionality>` for more details.
+- Added the ability for mods to access each others' attributes and methods. (`#5 <https://github.com/monkeyman192/pyMHF/issues/5>`_). See :doc:`here </docs/inter_mod_functionality>` for more details.
 - Fixed a few issues regarding running pyMHF. Thanks to `@Foundit3923 <https://github.com/Foundit3923>`_ for helping to figure out the issues.
 - Fixed an issue where hooks of imported functions which have ``_result_`` as an argument work.
 - Added :py:func:`pymhf.core.hooking.NOOP` decorator which indicates that the original game function shouldn't be called. (`#20 <https://github.com/monkeyman192/pyMHF/issues/20>`_)
