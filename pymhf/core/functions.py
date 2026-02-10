@@ -1,7 +1,7 @@
 import ctypes
 import inspect
 from functools import lru_cache
-from typing import Any, Callable, NamedTuple, Optional, _AnnotatedAlias, get_args, Type
+from typing import Any, Callable, NamedTuple, Optional, Type, _AnnotatedAlias, get_args
 
 from typing_extensions import get_type_hints
 

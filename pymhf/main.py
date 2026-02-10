@@ -1,15 +1,22 @@
 import asyncio
 import concurrent.futures
 import glob
+import importlib.resources as impres
 import os
 import os.path as op
 import subprocess
+import sys
 import time
 import webbrowser
 from functools import partial
 from signal import SIGTERM
 from threading import Event
 from typing import Optional
+
+if sys.version_info < (3, 10):
+    from importlib_metadata import entry_points
+else:
+    from importlib.metadata import entry_points
 
 import psutil
 import pymem
@@ -20,11 +27,11 @@ import pyrun_injected.dllinject as dllinject
 
 from pymhf.core._types import LoadTypeEnum, pymhfConfig
 from pymhf.core.hashing import hash_bytes_from_file, hash_bytes_from_memory
-from pymhf.core.importing import parse_file_for_mod
+from pymhf.core.importing import library_path_from_name, parse_file_for_mod
 from pymhf.core.log_handling import open_log_console
 from pymhf.core.process import start_process
 from pymhf.core.protocols import ESCAPE_SEQUENCE, TerminalProtocol
-from pymhf.utils.config import canonicalize_setting
+from pymhf.utils.config import canonicalize_setting, canonicalize_settings_inline, merge_configs
 from pymhf.utils.parse_toml import read_pymhf_settings
 from pymhf.utils.winapi import get_exe_path_from_pid
 
@@ -142,7 +149,7 @@ def get_process_when_ready(
         return None, None
 
 
-def load_mod_file(filepath: str, config_overrides: Optional[pymhfConfig] = None):
+def load_mod_file(filepath: str, config_overrides: Optional[dict] = None):
     """Load an individual file as a mod.
 
     Parameters
@@ -195,13 +202,38 @@ def run_module(
     config_dir
         The local config directory. This will only be provided if we are running a library.
     """
+    load_type = LoadTypeEnum.LIBRARY
     if plugin_name is None:
         if op.isfile(module_path):
             load_type = LoadTypeEnum.SINGLE_FILE
         if op.exists(op.join(module_path, "pymhf.toml")):
             load_type = LoadTypeEnum.MOD_FOLDER
-    else:
-        load_type = LoadTypeEnum.LIBRARY
+
+    # Ensure the module path is absolute so as some later logic will rely on this.
+    if not op.isabs(module_path):
+        module_path = op.abspath(module_path)
+
+    # Before parsing the config, check if any of the installed libraires have any extra config info that
+    # needs to be merged in.
+    final_config: pymhfConfig = {}
+    pymhf_libraries = [ep.name for ep in entry_points().select(group="pymhflib")]
+    for library in pymhf_libraries:
+        if impres.is_resource(library, "pymhf.toml"):
+            with impres.path(library, "pymhf.toml") as pymhf_toml:
+                lib_config = read_pymhf_settings(pymhf_toml)
+                if (library_path := library_path_from_name(library)) is not None:
+                    canonicalize_settings_inline(
+                        lib_config,
+                        library,
+                        library_path,
+                        None,
+                        None,
+                        ["{CURR_DIR}", "{USER_DIR}"],
+                    )
+                merge_configs(lib_config, final_config)
+    merge_configs(config, final_config)
+
+    config = final_config
 
     binary_path = None
     injected = None
@@ -232,7 +264,12 @@ def run_module(
     start_paused = config.get("start_paused", False)
 
     if config_dir is None:
-        cache_dir = op.join(module_path, ".cache")
+        # If we have a single-file mod, use the cache_dir as a folder up from the mod.
+        if load_type == LoadTypeEnum.SINGLE_FILE:
+            mod_dir, mod_fname = op.split(module_path)
+            cache_dir = op.join(mod_dir, f".{mod_fname}.cache")
+        else:
+            cache_dir = op.join(module_path, ".cache")
     else:
         cache_dir = op.join(config_dir, ".cache")
 
@@ -417,6 +454,13 @@ def run_module(
             assem_name = list(offset_map.keys())[0]
             binary_base = offset_map[assem_name][0]
             binary_size = offset_map[assem_name][1]
+        else:
+            binary_base = 0
+            binary_size = 0
+
+        # Some data for the injection process.
+        injected_data_list = []
+        sentinel_addr = 0
 
         try:
             cwd = CWD.replace("\\", "\\\\")
@@ -468,8 +512,6 @@ def run_module(
                                             _path.insert(0, fpath)
                                         break
             saved_path = [x.replace("\\", "\\\\") for x in _path]
-
-            injected_data_list = []
 
             # Inject the new path
             sys_path_str = f"""

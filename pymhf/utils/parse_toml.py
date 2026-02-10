@@ -1,5 +1,6 @@
+import os
 import re
-from typing import Optional, cast
+from typing import Optional, Union, cast
 
 import tomlkit
 
@@ -27,7 +28,7 @@ def read_inline_metadata(script: str) -> Optional[tomlkit.TOMLDocument]:
         return None
 
 
-def _parse_toml(fpath: str, standalone: bool = False) -> Optional[pymhfConfig]:
+def _parse_toml(fpath: Union[os.PathLike[str], str], standalone: bool = False) -> Optional[pymhfConfig]:
     settings = {}
     with open(fpath, "r") as f:
         if standalone:
@@ -38,7 +39,7 @@ def _parse_toml(fpath: str, standalone: bool = False) -> Optional[pymhfConfig]:
         return cast(pymhfConfig, settings.value)
 
 
-def read_pymhf_settings(fpath: str, standalone: bool = False) -> pymhfConfig:
+def read_pymhf_settings(fpath: Union[os.PathLike[str], str], standalone: bool = False) -> pymhfConfig:
     settings = _parse_toml(fpath, standalone)
     if not settings:
         return {}

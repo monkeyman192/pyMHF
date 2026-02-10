@@ -4,10 +4,53 @@ import re
 from logging import getLogger
 from typing import Optional
 
+from pymhf.core._types import pymhfConfig
+
 PATH_RE = re.compile(r"^\{(?P<tag>EXE_DIR|USER_DIR|CURR_DIR)\}(?P<rest>[^{}]*)$")
 
 
 logger = getLogger(__name__)
+
+
+def canonicalize_settings_inline(
+    config: pymhfConfig,
+    plugin_name: Optional[str],
+    module_dir: str,
+    exe_dir: Optional[str] = None,
+    suffix: Optional[str] = None,
+    filter: Optional[list[str]] = None,
+):
+    """Canonicalize all the settings in a config file. This will mutate the original config object.
+
+    To only modify values containing a particular value, specify this in the `filter` argument."""
+
+    def allow_value(value: str, filter: Optional[list[str]]):
+        if filter is not None:
+            return any(f in value for f in filter)
+        else:
+            return True
+
+    for key, value in config.items():
+        if isinstance(value, str):
+            if allow_value(value, filter):
+                config[key] = canonicalize_setting(value, plugin_name, module_dir, exe_dir, suffix)
+        elif isinstance(value, dict):
+            subdata = {}
+            for subkey, subvalue in value.items():
+                if isinstance(subvalue, str):
+                    if allow_value(subvalue, filter):
+                        subdata[subkey] = canonicalize_setting(
+                            subvalue,
+                            plugin_name,
+                            module_dir,
+                            exe_dir,
+                            suffix,
+                        )
+                else:
+                    subdata[subkey] = subvalue
+            config[key] = subdata
+        else:
+            config[key] = value
 
 
 def canonicalize_setting(
@@ -27,7 +70,7 @@ def canonicalize_setting(
 
     # This can receive None as the value.
     # In this case we simply return as we don't want to do anything with it.
-    if value is None:
+    if not isinstance(value, str):
         return None
 
     # Parse the value to determine what directory type we are asking for.
@@ -73,3 +116,15 @@ def canonicalize_setting(
             raise ValueError("Exe directory cannot be determined")
     elif tag == "CURR_DIR":
         return op.realpath(op.join(module_dir, *_suffix))
+
+
+def merge_configs(src: pymhfConfig, dst: pymhfConfig):
+    """Merge the source config into the dest config. Overwriting any values."""
+    for key, value in src.items():
+        if not isinstance(value, dict):
+            dst[key] = value
+        else:
+            for subkey, subvalue in value.items():
+                if key not in dst:
+                    dst[key] = {}
+                dst[key][subkey] = subvalue

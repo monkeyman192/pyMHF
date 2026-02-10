@@ -1,7 +1,9 @@
 import ctypes
+import importlib
 import os.path as op
 import sys
 from logging import getLogger
+from typing import Callable
 
 import pefile
 
@@ -51,3 +53,19 @@ def get_imports(binary_path: str) -> dict[str, ctypes._CFuncPtr]:
         funcptrs[_dll] = _funcptrs
 
     return funcptrs
+
+
+def get_callable_obj(object_ref: str) -> Callable:
+    # Get the object referred to in the object reference string.
+    # This expects a string of the form `importable.module:object.attr`.
+    # This should be the same as how normal python entrypoints are determined, and the code is in fact taken
+    # from the python packaging page:
+    # https://packaging.python.org/en/latest/specifications/entry-points/#data-model
+    modname, qualname_separator, qualname = object_ref.partition(":")
+    obj = importlib.import_module(modname)
+    if qualname_separator:
+        for attr in qualname.split("."):
+            obj = getattr(obj, attr)
+    else:
+        raise TypeError("")
+    return obj  # type: ignore

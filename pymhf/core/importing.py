@@ -43,6 +43,12 @@ def _fully_unpack_ast_attr(obj: ast.Attribute) -> str:
     return name
 
 
+def library_path_from_name(name: str) -> Optional[str]:
+    if (spec := importlib.util.find_spec(name)) is not None:
+        if spec.origin is not None:
+            return op.dirname(spec.origin)
+
+
 def parse_file_for_mod(data: str) -> bool:
     """Parse the provided data and determine if there is at least one mod class in it."""
     tree = ast.parse(data)

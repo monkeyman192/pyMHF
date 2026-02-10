@@ -5,8 +5,14 @@ import shutil
 import subprocess
 import sys
 from enum import Enum
-from importlib.metadata import PackageNotFoundError, entry_points, version
+from importlib import import_module
+from importlib.metadata import PackageNotFoundError, version
 from typing import Optional
+
+if sys.version_info < (3, 10):
+    from importlib_metadata import entry_points
+else:
+    from importlib.metadata import entry_points
 
 import questionary
 
@@ -333,24 +339,11 @@ def run():
     initial_config = False
 
     if not local:
+        # Get the entry points irrespective of how we are running the code.
+        # We do this so that if we are running a single-file mod which also uses a library we can still get
+        # library configuration settings and merge them with the config settings in the single-file mod.
         eps = entry_points()
-        # This check is to ensure compatibility with multiple versions of python as the code 3.10+ isn't
-        # backward compatible.
-        if isinstance(eps, dict):
-            pymhf_entry_points = eps.get("pymhflib", [])
-        else:
-            pymhf_entry_points = eps.select(group="pymhflib")
-        if mode == ModeEnum.COMMAND:
-            if isinstance(eps, dict):
-                pymhf_commands = eps.get("pymhfcmd", [])
-            else:
-                pymhf_commands = eps.select(group="pymhfcmd")
-
-            if not pymhf_commands:
-                print(
-                    "No [project.entry-points.pymhfcmd] section found in the pyproject.toml. "
-                    "Please create one to register and run custom commands."
-                )
+        pymhf_entry_points = eps.select(group="pymhflib")
 
         required_lib = None
         resolved_command = None
@@ -359,7 +352,7 @@ def run():
             if ep.name.lower() == plugin_name.lower():
                 required_lib = ep
         if mode == ModeEnum.COMMAND:
-            for cmd in pymhf_commands:
+            for cmd in eps.select(group="pymhfcmd") or []:
                 # See if the library has a check command defined.
                 if cmd.name.lower() == cmd_command:
                     resolved_command = cmd.value
@@ -377,9 +370,7 @@ def run():
         if mode == ModeEnum.COMMAND:
             if resolved_command is not None:
                 # We can use importlib here since the library has to be installed if we have made it here.
-                import importlib
-
-                mod = importlib.import_module(plugin_name)
+                mod = import_module(plugin_name)
                 cmd = getattr(mod, resolved_command, None)
                 if cmd is not None:
                     cmd(extras)

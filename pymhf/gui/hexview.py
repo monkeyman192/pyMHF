@@ -440,6 +440,7 @@ class HexView:
                 "_select_bytes_uint32",
                 str(int.from_bytes(self._selected_bytes, byteorder="little", signed=True)),
             )
+            dpg.set_value("_select_bytes_float32", str(struct.unpack_from("<f", self._selected_bytes)))
         elif selection_size == 8:
             dpg.set_value(
                 "_select_bytes_int64",
@@ -501,6 +502,7 @@ class HexView:
             dpg.add_string_value(tag="_select_bytes_uint16", default_value="N/A")
             dpg.add_string_value(tag="_select_bytes_int32", default_value="N/A")
             dpg.add_string_value(tag="_select_bytes_uint32", default_value="N/A")
+            dpg.add_string_value(tag="_select_bytes_float32", default_value="N/A")
             dpg.add_string_value(tag="_select_bytes_int64", default_value="N/A")
             dpg.add_string_value(tag="_select_bytes_uint64", default_value="N/A")
 
@@ -591,6 +593,8 @@ class HexView:
             dpg.add_text(source="_select_bytes_int32")
             dpg.add_text("uint32:")
             dpg.add_text(source="_select_bytes_uint32")
+            dpg.add_text("float32:")
+            dpg.add_text(source="_select_bytes_float32")
         with dpg.group(parent=self.parent, horizontal=True, tag="size_8_values", show=False):
             dpg.add_text("int64:")
             dpg.add_text(source="_select_bytes_int64")
