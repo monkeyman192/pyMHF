@@ -55,3 +55,36 @@ For the above example of checking to see if the patterns are valid, we may want 
     pymhf cmd check --exe="NMS.exe" nmspy
 
 The ``check`` function will receive ``['--exe="NMS.exe"']`` as an argument which we can then parse.
+
+``pymhf_rtfunc`` entry-point
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Because of how python imports code, it is generally recommended that developers do not include any code which will be run when importing which relies on any particular state.
+Because of this, we need some way to specify functions in the library which are to be run once the code has been injected into the target process, but before any mods are instantiated so that any data can be accessed as soon as possible in the mods.
+To facilitate this, ``pyMHF`` has the ability to pick up functions which are defined as being run at run-time by the library.
+
+For example, we may have some function which searches the binary for some data and then assigns it to a variable in a class like so:
+
+.. code-block:: python
+    :caption: library/data.py
+
+    class Data:
+        x: int
+
+        def find_variable(self):
+            # Some code to find the value of x
+            x = 42
+
+    data = Data()
+
+We can now define the following end-point:
+
+.. code-block:: toml
+
+    [project.entry-points.pymhf_rtfunc]
+    data = "library.data:data.find_variable"
+
+The syntax of this entry-point is very similar to that of normal python entry-points, but this function will be found and then run before any mods are instantiated.
+
+.. note::
+    The specified function or method cannot take any arguments.

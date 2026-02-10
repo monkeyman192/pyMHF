@@ -6,11 +6,17 @@ import logging
 import logging.handlers
 import os
 import os.path as op
+import sys
 import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from typing import Optional
+
+if sys.version_info < (3, 10):
+    from importlib_metadata import entry_points
+else:
+    from importlib.metadata import entry_points
 
 import pymem
 import pymem.process
@@ -220,6 +226,24 @@ try:
     # Load the offset cache.
     if not cache.offset_cache.loaded:
         cache.offset_cache.load()
+
+    # Before loading any mods, let's call any registered runtime function callbacks from any loaded
+    # libraries.
+    # These functions will be registered as an entrypoint of the library under
+    # [project.entry-points.pymhf_rtfunc].
+    from pymhf.utils.imports import get_callable_obj
+
+    eps = entry_points()
+    rtfunc_entry_points = eps.select(group="pymhf_rtfunc")
+    for ep in rtfunc_entry_points:
+        name = ep.name
+        value = ep.value
+        obj = get_callable_obj(value)
+        rootLogger.debug(f"Calling runtime function {name} -> {value} ({obj})")
+        try:
+            obj()
+        except Exception:
+            rootLogger.exception(f"There was an issue running the runtime function {name} ({value})")
 
     mod_manager.hook_manager = hook_manager
     # First, load our internal mod before anything else.
