@@ -391,9 +391,10 @@ def test_total_size_inheritence():
 
     @partial_struct
     class Parent(Base):
-        _total_size_ = 0x30
+        _total_size_ = 0x40
         c: Annotated[ctypes.c_uint32, 0x20]
-        d: ctypes.c_uint32
+        d: ctypes.c_uint32  # Will be at 0x24
+        e: Annotated[bool, Field(ctypes.c_bool, 0x30)]
 
     # Check the sizes and reading for the base class.
     data_too_small = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00")
@@ -407,10 +408,6 @@ def test_total_size_inheritence():
     assert obj.a == 1
     assert obj.b is True
 
-    print("------------------")
-    print(ctypes.sizeof(Parent))
-    print(Parent._fields_)
-
     # Check sizes and reading parent class.
     data_too_small2 = bytearray(
         b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00"
@@ -418,9 +415,24 @@ def test_total_size_inheritence():
         b"\x01\x00\x00\x00\x02\x00\x00\x00"
     )
     with pytest.raises(
-        ValueError, match=re.escape("Buffer size too small (40 instead of at least 48 bytes)")
+        ValueError, match=re.escape("Buffer size too small (40 instead of at least 64 bytes)")
     ):
         Parent.from_buffer(data_too_small2)
+
+    # Read the entire blob in to make sure it's read in correctly.
+    data_correct = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00"
+        b"\x02\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00"
+        b"\x03\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        b"\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    )
+    p = Parent.from_buffer(data_correct)
+    assert ctypes.sizeof(p) == 0x40
+    assert p.a == 1
+    assert p.b is True
+    assert p.c == 3
+    assert p.d == 2
+    assert p.e is True
 
 
 def test_invalid_cases():

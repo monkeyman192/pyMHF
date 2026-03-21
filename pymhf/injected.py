@@ -248,7 +248,6 @@ try:
     mod_manager.hook_manager = hook_manager
     # First, load our internal mod before anything else.
     if internal_mod_folder is not None:
-        logging.debug(f"Loading internal mods: {internal_mod_folder}")
         # If the mod folder isn't absolute, assume it's relative to the library directory.
         if not op.isabs(internal_mod_folder):
             internal_mod_folder = op.join(_internal.MODULE_PATH, internal_mod_folder)

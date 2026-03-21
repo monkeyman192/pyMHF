@@ -67,7 +67,7 @@ class _vector(ctypes.Structure, Generic[T]):
     def __len__(self) -> int:
         return (
             ctypes.addressof(self._last.contents) - ctypes.addressof(self._first.contents)
-        ) // 0x8  # Assuming 64 bit architecture
+        ) // ctypes.sizeof(self._template_type)
 
     def __getitem__(self, i: int) -> T:
         return self._first[i]
