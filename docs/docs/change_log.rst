@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+Current (0.2.3.dev)
+-------------------
+
+- Fixed an issue where the :py:class:`~pymhf.extensions.cpptypes._vector` type incorrectly calculated the length of the vector.
+- Added a toggle in the gui settings to enable reloading modules. When enabled, reloading a mod will reload all other python modules in the same directory. Anything within a ``.venv`` folder within the same directory will NOT be reloaded, neither will a file containing a mod (other than the original mod file being reloaded).
+
 0.2.2 (11/02/2026)
 ------------------
 

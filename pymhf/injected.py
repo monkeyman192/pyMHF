@@ -263,9 +263,7 @@ try:
 
     # Also load any mods after all the internal hooks:
     start_time = time.time()
-    bold = "\u001b[4m"
-    reset = "\u001b[0m"
-    logging.info(bold + "Loading mods" + reset)
+    logging.info("Loading mods")
     _loaded_mods = 0
     _loaded_hooks = 0
     try:
