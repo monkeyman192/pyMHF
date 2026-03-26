@@ -26,7 +26,7 @@ import pymhf.core._internal as _internal
 from pymhf.core._types import CustomTriggerProtocol, HookProtocol, KeyPressProtocol
 from pymhf.core.errors import NoSaveError
 from pymhf.core.hooking import HookManager
-from pymhf.core.importing import import_file
+from pymhf.core.importing import import_file, parse_file_for_mod
 from pymhf.core.memutils import get_addressof, map_struct
 from pymhf.core.utils import does_pid_have_focus, saferun
 from pymhf.gui.widget_data import (
@@ -369,7 +369,7 @@ class ModManager:
             self._mod_paths[mod_name] = module
         return True
 
-    def load_mod(self, fpath) -> Optional[ModuleType]:
+    def load_mod(self, fpath: str) -> Optional[ModuleType]:
         """Load a mod from the given filepath.
 
         This returns the loaded module if it contains a valid mod and can be loaded correctly.
@@ -551,6 +551,44 @@ class ModManager:
                 del sys.modules[module.__name__]
 
                 # Then, add everything back.
+                if not module.__file__:
+                    return
+
+                modules_to_reload = []
+                if gui.module_reload_enabled:
+                    logger.debug(f"reloading {module.__file__} and related modules")
+                    mod_dir = op.dirname(module.__file__)
+                    venv_dir = op.join(mod_dir, ".venv")
+                    # Loop through sys.modules and find any files in the same directory.
+                    for _module_name, _module_path in sys.modules.items():
+                        if hasattr(_module_path, "__file__"):
+                            try:
+                                # Check to make sure the file is in the same directory and isn't inside a venv
+                                _module_fpath = _module_path.__file__
+                                if (
+                                    _module_fpath
+                                    and op.commonpath([_module_fpath, mod_dir]) == mod_dir
+                                    and not op.commonpath([_module_fpath, venv_dir]) == venv_dir
+                                ):
+                                    # Ignore files containing mods.
+                                    # This will probably be added as an optional feature in the future, but
+                                    # for now I think simpler to not reload them and log a warning instead.
+                                    with open(_module_fpath, "r") as f:
+                                        if parse_file_for_mod(f.read()):
+                                            logger.warning(
+                                                "Cannot reload file containing mod definitions currently. "
+                                                f"{_module_fpath} is being skipped."
+                                            )
+                                            continue
+                                    # Remove the file from the system modules and reload it.
+                                    modules_to_reload.append((_module_name, _module_fpath))
+                            except ValueError:
+                                # Could be a couple of things, any of which we don't care about.
+                                pass
+                    for _module_name, _module_fpath in modules_to_reload:
+                        del sys.modules[_module_name]
+                        import_file(_module_fpath)
+                        logger.debug(f"Reimported {_module_name} at {_module_fpath}")
                 new_module = self.load_mod(module.__file__)
                 for _mod in self._preloaded_mods.values():
                     mod = self.instantiate_mod(_mod)
@@ -603,7 +641,11 @@ class ModManager:
                 # remove or add these attributes as required. Might want to have some kind of "copy" method to
                 # actually create a new instance each time but persist the data across.
 
-                logger.info(f"Finished reloading {name}")
+                if gui.module_reload_enabled:
+                    msg = f"Finished reloading {name} and {len(modules_to_reload)} related module(s)"
+                else:
+                    msg = f"Finished reloading {name}"
+                logger.info(msg)
             else:
                 logger.error(f"Cannot find mod {name}")
         except Exception:

@@ -78,6 +78,7 @@ class GUI:
         self.always_on_top = config.get("gui", {}).get("always_on_top", False)
         self.is_debug = config.get("logging", {}).get("log_level") == "debug"
         self.scale = config.get("gui", {}).get("scale", 1)
+        self.module_reload_enabled = False
         dpg.create_context()
         dpg.create_viewport(
             title=WINDOW_TITLE,
@@ -162,6 +163,9 @@ class GUI:
         else:
             rootLogger.setLevel(logging.INFO)
 
+    def toggle_module_reload(self, _sender, reload_module):
+        self.module_reload_enabled = reload_module
+
     def toggle_show_gui(self, _sender, show_gui):
         if "gui" in self.config:
             self.config["gui"]["shown"] = show_gui
@@ -181,6 +185,7 @@ class GUI:
         with dpg.value_registry():
             dpg.add_bool_value(tag="always_on_top", default_value=self.always_on_top)
             dpg.add_bool_value(tag="is_debug", default_value=self.is_debug)
+            dpg.add_bool_value(tag="module_reload", default_value=self.module_reload_enabled)
             dpg.add_bool_value(tag="show_gui", default_value=True)
         dpg.add_tab(label="Settings", tag=SETTINGS_NAME, parent="tabbar")
         tab_alias = dpg.get_alias_id(SETTINGS_NAME)
@@ -201,6 +206,14 @@ class GUI:
                 dpg.add_checkbox(
                     source="is_debug",
                     callback=self.toggle_debug_mode,
+                )
+
+            # Toggle for module reloading.
+            with dpg.table_row():
+                dpg.add_text("Enable sub-module reloading")
+                dpg.add_checkbox(
+                    source="module_reload",
+                    callback=self.toggle_module_reload,
                 )
 
             # Toggle for whether to show the gui at all.
