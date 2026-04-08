@@ -41,17 +41,22 @@ The ``value`` property of these classes is still the original integer in case th
         def log_lookup(self, lpacName: c_char_p64):
             logger.info(f"Got the lookup {lpacName}")
 
+:py:class:`~pymhf.extensions.ctypes.c_enum8`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This class is a wrapper around the ``ctypes.c_uint8`` type, but it's able to be subscripted to provide a concrete type based on the ``IntEnum`` used.
+
 
 :py:class:`~pymhf.extensions.ctypes.c_enum16`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This class is a wrapper around the ``ctypes.c_int32`` type, but it's able to be subscripted to provide a concrete type based on the ``IntEnum`` used.
+This class is a wrapper around the ``ctypes.c_uint16`` type, but it's able to be subscripted to provide a concrete type based on the ``IntEnum`` used.
 
 
 :py:class:`~pymhf.extensions.ctypes.c_enum32`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This class is a wrapper around the ``ctypes.c_int32`` type, but it's able to be subscripted to provide a concrete type based on the ``IntEnum`` used.
+This class is a wrapper around the ``ctypes.c_uint32`` type, but it's able to be subscripted to provide a concrete type based on the ``IntEnum`` used.
 
 For example, consider the following code:
 
