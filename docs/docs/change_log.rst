@@ -1,8 +1,8 @@
 Change Log
 ==========
 
-Current (0.2.3.dev)
--------------------
+0.2.3 (08/04/2026)
+------------------
 
 - Changed the underlying type for the ``pymhf.extensions.ctypes.c_enumN`` types so that they subclass from unsigned integers instead of signed integers.
 - Added the :py:class:`~pymhf.extensions.ctypes.c_enum8` type for creating enums whose value is serialized as an 8bit integer.
