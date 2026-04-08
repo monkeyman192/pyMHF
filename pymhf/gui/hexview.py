@@ -213,6 +213,8 @@ class HexView:
             dpg.configure_item("option_popup", show=True)
 
     def _delete_snapshot(self):
+        if not self._selected_snapshot_tag:
+            return
         curr_idx = list(self._memory_cache.keys()).index(self._selected_snapshot_tag)
         _data = self._memory_cache.pop(self._selected_snapshot_tag)
         dpg.configure_item(
