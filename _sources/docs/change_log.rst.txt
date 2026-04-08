@@ -4,6 +4,8 @@ Change Log
 Current (0.2.3.dev)
 -------------------
 
+- Changed the underlying type for the ``pymhf.extensions.ctypes.c_enumN`` types so that they subclass from unsigned integers instead of signed integers.
+- Added the :py:class:`~pymhf.extensions.ctypes.c_enum8` type for creating enums whose value is serialized as an 8bit integer.
 - Fixed an issue where the :py:class:`~pymhf.extensions.cpptypes._vector` type incorrectly calculated the length of the vector.
 - Added a toggle in the gui settings to enable reloading modules. When enabled, reloading a mod will reload all other python modules in the same directory. Anything within a ``.venv`` folder within the same directory will NOT be reloaded, neither will a file containing a mod (other than the original mod file being reloaded).
 
