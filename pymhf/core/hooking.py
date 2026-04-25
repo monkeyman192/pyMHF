@@ -986,6 +986,16 @@ class FunctionHook(Generic[P, R]):
                         f"but was called with {_args}"
                     )
                     raise
+                except OSError:
+                    logger.exception(f"There was an exception calling {self._func.__qualname__!r}")
+                    arg_types = [type(x) for x in _args]
+                    logger.error(
+                        "Function details:\n"
+                        f"Function Signature: {self._funcdef.arg_types}\n"
+                        f"Call args: {_args} => {arg_types}\n"
+                        f"Function offset: 0x{offset:X} => +0x{offset - _internal.BASE_ADDRESS:X}"
+                    )
+                    return None
                 return val
             else:
                 logger.error(f"Unable to call {self._func.__qualname__!r} - Cannot find function.")

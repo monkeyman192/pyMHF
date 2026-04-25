@@ -65,6 +65,9 @@ class _vector(ctypes.Structure, Generic[T]):
         return _cls
 
     def __len__(self) -> int:
+        # First make sure that there is actually some data pointed to.
+        if not self._first or not self._last:
+            return 0
         return (
             ctypes.addressof(self._last.contents) - ctypes.addressof(self._first.contents)
         ) // ctypes.sizeof(self._template_type)
