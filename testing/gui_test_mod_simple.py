@@ -3,7 +3,7 @@ import math
 import dearpygui.dearpygui as dpg
 
 from pymhf import Mod
-from pymhf.gui.decorators import FLOAT
+from pymhf.gui.decorators import COLOUR, FLOAT
 from pymhf.gui.widgets import CustomWidget, WidgetBehaviour
 
 
@@ -11,9 +11,9 @@ class MovingCircle(CustomWidget):
     # Specify that the widget will be drawn separately from the previous widget.
     widget_behaviour = WidgetBehaviour.SEPARATE
 
-    def __init__(self, colour: tuple[int, int, int, int] = (255, 0, 0, 255)):
+    def __init__(self):
         super().__init__()
-        self.colour = colour
+        self.colour = (255, 0, 0, 255)
         self.center_pos = (200, 200)
         self.clicked_on = False
 
@@ -62,7 +62,13 @@ class MovingCircle(CustomWidget):
         with dpg.handler_registry():
             dpg.add_mouse_release_handler(callback=self.release_mouse)
 
-    def redraw(self, theta: float, radius: float, center_pos: tuple[float, float]):
+    def redraw(
+        self,
+        theta: float,
+        radius: float,
+        center_pos: tuple[float, float],
+        dot_colour: tuple[float, float, float, float],
+    ):
         # This function is called each frame the tab the widget belongs to is selected.
         if self.clicked_on:
             self.center_pos = tuple(dpg.get_drawing_mouse_pos())
@@ -72,28 +78,45 @@ class MovingCircle(CustomWidget):
         y = self.center_pos[1] + 50 * math.sin(theta)
 
         # Update the circle's position using configure_item
-        dpg.configure_item(self.ids["DOT"], center=self.center_pos)
-        dpg.configure_item(self.ids["CIRCLE"], center=(x, y), radius=radius)
+        dpg.configure_item(self.ids["DOT"], center=self.center_pos, color=dot_colour, fill=dot_colour)
+        dpg.configure_item(
+            self.ids["CIRCLE"],
+            center=(x, y),
+            radius=radius,
+            color=dot_colour,
+            fill=dot_colour,
+        )
         return {"center_pos": self.center_pos}
 
 
 class GUITest(Mod):
     __author__ = "monkeyman192"
-    __description__ = "Test globals"
+    __description__ = "Example mod showcasing custom widgets"
 
     def __init__(self):
         super().__init__()
         self._theta = 0
         self._radius = 10
         self.center_pos = (200, 200)
+        self._dot_colour = (255, 0, 255, 255)
 
     @property
-    @MovingCircle((255, 0, 123, 255))
+    @COLOUR("dot colour", has_alpha=True, display_type=float, display_mode="HEX")
+    def dot_colour(self):
+        return self._dot_colour
+
+    @dot_colour.setter
+    def dot_colour(self, value):
+        self._dot_colour = value
+
+    @property
+    @MovingCircle()
     def circle_loc(self):
         return {
             "theta": self._theta,
             "radius": self._radius,
-            "center_pos": self.center_pos
+            "center_pos": self.center_pos,
+            "dot_colour": self._dot_colour,
         }
 
     @circle_loc.setter

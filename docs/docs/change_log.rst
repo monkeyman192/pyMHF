@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Current (0.2.4.dev)
+-------------------
+
+- Add a colour picker widget. This is implemented as the decorator :py:attr:`~pymhf.gui.decorators.COLOUR` (or :py:attr:`~pymhf.gui.decorators.COLOR` for the Americans).
+
 0.2.3 (08/04/2026)
 ------------------
 
