@@ -681,9 +681,7 @@ class ColourVariable(Variable):
         self.display_mode = display_mode
 
     def _add_variable_value(
-        self,
-        tag: str,
-        default_value: Union[tuple[float, float, float], tuple[float, float, float, float]]
+        self, tag: str, default_value: Union[tuple[float, float, float], tuple[float, float, float, float]]
     ):
         dpg.add_color_value(tag=tag, default_value=default_value)
 
@@ -696,7 +694,7 @@ class ColourVariable(Variable):
                 app_data[1] * 255,
                 app_data[2] * 255,
                 app_data[3] * 255,
-            ]
+            ],
         )
 
     def _add_editable_field(self, extra_args: dict[str, Any]):

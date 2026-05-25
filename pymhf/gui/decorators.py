@@ -44,6 +44,7 @@ def gui_button(label: str):
     """Create a button in the GUI with the provided label.
     When the button is pressed, the method which is decorated will be called with no arguments.
     """
+
     def inner(func: Callable[..., Any]) -> GUIElementProtocol[ButtonWidgetData]:
         func = cast(GUIElementProtocol, func)
         func._widget_data = ButtonWidgetData(func.__qualname__, label)
@@ -195,7 +196,8 @@ class gui_variable:
         has_alpha: bool = True,
         display_type: Union[type[int], type[float]] = int,
         display_mode: Literal["RGB", "HEX"] = "RGB",
-        **extra_args):
+        **extra_args,
+    ):
         """Create a colour entry field in the form of a colour editor which can take extra arguments.
         A few common options are able to be specified separately:
         - has_alpha (bool): Whether the alpha needs to be able to be specified.
