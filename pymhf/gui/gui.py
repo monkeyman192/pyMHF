@@ -538,7 +538,7 @@ class GUI:
                             dpg.set_value(tag, val.name)
                         # Read-only variable.
                         elif vars.variable_type == VariableType.STRING or not vars.has_setter:
-                            dpg.set_value(tag, repr(getattr(vars.mod, vars.variable_name)))
+                            dpg.set_value(tag, str(getattr(vars.mod, vars.variable_name)))
                         # "Normal" variable.
                         else:
                             dpg.set_value(tag, getattr(vars.mod, vars.variable_name))
