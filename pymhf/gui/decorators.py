@@ -200,7 +200,7 @@ class gui_variable:
     ):
         """Create a colour entry field in the form of a colour editor which can take extra arguments.
         A few common options are able to be specified separately:
-        - has_alpha (bool): Whether the alpha needs to be able to be specified.
+        - has_alpha: Whether the alpha needs to be able to be specified.
         - display_type: Whether to display the colour as a float (0 -> 1) or int (0 -> 255). This has no
             effect if `display_mode="HEX"`.
         - display_mode: Whether to use RGB or hexadecimal to represent the colour.
