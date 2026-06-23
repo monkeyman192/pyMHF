@@ -126,7 +126,7 @@ class FuncHook(cyminhook.MinHook):
         else:
             return self._name
 
-    def _determine_detour_list(self, detour: HookProtocol) -> Optional[list[HookProtocol]]:
+    def _determine_detour_list(self, detour: HookProtocol) -> Optional[list[Union[HookProtocol, Callable]]]:
         # Determine when the hook should be run. Don't add the detour yet
         # because if the hook is a one-shot then we need to know when to run it.
         detour_list = None
@@ -179,19 +179,29 @@ class FuncHook(cyminhook.MinHook):
             def _one_shot(
                 *args,
                 detour: HookProtocol = detour,
-                detour_list: list[HookProtocol] = detour_list,
+                detour_list: list[Union[HookProtocol, Callable]] = detour_list,
             ):
                 # NOTE: This may not work well if the code is called from multiple threads at the same time.
                 try:
                     detour(*args)
-                    self._disabled_detours.add(detour)
-                    detour_list.remove(self._oneshot_detours[detour])
-                except ValueError:
-                    logger.warning(
-                        f"Had an issue removing one-shot {detour._hook_func_name} from detour list."
-                    )
                 except Exception:
-                    logger.error(traceback.format_exc())
+                    logger.exception(
+                        f"There was an exception calling the one_shot detour {detour.__qualname__!r} -> "
+                        f"{detour._hook_func_name!r}. It will be disabled anyway, but it may not have been "
+                        "called completely."
+                    )
+                finally:
+                    # Irrespective of whether an exception happens, always try and remove the detour.
+                    # This should only fail if it was called multiple times (ie. if the function is called by
+                    # multiple threads). It should always be removed by the first thread which completes, but
+                    # the other threads will get an exception when removing the detour.
+                    try:
+                        self._disabled_detours.add(detour)
+                        detour_list.remove(self._oneshot_detours[detour])
+                    except ValueError:
+                        logger.warning(
+                            f"Had an issue removing one-shot {detour._hook_func_name} from detour list."
+                        )
 
             self._oneshot_detours[detour] = _one_shot
             detour_list.append(_one_shot)
@@ -249,8 +259,8 @@ class FuncHook(cyminhook.MinHook):
 
         try:
             super().__init__(signature=self.signature, target=self.target)
-        except cyminhook._cyminhook.Error as e:
-            if e.status == cyminhook._cyminhook.Status.MH_ERROR_ALREADY_CREATED:
+        except cyminhook._cyminhook.Error as e:  # type: ignore
+            if e.status == cyminhook._cyminhook.Status.MH_ERROR_ALREADY_CREATED:  # type: ignore
                 logger.error("Hook is already created")
             logger.error(f"Failed to initialize hook {self._name} at 0x{self.target:X}")
             logger.error(e.status.name[3:].replace("_", " ") + f" ({e})")
@@ -942,7 +952,8 @@ class FunctionHook(Generic[P, R]):
         if self._funcdef is None:
             self._funcdef = _get_funcdef(self._func)
         self._this_is_pointer = issubclass(self._funcdef.arg_types[0], ctypes._Pointer) | issubclass(
-            self._funcdef.arg_types[0], ctypes._Pointer_orig
+            self._funcdef.arg_types[0],
+            ctypes._Pointer_orig,  # type: ignore
         )
         return self._this_is_pointer
 
