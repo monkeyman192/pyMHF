@@ -53,10 +53,24 @@ Create a string entry field which can take extra arguments.
 To see what extra arguments are available, see the DearPyGUI documentation `here <https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_input_text>`__.
 
 :py:func:`ENUM(label: str, **kwargs) <pymhf.gui.decorators.ENUM>`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Create an enum entry field which can take extra arguments.
 To see what extra arguments are available, see the DearPyGUI documentation `here <https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_combo>`__.
+
+:py:func:`COLOUR(label: str, has_alpha: bool = True, display_type: Union[type[int], type[float]] = int, display_mode: Literal["RGB", "HEX"] = "RGB",**kwargs) <pymhf.gui.decorators.COLOUR>`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Create a colour entry field in the form of a colour editor which can take extra arguments.
+A few common options are able to be specified separately:
+
+  - has_alpha: Whether the alpha needs to be able to be specified.
+  - display_type: Whether to display the colour as a float (0 -> 1) or int (0 -> 255). This has no effect if `display_mode="HEX"`.
+  - display_mode: Whether to use RGB or hexadecimal to represent the colour.
+  RGB will display each component of the colour separately depending on the value of ``display_type``.
+  HEX will display the entire colour as a hex string (eg. #FFAABB).
+To see what extra arguments are available, see the DearPyGUI documentation `here <https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_color_edit>`__.
+
+This is also aliased as `COLOR`.
 
 Accessing the GUI via code
 --------------------------

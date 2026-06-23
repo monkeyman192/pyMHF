@@ -406,6 +406,52 @@ To see what extra arguments are available, see the DearPyGUI documentation
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="pymhf.gui.decorators.COLOR">
+<span class="sig-prename descclassname"><span class="pre">pymhf.gui.decorators.</span></span><span class="sig-name descname"><span class="pre">COLOR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.gui.gui.html#pymhf.gui.gui.WidgetDiff.type" title="pymhf.gui.gui.WidgetDiff.type"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="pymhf.gui.gui.html#pymhf.gui.gui.WidgetDiff.type" title="pymhf.gui.gui.WidgetDiff.type"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal['RGB'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">'HEX']</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RGB'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**extra_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.decorators.COLOR" title="Link to this definition">#</a></dt>
+<dd><p>Create a colour entry field in the form of a colour editor which can take extra arguments.
+A few common options are able to be specified separately:
+- has_alpha: Whether the alpha needs to be able to be specified.
+- display_type: Whether to display the colour as a float (0 -&gt; 1) or int (0 -&gt; 255). This has no</p>
+<blockquote>
+<div><p>effect if <cite>display_mode=”HEX”</cite>.</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>display_mode: Whether to use RGB or hexadecimal to represent the colour.</dt><dd><p>RGB will display each component of the colour separately depending on the value of <cite>display_type</cite>.
+HEX will display the entire colour as a hex string (eg. #FFAABB).</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>To see what extra arguments are available, see the DearPyGUI documentation
+<a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_color_edit">here</a>.</p>
+<p>Note: This decorator MUST be applied closer to the decorated function than the <code class="docutils literal notranslate"><span class="pre">&#64;property</span></code> decorator</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.gui.decorators.COLOUR">
+<span class="sig-prename descclassname"><span class="pre">pymhf.gui.decorators.</span></span><span class="sig-name descname"><span class="pre">COLOUR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.gui.gui.html#pymhf.gui.gui.WidgetDiff.type" title="pymhf.gui.gui.WidgetDiff.type"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="pymhf.gui.gui.html#pymhf.gui.gui.WidgetDiff.type" title="pymhf.gui.gui.WidgetDiff.type"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal['RGB'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">'HEX']</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RGB'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**extra_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.decorators.COLOUR" title="Link to this definition">#</a></dt>
+<dd><p>Create a colour entry field in the form of a colour editor which can take extra arguments.
+A few common options are able to be specified separately:
+- has_alpha: Whether the alpha needs to be able to be specified.
+- display_type: Whether to display the colour as a float (0 -&gt; 1) or int (0 -&gt; 255). This has no</p>
+<blockquote>
+<div><p>effect if <cite>display_mode=”HEX”</cite>.</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>display_mode: Whether to use RGB or hexadecimal to represent the colour.</dt><dd><p>RGB will display each component of the colour separately depending on the value of <cite>display_type</cite>.
+HEX will display the entire colour as a hex string (eg. #FFAABB).</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>To see what extra arguments are available, see the DearPyGUI documentation
+<a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_color_edit">here</a>.</p>
+<p>Note: This decorator MUST be applied closer to the decorated function than the <code class="docutils literal notranslate"><span class="pre">&#64;property</span></code> decorator</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="pymhf.gui.decorators.ENUM">
 <span class="sig-prename descclassname"><span class="pre">pymhf.gui.decorators.</span></span><span class="sig-name descname"><span class="pre">ENUM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">enum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.14)"><span class="pre">Type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.14)"><span class="pre">Enum</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">extra_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.decorators.ENUM" title="Link to this definition">#</a></dt>
 <dd><p>Create an enum entry field which can take extra arguments.
@@ -451,7 +497,9 @@ To see what extra arguments are available, see the DearPyGUI documentation
 <dl class="py function">
 <dt class="sig sig-object py" id="pymhf.gui.decorators.gui_button">
 <span class="sig-prename descclassname"><span class="pre">pymhf.gui.decorators.</span></span><span class="sig-name descname"><span class="pre">gui_button</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.decorators.gui_button" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Create a button in the GUI with the provided label.
+When the button is pressed, the method which is decorated will be called with no arguments.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pymhf.gui.decorators.gui_combobox">
@@ -475,6 +523,29 @@ This can be nested to create sub-groups to arbitrary depth.</p>
 <dd><p>Create a boolean entry field in the form of a checkbox which can take extra arguments.
 To see what extra arguments are available, see the DearPyGUI documentation
 <a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_checkbox">here</a>.</p>
+<p>Note: This decorator MUST be applied closer to the decorated function than the <code class="docutils literal notranslate"><span class="pre">&#64;property</span></code> decorator</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.gui.decorators.gui_variable.COLOUR">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">COLOUR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pymhf.gui.gui.html#pymhf.gui.gui.WidgetDiff.type" title="pymhf.gui.gui.WidgetDiff.type"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="pymhf.gui.gui.html#pymhf.gui.gui.WidgetDiff.type" title="pymhf.gui.gui.WidgetDiff.type"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;class</span> <span class="pre">'int'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal['RGB'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">'HEX']</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RGB'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**extra_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.gui.decorators.gui_variable.COLOUR" title="Link to this definition">#</a></dt>
+<dd><p>Create a colour entry field in the form of a colour editor which can take extra arguments.
+A few common options are able to be specified separately:
+- has_alpha: Whether the alpha needs to be able to be specified.
+- display_type: Whether to display the colour as a float (0 -&gt; 1) or int (0 -&gt; 255). This has no</p>
+<blockquote>
+<div><p>effect if <cite>display_mode=”HEX”</cite>.</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>display_mode: Whether to use RGB or hexadecimal to represent the colour.</dt><dd><p>RGB will display each component of the colour separately depending on the value of <cite>display_type</cite>.
+HEX will display the entire colour as a hex string (eg. #FFAABB).</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>To see what extra arguments are available, see the DearPyGUI documentation
+<a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_color_edit">here</a>.</p>
 <p>Note: This decorator MUST be applied closer to the decorated function than the <code class="docutils literal notranslate"><span class="pre">&#64;property</span></code> decorator</p>
 </dd></dl>
 

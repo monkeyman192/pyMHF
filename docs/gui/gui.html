@@ -421,6 +421,22 @@ To see what extra arguments are available, see the DearPyGUI documentation <a cl
 <p>Create an enum entry field which can take extra arguments.
 To see what extra arguments are available, see the DearPyGUI documentation <a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_combo">here</a>.</p>
 </section>
+<section id="colour-label-str-has-alpha-bool-true-display-type-union-type-int-type-float-int-display-mode-literal-rgb-hex-rgb-kwargs">
+<h3><a class="reference internal" href="../../api/pymhf.gui.decorators.html#pymhf.gui.decorators.COLOUR" title="pymhf.gui.decorators.COLOUR"><code class="xref py py-func docutils literal notranslate"><span class="pre">COLOUR(label:</span> <span class="pre">str,</span> <span class="pre">has_alpha:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">display_type:</span> <span class="pre">Union[type[int],</span> <span class="pre">type[float]]</span> <span class="pre">=</span> <span class="pre">int,</span> <span class="pre">display_mode:</span> <span class="pre">Literal[&quot;RGB&quot;,</span> <span class="pre">&quot;HEX&quot;]</span> <span class="pre">=</span> <span class="pre">&quot;RGB&quot;,**kwargs)</span></code></a><a class="headerlink" href="#colour-label-str-has-alpha-bool-true-display-type-union-type-int-type-float-int-display-mode-literal-rgb-hex-rgb-kwargs" title="Link to this heading">#</a></h3>
+<p>Create a colour entry field in the form of a colour editor which can take extra arguments.
+A few common options are able to be specified separately:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>has_alpha: Whether the alpha needs to be able to be specified.</p></li>
+<li><p>display_type: Whether to display the colour as a float (0 -&gt; 1) or int (0 -&gt; 255). This has no effect if <cite>display_mode=”HEX”</cite>.</p></li>
+<li><p>display_mode: Whether to use RGB or hexadecimal to represent the colour.</p></li>
+</ul>
+<p>RGB will display each component of the colour separately depending on the value of <code class="docutils literal notranslate"><span class="pre">display_type</span></code>.
+HEX will display the entire colour as a hex string (eg. #FFAABB).</p>
+</div></blockquote>
+<p>To see what extra arguments are available, see the DearPyGUI documentation <a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_color_edit">here</a>.</p>
+<p>This is also aliased as <cite>COLOR</cite>.</p>
+</section>
 </section>
 <section id="accessing-the-gui-via-code">
 <h2>Accessing the GUI via code<a class="headerlink" href="#accessing-the-gui-via-code" title="Link to this heading">#</a></h2>
