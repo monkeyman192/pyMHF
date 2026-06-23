@@ -6,6 +6,7 @@ Current (0.2.4.dev)
 
 - Add a colour picker widget. This is implemented as the decorator :py:attr:`~pymhf.gui.decorators.COLOUR` (or :py:attr:`~pymhf.gui.decorators.COLOR` for the Americans).
 - Fixed an issue where quotation marks were added to :py:attr:`~pymhf.gui.decorators.STRING` values in the UI.
+- Fixed an issue where, if an exception occurred during the calling of a ``one_shot`` detour, the detour wouldn't be unregistered. (`#109 <https://github.com/monkeyman192/pyMHF/issues/109>`_)
 
 0.2.3 (08/04/2026)
 ------------------
