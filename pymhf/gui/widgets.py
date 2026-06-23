@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Optional, Type, TypedDict, Union, cast
+from typing import TYPE_CHECKING, Any, Literal, Optional, Type, TypedDict, Union, cast
 
 import dearpygui.dearpygui as dpg
 
@@ -124,7 +124,7 @@ class Widget(ABC):
     def _join_or_create_new_table(self, after: int, parent: int):
         prev_type = None
 
-        # Check the top of the stack and get its' type.
+        # Check the top of the stack and get its type.
         if top_stack := dpg.top_container_stack():
             prev_type = dpg.get_item_info(top_stack).get("type")
         # If the top of the stack is a table, then we just add directly to it.
@@ -182,12 +182,19 @@ class Widget(ABC):
             label = dict_data["label"]
             has_setter = dict_data.get("has_setter", False)
             extra_args = dict_data.get("extra_args", {})
-            is_slider = dict_data.get("is_slider", False)
             mod = cast("Mod", func.__self__)
             variable_name = func.__name__
 
             if data.variable_type == VariableType.INTEGER:
-                widget = IntVariable(widget_id, label, mod, variable_name, has_setter, is_slider, extra_args)
+                widget = IntVariable(
+                    widget_id,
+                    label,
+                    mod,
+                    variable_name,
+                    has_setter,
+                    dict_data.get("is_slider", False),
+                    extra_args,
+                )
             elif data.variable_type == VariableType.FLOAT:
                 widget = FloatVariable(
                     widget_id,
@@ -195,7 +202,7 @@ class Widget(ABC):
                     mod,
                     variable_name,
                     has_setter,
-                    is_slider,
+                    dict_data.get("is_slider", False),
                     extra_args,
                 )
             elif data.variable_type == VariableType.BOOLEAN:
@@ -205,6 +212,18 @@ class Widget(ABC):
             elif data.variable_type == VariableType.ENUM:
                 data = cast(EnumVariableWidgetData, data)
                 widget = EnumVariable(widget_id, label, mod, variable_name, data.enum, has_setter, extra_args)
+            elif data.variable_type == VariableType.COLOUR:
+                widget = ColourVariable(
+                    widget_id,
+                    label,
+                    mod,
+                    variable_name,
+                    has_setter,
+                    dict_data.get("has_alpha", False),
+                    dict_data.get("display_type", int),
+                    dict_data.get("display_mode", "RGB"),
+                    extra_args,
+                )
         elif isinstance(data, GroupWidgetData):
             child_widgets: list[Widget] = []
             for cw in data.child_widgets:
@@ -639,3 +658,69 @@ class EnumVariable(Variable):
 
     def update_variable(self, _, app_data, user_data):
         setattr(user_data[0], user_data[1], getattr(self.enum, app_data, None))
+
+
+class ColourVariable(Variable):
+    widget_behaviour = WidgetBehaviour.CONTINUOUS
+
+    def __init__(
+        self,
+        id_: str,
+        label: str,
+        mod: "Mod",
+        variable_name: str,
+        has_setter: bool = False,
+        has_alpha: bool = False,
+        display_type: Union[type[int], type[float]] = int,
+        display_mode: Literal["RGB", "HEX"] = "RGB",
+        extra_args: Optional[dict] = None,
+    ):
+        super().__init__(id_, label, mod, variable_name, VariableType.COLOUR, has_setter, extra_args)
+        self.has_alpha = has_alpha
+        self.display_type = display_type
+        self.display_mode = display_mode
+
+    def _add_variable_value(
+        self, tag: str, default_value: Union[tuple[float, float, float], tuple[float, float, float, float]]
+    ):
+        dpg.add_color_value(tag=tag, default_value=default_value)
+
+    def update_variable(self, _, app_data, user_data):
+        setattr(
+            user_data[0],
+            user_data[1],
+            [
+                app_data[0] * 255,
+                app_data[1] * 255,
+                app_data[2] * 255,
+                app_data[3] * 255,
+            ],
+        )
+
+    def _add_editable_field(self, extra_args: dict[str, Any]):
+        if self.display_type is int:
+            display_type = dpg.mvColorEdit_uint8
+        elif self.display_type is float:
+            display_type = dpg.mvColorEdit_float
+        else:
+            raise TypeError(f"display_type must be `int` or `float`, not {self.display_type}")
+        if self.display_mode == "RGB":
+            display_mode = dpg.mvColorEdit_rgb
+        elif self.display_mode == "HEX":
+            display_mode = dpg.mvColorEdit_hex
+        else:
+            raise ValueError(f"display_mode must be 'RGB' or 'HEX', not {self.display_mode!r}")
+        return dpg.add_color_edit(
+            source=self.id_,
+            callback=self.update_variable,
+            no_alpha=(not self.has_alpha),
+            user_data=(self.mod, self.variable_name),
+            width=-1,
+            enabled=self.has_setter,
+            no_label=True,
+            alpha_bar=self.has_alpha,
+            no_drag_drop=False,
+            display_type=display_type,
+            display_mode=display_mode,
+            **extra_args,
+        )

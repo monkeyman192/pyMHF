@@ -1,6 +1,6 @@
 from contextvars import ContextVar
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Generic, NamedTuple, Optional, Protocol, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, Literal, NamedTuple, Optional, Protocol, Type, TypeVar, Union
 
 if TYPE_CHECKING:
     from pymhf.gui.widgets import Widget
@@ -37,7 +37,8 @@ class VariableType(Enum):
     STRING = 2
     BOOLEAN = 3
     ENUM = 4
-    CUSTOM = 5
+    COLOUR = 5
+    CUSTOM = 6
 
 
 # Widget data - This is the info that we provide from the decorator and bind to our decorated function.
@@ -141,6 +142,30 @@ class EnumVariableWidgetData(VariableWidgetData):
         return {
             **super().asdict(),
             "enum": self.enum,
+        }
+
+
+class ColourVariableWidgetData(VariableWidgetData):
+    def __init__(
+        self,
+        id_: str,
+        label: str,
+        has_alpha: bool = True,
+        display_type: Union[type[int], type[float]] = int,
+        display_mode: Literal["RGB", "HEX"] = "RGB",
+        extra_args: Optional[dict] = None,
+    ):
+        super().__init__(id_, label, VariableType.COLOUR, False, extra_args)
+        self.has_alpha = has_alpha
+        self.display_type = display_type
+        self.display_mode = display_mode
+
+    def asdict(self):
+        return {
+            **super().asdict(),
+            "has_alpha": self.has_alpha,
+            "display_mode": self.display_mode,
+            "display_type": self.display_type,
         }
 
 

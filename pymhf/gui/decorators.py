@@ -2,10 +2,11 @@ from contextlib import contextmanager
 from enum import Enum
 from hashlib import md5
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, Callable, Optional, Type, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Type, Union, cast
 
 from pymhf.gui.widget_data import (
     ButtonWidgetData,
+    ColourVariableWidgetData,
     EnumVariableWidgetData,
     GroupData,
     GUIElementProtocol,
@@ -40,6 +41,10 @@ def gui_group(group_label: Optional[str] = None):
 
 
 def gui_button(label: str):
+    """Create a button in the GUI with the provided label.
+    When the button is pressed, the method which is decorated will be called with no arguments.
+    """
+
     def inner(func: Callable[..., Any]) -> GUIElementProtocol[ButtonWidgetData]:
         func = cast(GUIElementProtocol, func)
         func._widget_data = ButtonWidgetData(func.__qualname__, label)
@@ -184,9 +189,62 @@ class gui_variable:
 
         return inner
 
+    @classmethod
+    def COLOUR(
+        cls,
+        label: str,
+        has_alpha: bool = True,
+        display_type: Union[type[int], type[float]] = int,
+        display_mode: Literal["RGB", "HEX"] = "RGB",
+        **extra_args,
+    ):
+        """Create a colour entry field in the form of a colour editor which can take extra arguments.
+        A few common options are able to be specified separately:
+        - has_alpha: Whether the alpha needs to be able to be specified.
+        - display_type: Whether to display the colour as a float (0 -> 1) or int (0 -> 255). This has no
+            effect if `display_mode="HEX"`.
+        - display_mode: Whether to use RGB or hexadecimal to represent the colour.
+            RGB will display each component of the colour separately depending on the value of `display_type`.
+            HEX will display the entire colour as a hex string (eg. #FFAABB).
+        To see what extra arguments are available, see the DearPyGUI documentation
+        `here <https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_color_edit>`__.
+
+        Note: This decorator MUST be applied closer to the decorated function than the ``@property`` decorator
+        """
+
+        def inner(func: Callable[..., Any]) -> GUIElementProtocol[ColourVariableWidgetData]:
+            func = cast(GUIElementProtocol, func)
+            gui_variable._clean_extra_args(extra_args)
+            # We need to pop a few extra args so as to not break anything downstream once we create the
+            # color_edit widget.
+            for arg_name in (
+                "no_alpha",
+                "user_data",
+                "width",
+                "enabled",
+                "no_label",
+                "alpha_bar",
+                "no_drag_drop",
+                "display_type",
+                "display_mode",
+            ):
+                extra_args.pop(arg_name, None)
+            func._widget_data = ColourVariableWidgetData(
+                func.__qualname__,
+                label,
+                has_alpha,
+                display_type,
+                display_mode,
+                extra_args,
+            )
+            return func
+
+        return inner
+
 
 INTEGER = gui_variable.INTEGER
 BOOLEAN = gui_variable.BOOLEAN
 STRING = gui_variable.STRING
 FLOAT = gui_variable.FLOAT
 ENUM = gui_variable.ENUM
+COLOR = COLOUR = gui_variable.COLOUR
