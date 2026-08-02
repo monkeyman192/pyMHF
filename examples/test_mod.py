@@ -1,6 +1,6 @@
 # /// script
 # dependencies = ["pymhf[gui]>=0.1.15"]
-# 
+#
 # [tool.pymhf]
 # exe = "notepad.exe"
 # start_paused = false
@@ -9,7 +9,7 @@
 #
 # [tool.pymhf.gui]
 # always_on_top = false
-# 
+#
 # [tool.pymhf.logging]
 # shown = false
 # log_dir = "."

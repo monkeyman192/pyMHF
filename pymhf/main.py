@@ -626,16 +626,17 @@ pymhf.core._internal._SENTINEL_PTR = {sentinel_addr!r}
         try:
             for _ in concurrent.futures.as_completed(futures, timeout=5):
                 pass
-        except TimeoutError:
+        except concurrent.futures.TimeoutError:
             # Don't really care.
-            print("Got a time out error...")
             pass
         if executor is not None:
-            executor.shutdown(wait=False)
+            executor.shutdown(wait=False, cancel_futures=True)
 
         # Have a short nap and then finish trying to clean up.
         time.sleep(0.5)
-        if REMOVE_SELF:
+        # Check to see if we have started the exe manually or not. If we are attaching to an already running
+        # process then we don't kill it.
+        if REMOVE_SELF and start_exe:
             pids = {pm_binary.process_id, log_pid}
         else:
             pids = {

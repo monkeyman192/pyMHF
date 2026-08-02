@@ -1,5 +1,6 @@
 import asyncio
 import builtins
+import concurrent.futures
 import ctypes
 import locale
 import logging
@@ -9,7 +10,6 @@ import os.path as op
 import sys
 import time
 import traceback
-from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from typing import TYPE_CHECKING, Optional
 
@@ -34,6 +34,7 @@ except Exception:
 from pymhf.core.utils import get_main_window_handle
 
 socket_logger_loaded = False
+gui = None
 executor = None
 api_executor = None
 api_server = None
@@ -175,7 +176,7 @@ try:
             # Have an "escape sequence" which will force this to exit.
             # This way we can kill it if need be from the other end.
             if __data == ESCAPE_SEQUENCE:
-                print("\nReceived exit command!")
+                print("\nReceived exit command")
                 raise ExecutionEndedException
             elif __data == READY_ASK_SEQUENCE:
                 print("\nReceived ready ask command")
@@ -224,7 +225,7 @@ try:
     # in the various functions to set and get keypresses don't work correctly.
     locale.setlocale(locale.LC_CTYPE, "C")
 
-    executor = ThreadPoolExecutor(2, thread_name_prefix="pyMHF_Internal_Executor")
+    executor = concurrent.futures.ThreadPoolExecutor(2, thread_name_prefix="pyMHF_Internal_Executor")
 
     binary = pymem.Pymem(_internal.EXE_NAME, exact_match=True)
     cache.module_map = {x.name: x for x in pymem.process.enum_process_module(binary.process_handle)}
@@ -322,10 +323,11 @@ try:
 
     # Add the API.
     if API_ALLOWED:
-        api_executor = ThreadPoolExecutor(1, thread_name_prefix="pyMHF_API_Executor")
+        api_executor = concurrent.futures.ThreadPoolExecutor(1, thread_name_prefix="pyMHF_API_Executor")
         api_server = ThreadedServer(api_app, "0.0.0.0", 5000)
         futures.append(api_executor.submit(api_server.run))
         logging.info("Running server on http://localhost:5000")
+        logging.info("HTTP Api documentation: http://localhost:5000/docs")
 
         # Loop over the mods which have been loaded and add any api routes which have been found.
         for mod in mod_manager.mods.values():
@@ -374,6 +376,20 @@ try:
     server.close()
     loop.run_until_complete(server.wait_closed())
     loop.close()
+
+    # Shut down futures and gui.
+    if gui is not None:
+        gui.exit()
+    try:
+        for _ in concurrent.futures.as_completed(futures, timeout=5):
+            pass
+    except concurrent.futures.TimeoutError:
+        # Don't really care.
+        pass
+    if executor is not None:
+        executor.shutdown(wait=False, cancel_futures=True)
+    if api_executor is not None:
+        api_executor.shutdown(wait=False, cancel_futures=True)
 
 except Exception:
     # If we hit this, something has gone wrong. Log to the current directory.

@@ -16,7 +16,7 @@ The functionality is implemented using the following decorator:
 This decorator marks the function or property as one which will be exposed as a HTTP endpoint.
 
 The ``route`` is an optional parameter which, if not provided will fall-back to the name of the function or property being decorated.
-This value will be prefixed with the name of the mod, so in the following code, the endpoint will be `GET mymod/location`:
+This value will be prefixed with the name of the mod, so in the following code, the endpoint will be ``GET MyMod/location``:
 
 .. code-block:: python
 
@@ -61,4 +61,5 @@ Websockets
 Websockets are created using the above decorator, and are currently read-only. This means that they can only be applied to properties.
 
 .. warning::
-    Since websockets can poll very frequently, care must be taken to not allow anything which can take any appreciable amount of time to return, otherwise you may see a performance hit.
+    Since websockets can poll very frequently, care must be taken to not allow anything which can take any appreciable amount of time to return,
+    otherwise you may see a performance hit.
