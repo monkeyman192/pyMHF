@@ -26,7 +26,28 @@ import pymhf.core._internal as _internal
 from pymhf.core._types import CustomTriggerProtocol, HookProtocol, KeyPressProtocol
 from pymhf.core.errors import NoSaveError
 from pymhf.core.hooking import HookManager
-from pymhf.core.http_api import APIEndpointProtocol, CleanableAPIRouter, EndpointData, api_app, router_mapping
+
+if TYPE_CHECKING:
+    from pymhf.core.http_api import (
+        APIEndpointProtocol,
+        CleanableAPIRouter,
+        EndpointData,
+        api_app,
+        router_mapping,
+    )
+
+try:
+    from pymhf.core.http_api import (
+        APIEndpointProtocol,
+        CleanableAPIRouter,
+        EndpointData,
+        api_app,
+        router_mapping,
+    )
+
+    HTTP_API_ALLOWED = True
+except ImportError:
+    HTTP_API_ALLOWED = False
 from pymhf.core.importing import import_file, parse_file_for_mod
 from pymhf.core.memutils import get_addressof, map_struct
 from pymhf.core.utils import does_pid_have_focus, saferun
@@ -213,7 +234,8 @@ class Mod(ABC):
         self._gui_widgets = []
         group_data: dict[str, GroupWidgetData] = {}
         # Also keep track of any API endpoints which are declared.
-        self._endpoints: dict[str, list[APIEndpointProtocol]] = {"GET": [], "PUT": [], "WEBSOCKET": []}
+        self._http_endpoints: dict[str, list[APIEndpointProtocol]] = {"GET": [], "PUT": [], "WEBSOCKET": []}
+        self._has_invalid_http_endpoints = False
 
         for obj in type(self).__dict__.values():
             if isinstance(obj, property):
@@ -228,6 +250,8 @@ class Mod(ABC):
                         func._widget_data.has_setter = obj.fset is not None
                     self._handle_widget_data(func, group_data)
                 if obj.fget and hasattr(obj.fget, "_api_endpoint"):
+                    if not HTTP_API_ALLOWED:
+                        self._has_invalid_http_endpoints = True
                     fget = cast(APIEndpointProtocol, MethodType(obj.fget, self))
                     if (method := fget._api_endpoint.method) is None:
                         # If we haven't specified a method, then set it automatically depending on the object.
@@ -238,7 +262,7 @@ class Mod(ABC):
                             "_api_endpoint",
                             EndpointData(fget._api_endpoint.route, method, fget._api_endpoint.dont_extend),
                         )
-                    self._endpoints[method].append(fget)
+                    self._http_endpoints[method].append(fget)
                     if obj.fset is not None:
                         if not fget._api_endpoint.dont_extend:
                             # If we haven't explicitly been told not to create a PUT request for the setter,
@@ -249,12 +273,14 @@ class Mod(ABC):
                                 "_api_endpoint",
                                 EndpointData(fget._api_endpoint.route, "PUT", False),
                             )
-                            self._endpoints["PUT"].append(fset)
+                            self._http_endpoints["PUT"].append(fset)
             else:
                 if hasattr(obj, "_widget_data"):
                     func = cast(GUIElementProtocol[WidgetData], MethodType(obj, self))
                     self._handle_widget_data(func, group_data)
                 if hasattr(obj, "_api_endpoint"):
+                    if not HTTP_API_ALLOWED:
+                        self._has_invalid_http_endpoints = True
                     # Also need to handle the case of endpoints not being properties.
                     func = cast(APIEndpointProtocol, MethodType(obj, self))
                     if (method := func._api_endpoint.method) is None:
@@ -271,7 +297,7 @@ class Mod(ABC):
                             "_api_endpoint",
                             EndpointData(func._api_endpoint.route, method, func._api_endpoint.dont_extend),
                         )
-                    self._endpoints[method].append(func)
+                    self._http_endpoints[method].append(func)
 
         self.pymhf_gui: Optional[GUI] = None
 
@@ -679,10 +705,10 @@ class ModManager:
 
                     # Get the HTTP router if there is one for this mod.
                     if (mod_router := router_mapping.get(mod._mod_name)) is not None:
-                        mod_router.load_routes(mod._endpoints)
+                        mod_router.load_routes(mod._http_endpoints)
                     else:
                         mod_router = CleanableAPIRouter(mod._mod_name, prefix=f"/{mod._mod_name}")
-                        mod_router.load_routes(mod._endpoints)
+                        mod_router.load_routes(mod._http_endpoints)
                         api_app.include_router(mod_router, tags=[mod._mod_name])
                         router_mapping[mod._mod_name] = mod_router
 

@@ -27,9 +27,9 @@ if TYPE_CHECKING:
 try:
     from pymhf.core.http_api import CleanableAPIRouter, ThreadedServer, api_app, router_mapping
 
-    API_ALLOWED = True
-except Exception:
-    API_ALLOWED = False
+    HTTP_API_ALLOWED = True
+except ImportError:
+    HTTP_API_ALLOWED = False
 
 from pymhf.core.utils import get_main_window_handle
 
@@ -322,7 +322,7 @@ try:
     futures = []
 
     # Add the API.
-    if API_ALLOWED:
+    if HTTP_API_ALLOWED:
         api_executor = concurrent.futures.ThreadPoolExecutor(1, thread_name_prefix="pyMHF_API_Executor")
         api_server = ThreadedServer(api_app, "0.0.0.0", 5000)
         futures.append(api_executor.submit(api_server.run))
@@ -331,19 +331,19 @@ try:
 
         # Loop over the mods which have been loaded and add any api routes which have been found.
         for mod in mod_manager.mods.values():
-            if sum(len(x) for x in mod._endpoints.values()) == 0:
+            if sum(len(x) for x in mod._http_endpoints.values()) == 0:
                 # If we have no endpoints for a mod, then skip this step for it.
                 continue
             # Create a router for each mod so that we can logically group endpoints.
             mod_router = CleanableAPIRouter(mod._mod_name, prefix=f"/{mod._mod_name}")
-            mod_router.load_routes(mod._endpoints)
+            mod_router.load_routes(mod._http_endpoints)
             api_app.include_router(mod_router, tags=[mod._mod_name])
             router_mapping[mod._mod_name] = mod_router
     else:
         # Check to see if any mods have any http api endpoints defined. If so, show a warning that they won't
         # work and to install the correct dependency.
         for mod in mod_manager.mods.values():
-            if sum(len(x) for x in mod._endpoints.values()) != 0:
+            if mod._has_invalid_http_endpoints:
                 logging.warning(
                     "One or more mods with HTTP endpoints were detected. This functionality will not be "
                     "enabled since you don't have the `http_api` optional dependency installed."

@@ -4,18 +4,22 @@ from importlib.metadata import PackageNotFoundError, version
 from logging import getLogger
 from typing import Any, Callable, Literal, NamedTuple, Optional, Protocol, Type
 
-import uvicorn
-from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.docs import get_swagger_ui_html
+logger = getLogger(__name__)
+
+try:
+    import uvicorn
+    from fastapi import APIRouter, FastAPI, WebSocket, WebSocketDisconnect
+    from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.openapi.docs import get_swagger_ui_html
+except ImportError:
+    raise ImportError(
+        "http_api optional dependency not found for pyMHF. Install `pymhf[http_api] to include it."
+    )
 
 try:
     pymhf_version = version("pymhf")
 except PackageNotFoundError:
     pymhf_version = "unknown"
-
-
-logger = getLogger(__name__)
 
 
 # Have a mapping of the names of the endpoint function and the actual function.
