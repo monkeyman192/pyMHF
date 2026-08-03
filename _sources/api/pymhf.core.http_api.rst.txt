@@ -1,0 +1,7 @@
+pymhf.core.http\_api module
+===========================
+
+.. automodule:: pymhf.core.http_api
+   :members:
+   :show-inheritance:
+   :undoc-members:

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>pymhf.utils.partial_struct module &#8212; pyMHF  documentation</title>
+    <title>pymhf.core.http_api module &#8212; pyMHF  documentation</title>
   
   
   
@@ -41,12 +41,12 @@
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf.utils.partial_struct';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf.core.http_api';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pymhf.utils.winapi module" href="pymhf.utils.winapi.html" />
-    <link rel="prev" title="pymhf.utils.parse_toml module" href="pymhf.utils.parse_toml.html" />
+    <link rel="next" title="pymhf.core.importing module" href="pymhf.core.importing.html" />
+    <link rel="prev" title="pymhf.core.hooking module" href="pymhf.core.hooking.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -304,13 +304,13 @@
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="pymhf.html">pymhf package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="pymhf.core.html">pymhf.core package</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="pymhf.core.html">pymhf.core package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.calling.html">pymhf.core.calling module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.errors.html">pymhf.core.errors module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.functions.html">pymhf.core.functions module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.hashing.html">pymhf.core.hashing module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.hooking.html">pymhf.core.hooking module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pymhf.core.http_api.html">pymhf.core.http_api module</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">pymhf.core.http_api module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.importing.html">pymhf.core.importing module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.log_handling.html">pymhf.core.log_handling module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.core.memutils.html">pymhf.core.memutils module</a></li>
@@ -332,12 +332,12 @@
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widgets.html">pymhf.gui.widgets module</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 current active has-children"><a class="reference internal" href="pymhf.utils.html">pymhf.utils namespace</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="pymhf.utils.html">pymhf.utils namespace</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.utils.config.html">pymhf.utils.config module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.utils.iced.html">pymhf.utils.iced module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.utils.imports.html">pymhf.utils.imports module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.utils.parse_toml.html">pymhf.utils.parse_toml module</a></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">pymhf.utils.partial_struct module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pymhf.utils.partial_struct.html">pymhf.utils.partial_struct module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.utils.winapi.html">pymhf.utils.winapi module</a></li>
 </ul>
 </details></li>
@@ -391,9 +391,9 @@
     <li class="breadcrumb-item"><a href="pymhf.html" class="nav-link">pymhf package</a></li>
     
     
-    <li class="breadcrumb-item"><a href="pymhf.utils.html" class="nav-link">pymhf.utils namespace</a></li>
+    <li class="breadcrumb-item"><a href="pymhf.core.html" class="nav-link">pymhf.core package</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pymhf.utils.partial_struct module</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pymhf.core.http_api module</span></li>
   </ul>
 </nav>
 </div>
@@ -410,30 +410,103 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-pymhf.utils.partial_struct">
-<span id="pymhf-utils-partial-struct-module"></span><h1>pymhf.utils.partial_struct module<a class="headerlink" href="#module-pymhf.utils.partial_struct" title="Link to this heading">#</a></h1>
+  <section id="module-pymhf.core.http_api">
+<span id="pymhf-core-http-api-module"></span><h1>pymhf.core.http_api module<a class="headerlink" href="#module-pymhf.core.http_api" title="Link to this heading">#</a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="pymhf.utils.partial_struct.Field">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.utils.partial_struct.</span></span><span class="sig-name descname"><span class="pre">Field</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_ctypes._SimpleCData</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_ctypes.Structure</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pymhf.core._Pointer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_ctypes._Pointer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_ctypes.Array</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_ctypes.Union</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="pymhf.extensions.ctypes.html#pymhf.extensions.ctypes.c_enum8" title="pymhf.extensions.ctypes.c_enum8"><span class="pre">pymhf.extensions.ctypes.c_enum8</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="pymhf.extensions.ctypes.html#pymhf.extensions.ctypes.c_enum16" title="pymhf.extensions.ctypes.c_enum16"><span class="pre">pymhf.extensions.ctypes.c_enum16</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="pymhf.extensions.ctypes.html#pymhf.extensions.ctypes.c_enum32" title="pymhf.extensions.ctypes.c_enum32"><span class="pre">pymhf.extensions.ctypes.c_enum32</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.utils.partial_struct.Field" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dt class="sig sig-object py" id="pymhf.core.http_api.APIEndpointProtocol">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.core.http_api.</span></span><span class="sig-name descname"><span class="pre">APIEndpointProtocol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.http_api.APIEndpointProtocol" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></a></p>
+<p>Protocol for API Endpoint objects</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.core.http_api.CleanableAPIRouter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.core.http_api.</span></span><span class="sig-name descname"><span class="pre">CleanableAPIRouter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.http_api.CleanableAPIRouter" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">APIRouter</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.http_api.CleanableAPIRouter.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.http_api.CleanableAPIRouter.clear" title="Link to this definition">#</a></dt>
+<dd><p>Remove all existing routes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.http_api.CleanableAPIRouter.load_routes">
+<span class="sig-name descname"><span class="pre">load_routes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="pymhf.extensions.cpptypes.html#pymhf.extensions.cpptypes.std.list" title="pymhf.extensions.cpptypes.std.list"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pymhf.core.http_api.APIEndpointProtocol" title="pymhf.core.http_api.APIEndpointProtocol"><span class="pre">APIEndpointProtocol</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.http_api.CleanableAPIRouter.load_routes" title="Link to this definition">#</a></dt>
+<dd><p>Load all the routes for a mod.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.core.http_api.EndpointData">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.core.http_api.</span></span><span class="sig-name descname"><span class="pre">EndpointData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">route</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dont_extend</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.http_api.EndpointData" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.NamedTuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></a></p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="pymhf.utils.partial_struct.Field.datatype">
-<span class="sig-name descname"><span class="pre">datatype</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_SimpleCData</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.Structure" title="(in Python v3.14)"><span class="pre">Structure</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_Pointer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_Pointer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.Array" title="(in Python v3.14)"><span class="pre">Array</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/ctypes.html#ctypes.Union" title="(in Python v3.14)"><span class="pre">Union</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="pymhf.extensions.ctypes.html#pymhf.extensions.ctypes.c_enum8" title="pymhf.extensions.ctypes.c_enum8"><span class="pre">c_enum8</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="pymhf.extensions.ctypes.html#pymhf.extensions.ctypes.c_enum16" title="pymhf.extensions.ctypes.c_enum16"><span class="pre">c_enum16</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="pymhf.extensions.ctypes.html#pymhf.extensions.ctypes.c_enum32" title="pymhf.extensions.ctypes.c_enum32"><span class="pre">c_enum32</span></a></span><a class="headerlink" href="#pymhf.utils.partial_struct.Field.datatype" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="pymhf.core.http_api.EndpointData.dont_extend">
+<span class="sig-name descname"><span class="pre">dont_extend</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#pymhf.core.http_api.EndpointData.dont_extend" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="pymhf.utils.partial_struct.Field.offset">
-<span class="sig-name descname"><span class="pre">offset</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#pymhf.utils.partial_struct.Field.offset" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="pymhf.core.http_api.EndpointData.method">
+<span class="sig-name descname"><span class="pre">method</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'GET'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'PUT'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'WEBSOCKET'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#pymhf.core.http_api.EndpointData.method" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pymhf.core.http_api.EndpointData.route">
+<span class="sig-name descname"><span class="pre">route</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#pymhf.core.http_api.EndpointData.route" title="Link to this definition">#</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pymhf.core.http_api.ThreadedServer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.core.http_api.</span></span><span class="sig-name descname"><span class="pre">ThreadedServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FastAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.http_api.ThreadedServer" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Loosely wrapped version of the uvicorn Server object to facilitate running it in a thread.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.http_api.ThreadedServer.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.http_api.ThreadedServer.run" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pymhf.core.http_api.ThreadedServer.shutdown">
+<span class="sig-name descname"><span class="pre">shutdown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.http_api.ThreadedServer.shutdown" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pymhf.utils.partial_struct.partial_struct">
-<span class="sig-prename descclassname"><span class="pre">pymhf.utils.partial_struct.</span></span><span class="sig-name descname"><span class="pre">partial_struct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_T</span></span></span><a class="headerlink" href="#pymhf.utils.partial_struct.partial_struct" title="Link to this definition">#</a></dt>
-<dd><p>Mark the decorated class as a partial struct.
-This will automatically construct the <code class="docutils literal notranslate"><span class="pre">_field_</span></code> attribute for this class</p>
+<dt class="sig sig-object py" id="pymhf.core.http_api.create_app">
+<span class="sig-prename descclassname"><span class="pre">pymhf.core.http_api.</span></span><span class="sig-name descname"><span class="pre">create_app</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">FastAPI</span></span></span><a class="headerlink" href="#pymhf.core.http_api.create_app" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.core.http_api.endpoint">
+<span class="sig-prename descclassname"><span class="pre">pymhf.core.http_api.</span></span><span class="sig-name descname"><span class="pre">endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">route</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'GET'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'PUT'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'WEBSOCKET'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dont_extend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.http_api.endpoint" title="Link to this definition">#</a></dt>
+<dd><p>Create a HTTP endpoint for the decorated method or property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>route</strong> – The name of the path to serve the endpoint on.
+This will always be relative to the name of the mod this method or property belongs to.
+If not provided, it will fallback to the name of the function.</p></li>
+<li><p><strong>method</strong> – The type of HTTP request this will be bound to.
+Note that if this is specified as “WEBSOCKET”, this function will be called repeatedly, so make sure
+nothing which blocks or takes a long time to retrieve is called.</p></li>
+<li><p><strong>dont_extend</strong> – By default, if this decorator is applied to a property, if that property also has a setter, then a
+PUT endpoint will also be generated for it. To disable this set this to True.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pymhf.core.http_api.websocket_wrapper">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pymhf.core.http_api.</span></span><span class="sig-name descname"><span class="pre">websocket_wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">websocket</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">WebSocket</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.http_api.websocket_wrapper" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
 
 </section>
 
@@ -448,20 +521,20 @@ This will automatically construct the <code class="docutils literal notranslate"
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="pymhf.utils.parse_toml.html"
+       href="pymhf.core.hooking.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">pymhf.utils.parse_toml module</p>
+        <p class="prev-next-title">pymhf.core.hooking module</p>
       </div>
     </a>
     <a class="right-next"
-       href="pymhf.utils.winapi.html"
+       href="pymhf.core.importing.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">pymhf.utils.winapi module</p>
+        <p class="prev-next-title">pymhf.core.importing module</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

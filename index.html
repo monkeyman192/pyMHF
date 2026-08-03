@@ -27,16 +27,16 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=7f76b32a3354e82990f2" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="_static/scripts/fontawesome.js?digest=7f76b32a3354e82990f2"></script>
+  <script defer src="_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="_static/documentation_options.js?v=5929fcd5"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
@@ -63,7 +63,9 @@
 
   
   <div id="pst-scroll-pixel-helper"></div>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -159,11 +161,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -176,8 +185,7 @@
           
           
           
-          <a href="https://github.com/monkeyman192/pyMHF" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/monkeyman192/pyMHF" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -250,11 +258,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -267,8 +282,7 @@
           
           
           
-          <a href="https://github.com/monkeyman192/pyMHF" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/monkeyman192/pyMHF" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -308,11 +322,13 @@
 <h1>pyMHF documentation<a class="headerlink" href="#pymhf-documentation" title="Link to this heading">#</a></h1>
 <p>pyMHF is a python Modding and Hooking Framework.
 It is designed to make it very easy to create libraries for any game or application which can then be used to make mods.
-pyMHF is also able to run single python files as a mod <a class="reference external" href="https://docs.astral.sh/uv/">uv</a> recommended. See <a class="reference external" href="single_file_mods">here</a> for more details</p>
+pyMHF is also able to run single python files as a mod. To do so, using <a class="reference external" href="https://docs.astral.sh/uv/">uv</a> is recommended. See <a class="reference external" href="docs/single_file_mods">here</a> for more details</p>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>When using uv as a package manager, it’s very important that you DO NOT let uv use its managed python installs with pyMHF. These python builds do not seem to like being injected and will cause the target process to crash.
-It is recommended that you have a python version between 3.9+ installed from the official python source, and you can potentially even set the <code class="docutils literal notranslate"><span class="pre">UV_NO_MANAGED_PYTHON</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">false</span></code> on your system to force uv to use the system installs.</p>
+<p>When using uv as a package manager, it’s very important that you DO NOT let uv use its managed python installs with pyMHF.
+These python builds do not seem to like being injected and will cause the target process to crash.
+It is recommended that you have a python version between 3.9+ installed from the official python source,
+and you can potentially even set the <code class="docutils literal notranslate"><span class="pre">UV_NO_MANAGED_PYTHON</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">false</span></code> on your system to force uv to use the system installs.</p>
 </div>
 <section id="features">
 <h2>Features<a class="headerlink" href="#features" title="Link to this heading">#</a></h2>
@@ -323,20 +339,29 @@ It is recommended that you have a python version between 3.9+ installed from the
 <section id="live-mod-reloading">
 <h3>Live mod reloading<a class="headerlink" href="#live-mod-reloading" title="Link to this heading">#</a></h3>
 <p>Any mod which is loaded by pyMHF is automatically able to be reloaded via the GUI.
-When a mod is loaded, it will have its own tab in the GUI, and at the top of the tab is a “reload” button. Pressing this will unload the currently loaded <code class="docutils literal notranslate"><span class="pre">Mod</span></code> instance from the mod file and reload the file from disk, re-hooking any functions required, and updating the tab for the mod if any gui elements have been added, removed or modified.</p>
+When a mod is loaded, it will have its own tab in the GUI, and at the top of the tab is a “reload” button.
+Pressing this will unload the currently loaded <code class="docutils literal notranslate"><span class="pre">Mod</span></code> instance from the mod file and reload the file from disk,
+re-hooking any functions required, and updating the tab for the mod if any gui elements have been added, removed or modified.</p>
 </section>
 <section id="multi-detour-capability">
 <h3>Multi-detour capability<a class="headerlink" href="#multi-detour-capability" title="Link to this heading">#</a></h3>
 <p>pyMHF is able to support multiple detours for a single hooked function by enforcing detours to either be run before or after the original function.
-This means that multiple mods can hook the same function and the only contention issues are those of the order in which the mods are instanitated. All valid hooks will be run from all loaded mods on the same hooked function.</p>
+This means that multiple mods can hook the same function and the only contention issues are those of the order in which the mods are instanitated.
+All valid hooks will be run from all loaded mods on the same hooked function.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Detours should generally be written such that their order doesn’t matter.</p>
+<p>Detours should be written such that their order doesn’t matter.</p>
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>If you want to write a detour that does something both before and after the original function is run, write two detours! One <em>before</em> detour, and one <em>after</em>.</p>
 </div>
+</section>
+<section id="http-api-generation">
+<h3>HTTP API Generation<a class="headerlink" href="#http-api-generation" title="Link to this heading">#</a></h3>
+<p>Properties and methods in a mod are able to bound to HTTP endpoints by leveraging <a class="reference external" href="https://fastapi.tiangolo.com/">FastAPI</a>.
+Currently <cite>GET</cite> and <cite>PUT</cite> endpoints are supported, as well as read-only websockets. This functionality will be expanded upon in the future.
+For more details, see <a class="reference external" href="docs/http_api">here</a>.</p>
 <div class="toctree-wrapper compound">
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Documentation:</span></p>
 <ul>
@@ -353,6 +378,7 @@ This means that multiple mods can hook the same function and the only contention
 <li class="toctree-l2"><a class="reference internal" href="docs/extension_types.html">Extension types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/libraries/index.html">Creating modding API’s with pyMHF</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/gui/index.html">GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/http_api.html">HTTP API</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/change_log.html">Change Log</a></li>
 </ul>
 </li>
@@ -403,8 +429,8 @@ This means that multiple mods can hook the same function and the only contention
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -438,7 +464,7 @@ This means that multiple mods can hook the same function and the only contention
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.20.0.
 </p></div>
       
     </div>

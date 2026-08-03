@@ -4,16 +4,17 @@ Change Log
 Current (0.2.4.dev)
 -------------------
 
+- Fixed an issue where the :py:class:`~pymhf.extensions.cpptypes._vector` type incorrectly calculated the length of the vector.
 - Add a colour picker widget. This is implemented as the decorator :py:attr:`~pymhf.gui.decorators.COLOUR` (or :py:attr:`~pymhf.gui.decorators.COLOR` for the Americans).
 - Fixed an issue where quotation marks were added to :py:attr:`~pymhf.gui.decorators.STRING` values in the UI.
 - Fixed an issue where, if an exception occurred during the calling of a ``one_shot`` detour, the detour wouldn't be unregistered. (`#109 <https://github.com/monkeyman192/pyMHF/issues/109>`_)
+- Added the ability to bind properties and methods to HTTP endpoints and generate OpenAPI docs based on this. See :doc:`here </docs/http_api>` for more details.
 
 0.2.3 (08/04/2026)
 ------------------
 
 - Changed the underlying type for the ``pymhf.extensions.ctypes.c_enumN`` types so that they subclass from unsigned integers instead of signed integers.
 - Added the :py:class:`~pymhf.extensions.ctypes.c_enum8` type for creating enums whose value is serialized as an 8bit integer.
-- Fixed an issue where the :py:class:`~pymhf.extensions.cpptypes._vector` type incorrectly calculated the length of the vector.
 - Added a toggle in the gui settings to enable reloading modules. When enabled, reloading a mod will reload all other python modules in the same directory. Anything within a ``.venv`` folder within the same directory will NOT be reloaded, neither will a file containing a mod (other than the original mod file being reloaded).
 
 0.2.2 (11/02/2026)
