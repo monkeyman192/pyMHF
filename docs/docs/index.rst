@@ -1,5 +1,5 @@
 Usage guide
-==================
+===========
 
 .. toctree::
    :maxdepth: 1
@@ -15,4 +15,5 @@ Usage guide
    extension_types
    libraries/index
    gui/index
+   http_api
    change_log

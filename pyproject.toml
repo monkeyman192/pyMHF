@@ -45,6 +45,10 @@ dynamic = ["version"]
 gui = [
   "dearpygui",
 ]
+http_api = [
+  "uvicorn",
+  "fastapi",
+]
 
 [dependency-groups]
 dev = [

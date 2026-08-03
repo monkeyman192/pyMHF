@@ -1,5 +1,6 @@
 import asyncio
 import builtins
+import concurrent.futures
 import ctypes
 import locale
 import logging
@@ -9,9 +10,8 @@ import os.path as op
 import sys
 import time
 import traceback
-from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 if sys.version_info < (3, 10):
     from importlib_metadata import entry_points
@@ -21,10 +21,23 @@ else:
 import pymem
 import pymem.process
 
+if TYPE_CHECKING:
+    from pymhf.core.http_api import CleanableAPIRouter, ThreadedServer, api_app, router_mapping
+
+try:
+    from pymhf.core.http_api import CleanableAPIRouter, ThreadedServer, api_app, router_mapping
+
+    HTTP_API_ALLOWED = True
+except ImportError:
+    HTTP_API_ALLOWED = False
+
 from pymhf.core.utils import get_main_window_handle
 
 socket_logger_loaded = False
+gui = None
 executor = None
+api_executor = None
+api_server = None
 ready = False
 
 try:
@@ -143,7 +156,7 @@ try:
         globals().
         """
 
-        def connection_made(self, transport: asyncio.transports.WriteTransport):
+        def connection_made(self, transport: asyncio.transports.WriteTransport):  # type: ignore
             self.transport: asyncio.transports.WriteTransport = transport
             # peername = transport.get_extra_info('peername')
             # self.write(f'Connection from {peername} ')
@@ -159,11 +172,11 @@ try:
             """
             self.transport.write(value.encode())
 
-        def data_received(self, __data: bytes):
+        def data_received(self, __data: bytes):  # type: ignore
             # Have an "escape sequence" which will force this to exit.
             # This way we can kill it if need be from the other end.
             if __data == ESCAPE_SEQUENCE:
-                print("\nReceived exit command!")
+                print("\nReceived exit command")
                 raise ExecutionEndedException
             elif __data == READY_ASK_SEQUENCE:
                 print("\nReceived ready ask command")
@@ -212,7 +225,7 @@ try:
     # in the various functions to set and get keypresses don't work correctly.
     locale.setlocale(locale.LC_CTYPE, "C")
 
-    executor = ThreadPoolExecutor(2, thread_name_prefix="pyMHF_Internal_Executor")
+    executor = concurrent.futures.ThreadPoolExecutor(2, thread_name_prefix="pyMHF_Internal_Executor")
 
     binary = pymem.Pymem(_internal.EXE_NAME, exact_match=True)
     cache.module_map = {x.name: x for x in pymem.process.enum_process_module(binary.process_handle)}
@@ -307,6 +320,36 @@ try:
     server = loop.run_until_complete(coro)
 
     futures = []
+
+    # Add the API.
+    if HTTP_API_ALLOWED:
+        api_executor = concurrent.futures.ThreadPoolExecutor(1, thread_name_prefix="pyMHF_API_Executor")
+        api_server = ThreadedServer(api_app, "0.0.0.0", 5000)
+        futures.append(api_executor.submit(api_server.run))
+        logging.info("Running server on http://localhost:5000")
+        logging.info("HTTP Api documentation: http://localhost:5000/docs")
+
+        # Loop over the mods which have been loaded and add any api routes which have been found.
+        for mod in mod_manager.mods.values():
+            if sum(len(x) for x in mod._http_endpoints.values()) == 0:
+                # If we have no endpoints for a mod, then skip this step for it.
+                continue
+            # Create a router for each mod so that we can logically group endpoints.
+            mod_router = CleanableAPIRouter(mod._mod_name, prefix=f"/{mod._mod_name}")
+            mod_router.load_routes(mod._http_endpoints)
+            api_app.include_router(mod_router, tags=[mod._mod_name])
+            router_mapping[mod._mod_name] = mod_router
+    else:
+        # Check to see if any mods have any http api endpoints defined. If so, show a warning that they won't
+        # work and to install the correct dependency.
+        for mod in mod_manager.mods.values():
+            if mod._has_invalid_http_endpoints:
+                logging.warning(
+                    "One or more mods with HTTP endpoints were detected. This functionality will not be "
+                    "enabled since you don't have the `http_api` optional dependency installed."
+                    "Please ensure it is installed before trying again."
+                )
+
     if _internal.CONFIG.get("gui", {}).get("shown", True) and GUI is not None:
         gui = GUI(mod_manager, _internal.CONFIG)
         # For each mod, add the corresponding tab to the gui.
@@ -334,6 +377,20 @@ try:
     loop.run_until_complete(server.wait_closed())
     loop.close()
 
+    # Shut down futures and gui.
+    if gui is not None:
+        gui.exit()
+    try:
+        for _ in concurrent.futures.as_completed(futures, timeout=5):
+            pass
+    except concurrent.futures.TimeoutError:
+        # Don't really care.
+        pass
+    if executor is not None:
+        executor.shutdown(wait=False, cancel_futures=True)
+    if api_executor is not None:
+        api_executor.shutdown(wait=False, cancel_futures=True)
+
 except Exception:
     # If we hit this, something has gone wrong. Log to the current directory.
 
@@ -354,5 +411,9 @@ except Exception:
         with open(op.join(op.expanduser("~"), "CRITICAL_ERROR.txt"), "w") as f:
             traceback.print_exc(file=f)
 finally:
+    if api_server is not None:
+        api_server.shutdown()
     if executor is not None:
         executor.shutdown(wait=False, cancel_futures=True)
+    if api_executor is not None:
+        api_executor.shutdown(wait=False, cancel_futures=True)
