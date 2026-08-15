@@ -62,7 +62,7 @@ For example, consider the following code:
 
 .. code-block:: python
 
-    from pymhf.utils.partial_struct import partial_struct
+    from pymhf.core.structs import partial_struct
     from pymhf.extensions.ctypes import c_enum32
     import ctypes
     from enum import IntEnum

@@ -44,6 +44,8 @@ try:
     import pymhf.core._internal as _internal
     from pymhf.utils.config import canonicalize_setting
 
+    _internal.IS_INJECTED = True
+
     rootLogger = logging.getLogger("")
 
     logging_config = _internal.CONFIG.get("logging", {}) or {}
@@ -251,12 +253,12 @@ try:
     for ep in rtfunc_entry_points:
         name = ep.name
         value = ep.value
-        obj = get_callable_obj(value)
-        rootLogger.debug(f"Calling runtime function {name} -> {value} ({obj})")
-        try:
-            obj()
-        except Exception:
-            rootLogger.exception(f"There was an issue running the runtime function {name} ({value})")
+        if (obj := get_callable_obj(value)) is not None:
+            rootLogger.debug(f"Calling runtime function {name} -> {value} ({obj})")
+            try:
+                obj()
+            except Exception:
+                rootLogger.exception(f"There was an issue running the runtime function {name} ({value})")
 
     mod_manager.hook_manager = hook_manager
     # First, load our internal mod before anything else.
@@ -326,7 +328,6 @@ try:
         api_executor = concurrent.futures.ThreadPoolExecutor(1, thread_name_prefix="pyMHF_API_Executor")
         api_server = ThreadedServer(api_app, "0.0.0.0", 5000)
         futures.append(api_executor.submit(api_server.run))
-        logging.info("Running server on http://localhost:5000")
         logging.info("HTTP Api documentation: http://localhost:5000/docs")
 
         # Loop over the mods which have been loaded and add any api routes which have been found.

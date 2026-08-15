@@ -3,7 +3,7 @@ from typing import Annotated
 
 from pymhf.core.hooking import Structure
 from pymhf.core.memutils import get_addressof, map_struct
-from pymhf.utils.partial_struct import partial_struct
+from pymhf.core.structs import partial_struct
 
 
 def test_new_empty_struct():

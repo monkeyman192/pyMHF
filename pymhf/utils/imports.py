@@ -3,7 +3,7 @@ import importlib
 import os.path as op
 import sys
 from logging import getLogger
-from typing import Callable
+from typing import Callable, Optional
 
 import pefile
 
@@ -55,7 +55,7 @@ def get_imports(binary_path: str) -> dict[str, ctypes._CFuncPtr]:
     return funcptrs
 
 
-def get_callable_obj(object_ref: str) -> Callable:
+def get_callable_obj(object_ref: str) -> Optional[Callable]:
     # Get the object referred to in the object reference string.
     # This expects a string of the form `importable.module:object.attr`.
     # This should be the same as how normal python entrypoints are determined, and the code is in fact taken
@@ -65,7 +65,11 @@ def get_callable_obj(object_ref: str) -> Callable:
     obj = importlib.import_module(modname)
     if qualname_separator:
         for attr in qualname.split("."):
-            obj = getattr(obj, attr)
+            try:
+                obj = getattr(obj, attr)
+            except AttributeError:
+                logger.error(f"Callable object {object_ref} not found. Please check the path and name")
+                return None
     else:
-        raise TypeError("")
+        raise TypeError(f"Invalid callable object: {object_ref}")
     return obj  # type: ignore

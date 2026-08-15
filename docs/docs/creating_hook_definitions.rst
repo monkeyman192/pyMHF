@@ -144,7 +144,7 @@ Defining functions to hook is done in much the same way as above, however, we si
     from pymhf.core.hooking import Structure, function_hook
     from pymhf.core.utils import set_main_window_active
     from pymhf.gui.decorators import gui_button
-    from pymhf.utils.partial_struct import Field, partial_struct
+    from pymhf.core.structs import Field, partial_struct
 
     logger = logging.getLogger()
 
@@ -242,7 +242,7 @@ To hook or call a function with an overload, append ``.overload(overload_id: str
     from pymhf.core.hooking import Structure, function_hook
     from pymhf.core.utils import set_main_window_active
     from pymhf.gui.decorators import gui_button
-    from pymhf.utils.partial_struct import Field, partial_struct
+    from pymhf.core.structs import Field, partial_struct
 
     logger = logging.getLogger()
 
@@ -418,7 +418,7 @@ We can see how to use this below:
     import ctypes
     from typing import Annotated
     from pymhf.core.hooking import Structure
-    from pymhf.utils.partial_struct import partial_struct
+    from pymhf.core.structs import partial_struct
 
     @partial_struct
     class Vector(Structure):

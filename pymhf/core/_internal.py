@@ -20,6 +20,8 @@ MOD_SAVE_DIR: str = ""
 INCLUDED_ASSEMBLIES: dict[str, str] = {}
 CACHE_DIR: str = ""
 _SENTINEL_PTR: int = 0
+# Set to True when loaded from the injection code.
+IS_INJECTED: bool = False
 
 _executor: ThreadPoolExecutor = None  # type: ignore
 
