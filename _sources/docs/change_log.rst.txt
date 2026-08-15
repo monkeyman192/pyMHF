@@ -9,6 +9,8 @@ Current (0.2.4.dev)
 - Fixed an issue where quotation marks were added to :py:attr:`~pymhf.gui.decorators.STRING` values in the UI.
 - Fixed an issue where, if an exception occurred during the calling of a ``one_shot`` detour, the detour wouldn't be unregistered. (`#109 <https://github.com/monkeyman192/pyMHF/issues/109>`_)
 - Added the ability to bind properties and methods to HTTP endpoints and generate OpenAPI docs based on this. See :doc:`here </docs/http_api>` for more details.
+- Moved the ``partial_struct`` decorator and ``Field`` dataclass to ``pymhf.core.structs.partial_struct``.
+- Added :py:class:`~pymhf.core.structs.ContainerStruct` and :py:class:`~pymhf.core.structs.Pattern` to facilitate finding fields or globally defined objects at run-time. (`#98 <https://github.com/monkeyman192/pyMHF/issues/98>_`)
 
 0.2.3 (08/04/2026)
 ------------------

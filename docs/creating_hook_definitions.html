@@ -311,6 +311,7 @@
 <li class="toctree-l1"><a class="reference internal" href="inter_mod_functionality.html">Inter-mod functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="partial_structs.html">Partial Structs</a></li>
 
+<li class="toctree-l1"><a class="reference internal" href="container_structs.html">Container Structs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="single_file_mods.html">Single-file mods</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extension_types.html">Extension types</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="libraries/index.html">Creating modding API’s with pyMHF</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -515,7 +516,7 @@ If the binary receives updates, then the <code class="docutils literal notransla
 <span class="linenos"> 6</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">function_hook</span>
 <span class="linenos"> 7</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_main_window_active</span>
 <span class="linenos"> 8</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.gui.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">gui_button</span>
-<span class="linenos"> 9</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">partial_struct</span>
+<span class="linenos"> 9</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.structs</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">partial_struct</span>
 <span class="linenos">10</span>
 <span class="linenos">11</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
 <span class="linenos">12</span>
@@ -607,7 +608,7 @@ The methods also need the <code class="docutils literal notranslate"><span class
 <span class="linenos"> 7</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">function_hook</span>
 <span class="linenos"> 8</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_main_window_active</span>
 <span class="linenos"> 9</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.gui.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">gui_button</span>
-<span class="linenos">10</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">partial_struct</span>
+<span class="linenos">10</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.structs</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">partial_struct</span>
 <span class="linenos">11</span>
 <span class="linenos">12</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
 <span class="linenos">13</span>
@@ -773,7 +774,7 @@ pyMHF makes this easy by providing the <a class="reference internal" href="../ap
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">Structure</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.utils.partial_struct</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial_struct</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.structs</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial_struct</span>
 
 <span class="nd">@partial_struct</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Vector</span><span class="p">(</span><span class="n">Structure</span><span class="p">):</span>

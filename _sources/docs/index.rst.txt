@@ -11,6 +11,7 @@ Usage guide
    mod_states
    inter_mod_functionality
    partial_structs
+   container_structs
    single_file_mods
    extension_types
    libraries/index

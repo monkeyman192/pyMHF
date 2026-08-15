@@ -1,0 +1,7 @@
+pymhf.core.structs module
+=========================
+
+.. automodule:: pymhf.core.structs
+   :members:
+   :show-inheritance:
+   :undoc-members:

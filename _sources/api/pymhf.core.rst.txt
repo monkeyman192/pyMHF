@@ -18,6 +18,7 @@ Submodules
    pymhf.core.memutils
    pymhf.core.mod_loader
    pymhf.core.module_data
+   pymhf.core.structs
    pymhf.core.utils
 
 Module contents

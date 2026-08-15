@@ -27,7 +27,7 @@ Below is an example of a struct which we have mapped out that we know has a 32 b
 
     import ctypes
     from typing import Annotated
-    from pymhf.utils.partial_struct import partial_struct, Field
+    from pymhf.core.structs import partial_struct, Field
     
     @partial_struct
     class Test(ctypes.Structure):
@@ -40,7 +40,7 @@ It is also possible to specify the total size of the struct in bytes by assignin
 
     import ctypes
     from typing import Annotated
-    from pymhf.utils.partial_struct import partial_struct, Field
+    from pymhf.core.structs import partial_struct, Field
     
     @partial_struct
     class Test(ctypes.Structure):
@@ -59,7 +59,7 @@ It is possible to have a partial struct as the base class of another like so:
 
     import ctypes
     from typing import Annotated
-    from pymhf.utils.partial_struct import partial_struct, Field
+    from pymhf.core.structs import partial_struct, Field
 
     @partial_struct
     class Base(ctypes.Structure):
@@ -95,7 +95,7 @@ In the above example, if we knew the size of the child class, we could also type
 
     import ctypes
     from typing import Annotated
-    from pymhf.utils.partial_struct import partial_struct, Field
+    from pymhf.core.structs import partial_struct, Field
 
     @partial_struct
     class Base(ctypes.Structure):
