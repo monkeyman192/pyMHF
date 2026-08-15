@@ -6,8 +6,8 @@ from typing import Annotated, Generic, Type, TypeVar, Union
 
 import pytest
 
+from pymhf.core.structs import Field, partial_struct
 from pymhf.extensions.ctypes import c_enum32
-from pymhf.utils.partial_struct import Field, partial_struct
 
 
 def test_simple_structure():

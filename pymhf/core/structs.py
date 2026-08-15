@@ -1,19 +1,85 @@
 import ctypes
 import inspect
 from dataclasses import dataclass
-from typing import Optional, Type, TypeVar, _AnnotatedAlias, get_args
+from logging import getLogger
+from typing import Literal, Optional, Type, TypeVar, Union, _AnnotatedAlias, get_args
 
 from typing_extensions import get_type_hints
 
+from pymhf.core._internal import BASE_ADDRESS, IS_INJECTED
+from pymhf.core.memutils import find_pattern_in_binary, map_struct
 from pymhf.extensions.ctypes import CTYPES
 
+_C = TypeVar("_C")
 _T = TypeVar("_T", bound=Type[ctypes.Structure])
+
+logger = getLogger(__name__)
 
 
 @dataclass
 class Field:
     datatype: CTYPES
     offset: Optional[int] = None
+
+
+@dataclass
+class Pattern:
+    pattern: str
+    address_offset: int = 3
+    address_dtype: Union[
+        type[ctypes.c_uint16],  # for 32 bit binaries... Maybe?
+        type[ctypes.c_uint32],  # For 64 bit binaries normally.
+        type[ctypes.c_uint64],
+    ] = ctypes.c_uint32
+    address_type: Literal["relative", "absolute"] = "relative"
+
+
+class ContainerStruct:
+    """
+    Base class which, when inherited will automatically find any fields which are
+    This will also utilise the pattern cache so the lookup within the binary only occurs once per unique
+    exe."""
+
+    def __init_subclass__(cls):
+        if not IS_INJECTED:
+            # If the class is getting initialised but we aren't running within an injected process then we
+            # won't actually be able to find any of the fields.
+            # Simply return and this will be called again automatically once injected.
+            return
+        # Loop over the fields defined on the class and determine the offsets from the cache as required.
+        for field_name, annotation in get_type_hints(cls, include_extras=True).items():
+            if not isinstance(annotation, _AnnotatedAlias):
+                # In this case it's just the
+                pass
+            else:
+                # If the annotation is a Field object, get info from it, otherwise it must be an integer
+                # specifying the offset.
+                metadata = annotation.__metadata__
+                if len(metadata) != 1:
+                    raise ValueError(f"The field {field_name!r} has an invalid annotation: {annotation}")
+                metadata = metadata[0]
+                if isinstance(metadata, Pattern):
+                    pattern = metadata.pattern
+                    address_offset = metadata.address_offset
+                    address_dtype = metadata.address_dtype
+                    address_type = metadata.address_type
+
+                    # Find the pattern in the binary
+                    patt_addr = find_pattern_in_binary(pattern, False)
+                    if patt_addr:
+                        start_addr = BASE_ADDRESS + patt_addr
+                        rel_offset = address_dtype.from_address(start_addr + address_offset)
+                        if address_type == "relative":
+                            abs_offset = (
+                                start_addr + rel_offset.value + address_offset + ctypes.sizeof(address_dtype)
+                            )
+                        else:
+                            abs_offset = rel_offset.value
+                        setattr(cls, field_name, map_struct(abs_offset, annotation.__origin__))
+                    else:
+                        logger.error(f"Unable to find the field {cls}.{field_name} with pattern {pattern!r}")
+                else:
+                    raise ValueError(f"The field {field_name!r} has an invalid annotation: {annotation}")
 
 
 def partial_struct(cls: _T) -> _T:
