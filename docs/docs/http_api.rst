@@ -5,6 +5,10 @@ pyMHF is able to automatically create HTTP API's for mods, including Swagger API
 
 To utilise this functionality, the `http_api` optional dependency needs to be installed with pyMHF (this is typed as ``pymhf[http_api]`` in your pyproject.toml.)
 
+.. note::
+    The uvicorn server will only be started if there is at least one mod detected on initial load with a HTTP endpoint.
+    If a mod is updatad to have an endpoint added after startup and then reloaded nothing will happen. In this case you need to actually restart the process for the server to be initialised.
+
 Decorators
 ----------
 
