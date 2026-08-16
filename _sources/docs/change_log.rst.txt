@@ -1,8 +1,8 @@
 Change Log
 ==========
 
-Current (0.2.4.dev)
--------------------
+0.2.4 (16/08/2026)
+------------------
 
 - Fixed an issue where the :py:class:`~pymhf.extensions.cpptypes._vector` type incorrectly calculated the length of the vector.
 - Add a colour picker widget. This is implemented as the decorator :py:attr:`~pymhf.gui.decorators.COLOUR` (or :py:attr:`~pymhf.gui.decorators.COLOR` for the Americans).
