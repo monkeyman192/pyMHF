@@ -324,6 +324,8 @@ try:
     futures = []
 
     # Add the API.
+    # TODO: This should be optimised so that if no mods have any http endpoints defined, we don't bother
+    # running the server. This will however mean if a mod is reloaded and adds one it won't work.
     if HTTP_API_ALLOWED:
         api_executor = concurrent.futures.ThreadPoolExecutor(1, thread_name_prefix="pyMHF_API_Executor")
         api_server = ThreadedServer(api_app, "0.0.0.0", 5000)

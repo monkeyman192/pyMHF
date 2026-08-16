@@ -280,6 +280,9 @@ class GUI:
 
         changes, deletions = self.diff_widgets(widgets, mod._gui_widgets)
 
+        # Add the current tab to the stack so that any drawing knows it's within this context.
+        dpg.push_container_stack(mod_name)
+
         # Handle the deletes first.
         for line in deletions:
             self.handle_diff_row(mod, line)
@@ -287,6 +290,9 @@ class GUI:
         # Then any changes.
         for line in changes:
             self.handle_diff_row(mod, line)
+
+        # Pop the current tab from the stack.
+        dpg.pop_container_stack()
 
         self.widget_data[mod_name] = mod._gui_widgets
 
@@ -398,14 +404,34 @@ class GUI:
                 prev_existing_widget = widget_id
         # Finally, delete all the old widgets which don't exist any more.
         for widget_id in removed_widgets:
-            deletions.append({"type": "remove", "old": widget_id})
+            if isinstance(_widget_data := old_widget_map.get(widget_id), GroupWidgetData):
+                deletions.append(
+                    {"type": "remove", "old": widget_id, "children": _widget_data.asdict()["child_widgets"]}
+                )
+            else:
+                deletions.append({"type": "remove", "old": widget_id})
 
         return changes, deletions
 
-    def handle_diff_row(self, mod: Mod, line: dict):
+    def handle_diff_row(self, mod: Mod, line: dict, is_remove: bool = False):
+        """Handle the row diff.
+        This will generally receive the line from the diffs, however if can also receive children of groups
+        which need to be deleted."""
         mod_name = mod._mod_name
         widget_mapping = self.widget_mapping[mod_name]
+        if is_remove is True:
+            if (children := line.get("children")) is not None:
+                for child in children:
+                    self.handle_diff_row(mod, child, True)
+            self.tracking_variables[mod_name].pop(line["id_"], None)
+            self.redrawing_widgets[mod_name].pop(line["id_"], None)
+            return
+
         if line["type"] == "remove":
+            # If the widget has children, delete them first.
+            if (children := line.get("children")) is not None:
+                for child in children:
+                    self.handle_diff_row(mod, child, True)
             if (widget := widget_mapping.get(line["old"])) is not None:
                 widget.remove()
                 # Try remove the widget from any tracking or redrawing data.

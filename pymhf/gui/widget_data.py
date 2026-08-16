@@ -52,7 +52,7 @@ class WidgetData:
         self.widget_type = WidgetType.NONE
 
     def asdict(self):
-        return {"label": self.label}
+        return {"id_": self.id_, "label": self.label}
 
 
 class CustomWidgetData(WidgetData):
@@ -88,8 +88,8 @@ class GroupWidgetData(WidgetData):
             if isinstance(child, WidgetData):
                 children.append(child.asdict())
             else:
-                children.append(child)
-        return {"id_": self.id_, "label": self.label, "child_widgets": children}
+                children.append(child._widget_data.asdict())
+        return {**super().asdict(), "child_widgets": children}
 
 
 class ButtonWidgetData(WidgetData):
