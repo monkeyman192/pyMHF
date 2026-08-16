@@ -368,6 +368,8 @@ class ModManager:
         self._mod_paths: dict[str, ModuleType] = {}
         # Keep a mapping of the hotkey callbacks
         self.hotkey_callbacks: dict[tuple[str, str], Any] = {}
+        # Keep track of whether we have any mods when mods are initially loaded that require the http server.
+        self.any_http_endpoints = False
 
     @overload
     def __getitem__(self, key: str) -> _Proxy: ...
@@ -544,12 +546,12 @@ class ModManager:
                 "This mod will not be loaded until this is fixed."
             )
             return None
-        # First register each of the methods which are detours.
+        # Register each of the methods which are detours.
         for hook in _mod.hooks:
             self.hook_manager.register_hook(hook)
         # Add any custom callbacks which may be defined by the calling library.
         self.hook_manager._add_custom_callbacks(_mod._custom_callbacks)
-        # Finally, set up any keyboard bindings.
+        # Set up any keyboard bindings.
         for hotkey_func in _mod._hotkey_funcs:
             # Don't need to tell the hook manager, register the keyboard
             # hotkey here...
@@ -568,6 +570,9 @@ class ModManager:
                 )
             )
             self.hotkey_callbacks[(hotkey_func._hotkey, hotkey_func._hotkey_press)] = cb
+        # Check for HTTP endpoints.
+        if not self.any_http_endpoints and sum(len(x) for x in _mod._http_endpoints.values()) != 0:
+            self.any_http_endpoints = True
         self.mods[_mod._mod_name] = _mod
         return _mod
 
