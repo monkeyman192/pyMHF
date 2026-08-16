@@ -128,8 +128,6 @@ def get_field_info(obj, logger=None, indent: int = 0, as_hex: bool = True, max_d
     for field, field_type in cls_obj._fields_:
         if has_values:
             val = getattr(obj, field)
-            # if isinstance(val, ctypes.Array):
-            #     val = [x for x in val]
         field_data: ctypes._CField = getattr(cls_obj, field)
         offset = _hex_repr(field_data.offset, as_hex)
         size = _hex_repr(field_data.size, as_hex)
