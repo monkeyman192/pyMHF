@@ -391,6 +391,11 @@
 <h1>HTTP API<a class="headerlink" href="#http-api" title="Link to this heading">#</a></h1>
 <p>pyMHF is able to automatically create HTTP API’s for mods, including Swagger API docs, all powered by <a class="reference external" href="https://fastapi.tiangolo.com/">FastAPI</a>.</p>
 <p>To utilise this functionality, the <cite>http_api</cite> optional dependency needs to be installed with pyMHF (this is typed as <code class="docutils literal notranslate"><span class="pre">pymhf[http_api]</span></code> in your pyproject.toml.)</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The uvicorn server will only be started if there is at least one mod detected on initial load with a HTTP endpoint.
+If a mod is updatad to have an endpoint added after startup and then reloaded nothing will happen. In this case you need to actually restart the process for the server to be initialised.</p>
+</div>
 <section id="decorators">
 <h2>Decorators<a class="headerlink" href="#decorators" title="Link to this heading">#</a></h2>
 <p>The functionality is implemented using the following decorator:</p>
