@@ -11,6 +11,8 @@ Current (0.2.4.dev)
 - Added the ability to bind properties and methods to HTTP endpoints and generate OpenAPI docs based on this. See :doc:`here </docs/http_api>` for more details.
 - Moved the ``partial_struct`` decorator and ``Field`` dataclass to ``pymhf.core.structs.partial_struct``.
 - Added :py:class:`~pymhf.core.structs.ContainerStruct` and :py:class:`~pymhf.core.structs.Pattern` to facilitate finding fields or globally defined objects at run-time. (`#98 <https://github.com/monkeyman192/pyMHF/issues/98>_`)
+- Fixed an issue where, if a new GUI property was added before any others and the mod was reloaded, an error would occur. (`#111 <https://github.com/monkeyman192/pyMHF/issues/111>`_)
+- Fixed an issue where, if a GUI group was deleted, the bound functions under it weren't unlinked from the GUI properly.
 
 0.2.3 (08/04/2026)
 ------------------

@@ -16,7 +16,7 @@ The best way to understand this is with an example:
         memory_manager: Annotated[MemManager, Pattern("48 8D 0D ? ? ? ? 44 88 35 ? ? ? ? C7 05")]
         ui_manager: Annotated[UIManager, Pattern("48 8D 0D ? ? ? ? E8 ? ? ? ? B2 ? 48 8D 0D")]
 
-In the above example ``MemManager`` and ``UIManager`` would be classes which subclass from :py:class:`~pymhf.core.hooking.Structure` (which intself just subclasses from ``ctypes.Structure``).
+In the above example ``MemManager`` and ``UIManager`` would be classes which subclass from :py:class:`~pymhf.core.hooking.Structure` (which itself just subclasses from ``ctypes.Structure``).
 
 The byte pattern for each field generally will have the following structure:
 
