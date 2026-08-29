@@ -177,15 +177,14 @@ def _get_memview(offset: int, type_: Type[ctypes.Structure]) -> memoryview:
 
 
 def _get_memview_with_size(offset: int, size: int) -> Optional[memoryview]:
-    """Return a memoryview which covers the region of memory specified by the
-    struct provided.
+    """Return a memoryview which covers the region of memory specified by the size.
 
     Parameters
     ----------
     offset:
-        The memory address to start reading the struct from.
-    type_:
-        The type of the ctypes.Structure to be loaded at this location.
+        The memory address to start reading from.
+    size:
+        The size of the memoryview to be created at the specified address.
     """
     if not offset:
         return None
