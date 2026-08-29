@@ -389,6 +389,13 @@
                   
   <section id="change-log">
 <h1>Change Log<a class="headerlink" href="#change-log" title="Link to this heading">#</a></h1>
+<section id="current-0-2-5-dev">
+<h2>Current (0.2.5.dev)<a class="headerlink" href="#current-0-2-5-dev" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Cleaned up the <code class="docutils literal notranslate"><span class="pre">c_enum</span></code> implementation to have a single base class to ensure consistency across inheriting types.</p></li>
+<li><p>Changed the string representation of <code class="docutils literal notranslate"><span class="pre">c_enum</span></code> types (eg. <code class="docutils literal notranslate"><span class="pre">c_enum8</span></code>, etc.) so that the value is now the name of the associated enum value. The old form is now available via <code class="docutils literal notranslate"><span class="pre">repr()</span></code>.</p></li>
+</ul>
+</section>
 <section id="id1">
 <h2>0.2.4 (16/08/2026)<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
 <ul class="simple">
