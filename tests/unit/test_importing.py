@@ -1,7 +1,9 @@
 # Test functions in the pymhf.core.importing file
+from typing import Optional
+
 import pytest
 
-from pymhf.core.importing import parse_file_for_mod
+from pymhf.core.importing import get_mod_name, parse_file_for_mod
 
 # "files" which will pass.
 STANDARD_IMPORT = """
@@ -95,3 +97,24 @@ class Thing():
 )
 def test_parse_file_for_mod(data: str, result: bool):
     assert parse_file_for_mod(data) is result
+
+
+@pytest.mark.parametrize(
+    "data,result",
+    [
+        (STANDARD_IMPORT, "Thing"),
+        (STANDARD_FROM_IMPORT, "Thing"),
+        (ALIAS_IMPORT, "Thing"),
+        (ALIAS_FROM_IMPORT, "Thing"),
+        (FULL_PATH_STANDARD_IMPORT, "Thing"),
+        (FULL_PATH_STANDARD_FROM_IMPORT, "Thing"),
+        (FULL_PATH_ALIAS_IMPORT, "Thing"),
+        (FULL_PATH_ALIAS_FROM_IMPORT, "Thing"),
+        (NO_IMPORT, None),
+        (NO_IMPORT2, None),
+        (INCORRECT_IMPORT, None),
+        (NO_MOD_CLASS, None),
+    ],
+)
+def test_get_mod_name(data: str, result: Optional[str]):
+    assert get_mod_name(data) == result
