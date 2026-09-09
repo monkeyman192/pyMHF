@@ -49,8 +49,12 @@ def library_path_from_name(name: str) -> Optional[str]:
             return op.dirname(spec.origin)
 
 
-def parse_file_for_mod(data: str) -> bool:
-    """Parse the provided data and determine if there is at least one mod class in it."""
+def get_mod_name(data: str) -> Optional[str]:
+    """Parse the provided data and return the name of the first mod class defined in it.
+
+    This allows the name of a mod to be determined without importing the file it's defined in.
+    ``None`` is returned if no mod class can be found.
+    """
     tree = ast.parse(data)
     mod_class_name = None
     for node in tree.body:
@@ -72,13 +76,18 @@ def parse_file_for_mod(data: str) -> bool:
                 # For a simple name, it's easy - just match it.
                 if isinstance(base, ast.Name):
                     if base.id == mod_class_name:
-                        return True
+                        return node.name
                 # If it's an attribute it's a bit trickier...
                 elif isinstance(base, ast.Attribute):
                     resolved_base = _fully_unpack_ast_attr(base)
                     if resolved_base == mod_class_name:
-                        return True
-    return False
+                        return node.name
+    return None
+
+
+def parse_file_for_mod(data: str) -> bool:
+    """Parse the provided data and determine if there is at least one mod class in it."""
+    return get_mod_name(data) is not None
 
 
 def import_file(fpath: str) -> Optional[ModuleType]:

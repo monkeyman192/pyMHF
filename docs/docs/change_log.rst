@@ -4,6 +4,7 @@ Change Log
 Current (0.2.5.dev)
 -------------------
 
+- Added the ``disabled_mods`` setting which takes a list of mod names which will not be loaded. The files these mods are defined in aren't imported at all, so unlike the ``@disable`` decorator, no code in them is run. See :doc:`here </docs/settings>` for more details.
 - Cleaned up the ``c_enum`` implementation to have a single base class to ensure consistency across inheriting types.
 - Changed the string representation of ``c_enum`` types (eg. ``c_enum8``, etc.) so that the value is now the name of the associated enum value. The old form is now available via ``repr()``.
 

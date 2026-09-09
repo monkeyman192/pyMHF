@@ -199,3 +199,10 @@ These settings are set by calling ``pymhf --config <libraryname>`` or on first r
 - **mod_save_dir**: [Can use magic path] [Overrides ``default_mod_save_dir``] The path to the directory within which mod saves are to be placed. If this is not an absolute path and instead a "magic" path, ``MOD_SAVES`` will be appended to the magic path for the final path.
 
 - **log_dir** [Can use magic path] [Overrides ``default_log_dir``] The path to save the logs under. If not an absolute path, a subdirectory called ``LOGS`` will be created under this directory.
+
+- **disabled_mods**: A list of mod names which will not be loaded. The name is the name of the class which subclasses ``Mod``, ie. the name shown on the mod's tab in the GUI. Files containing these mods are not imported at all, so nothing in them is run:
+
+  .. code-block:: toml
+
+      [pymhf.local_config]
+      disabled_mods = ["MyMod", "SomeOtherMod"]

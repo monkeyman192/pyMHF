@@ -109,6 +109,8 @@ try:
     mod_folder = _internal.CONFIG.get("mod_dir")
     mod_folder = canonicalize_setting(mod_folder, "pymhf", _module_path, _binary_dir)
 
+    disabled_mods = _internal.CONFIG.get("disabled_mods") or []
+
     import keyboard._winkeyboard as kwk
 
     # Prefill the key name tables to avoid taking a hit when hooking.
@@ -286,10 +288,14 @@ try:
             # For a single file mod, we just load that file.
             _loaded_mods, _loaded_hooks = mod_manager.load_single_mod(_internal.MODULE_PATH)
         elif _internal.LOAD_TYPE == LoadTypeEnum.MOD_FOLDER:
-            _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(_internal.MODULE_PATH, deep_search=True)
+            _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(
+                _internal.MODULE_PATH, deep_search=True, disabled_mods=disabled_mods
+            )
         else:  # Loading a library.
             if mod_folder is not None:
-                _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(mod_folder, deep_search=True)
+                _loaded_mods, _loaded_hooks = mod_manager.load_mod_folder(
+                    mod_folder, deep_search=True, disabled_mods=disabled_mods
+                )
             else:
                 logging.warning(
                     """You have not configured the `mod_dir` variable in the pymhf.toml file.
