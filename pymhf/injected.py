@@ -125,6 +125,7 @@ try:
         ExecutionEndedException,
         custom_exception_handler,
     )
+    from pymhf.core.structs import finalize_pending_structs
 
     try:
         from pymhf.gui.gui import GUI
@@ -309,6 +310,12 @@ try:
     )
 
     mod_manager._assign_mod_instances()
+
+    # At this point we have finished loading all the mods. We need to finalise any structs here in case there
+    # are any dangling references.
+    # Note: If there are any unresolved references this will raise an error. We'll let this happen since it
+    # is a critical error.
+    finalize_pending_structs()
 
     _internal.MAIN_HWND = get_main_window_handle()
 

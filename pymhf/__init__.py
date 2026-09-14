@@ -7,7 +7,7 @@ import sys
 from enum import Enum
 from importlib import import_module
 from importlib.metadata import PackageNotFoundError, version
-from typing import Optional
+from typing import TYPE_CHECKING
 
 if sys.version_info < (3, 10):
     from importlib_metadata import entry_points
@@ -16,8 +16,6 @@ else:
 
 import questionary
 
-from .core._types import FUNCDEF  # noqa
-from .core.hooking import FuncHook  # noqa
 from .core.mod_loader import Mod, ModState  # noqa
 from .main import load_mod_file, load_module, run_module  # noqa
 from .utils.imports import SPHINX_AUTODOC_RUNNING
@@ -26,6 +24,9 @@ try:
     __version__ = version("pymhf")
 except PackageNotFoundError:
     pass
+
+if TYPE_CHECKING:
+    from tkinter import Tk, filedialog
 
 try:
     from tkinter import Tk, filedialog
@@ -59,7 +60,7 @@ def _is_int(val: str) -> bool:
     return True
 
 
-def get_folder(title: str, q: questionary.Question, has_tkinter: bool, idir: Optional[str] = None) -> str:
+def get_folder(title: str, q: questionary.Question, has_tkinter: bool, idir: str | None = None) -> str:
     if has_tkinter:
         return filedialog.askdirectory(initialdir=idir, title=title)
     else:

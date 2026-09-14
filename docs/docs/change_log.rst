@@ -6,6 +6,7 @@ Current (0.2.5.dev)
 
 - Cleaned up the ``c_enum`` implementation to have a single base class to ensure consistency across inheriting types.
 - Changed the string representation of ``c_enum`` types (eg. ``c_enum8``, etc.) so that the value is now the name of the associated enum value. The old form is now available via ``repr()``.
+- Completely re-wrote and re-structured how partial structs work. This has greatly improved how inheritence works, allowing for much more flexible use cases. See :doc:`here </docs/partial_structs>` for the full details.
 
 0.2.4 (16/08/2026)
 ------------------
