@@ -161,6 +161,11 @@ class PartialStructMeta(type(ctypes.Structure)):
     of all base classes.
     Methods are also retained so that we still get normal inheritence."""
 
+    # Internal list of fields to assign to _fields_ on initialisation (or afterwards in the case of structs
+    # which have unresolved fields).
+    # This is required because in python 3.13 ctypes objects were changed so that you couldn't set _fields_
+    # before the __init__ was called on the class, cf. https://github.com/python/cpython/issues/124520
+    _fields: list[tuple[str, CTYPES]]
     _fields_: list[tuple[str, CTYPES]]
     _partial_fields_: dict
     _partial_attributes_: dict[str, tuple]
@@ -267,12 +272,19 @@ class PartialStructMeta(type(ctypes.Structure)):
             if finalised_base_found:
                 # Generate the fields at least but only for the ones added here.
                 base_size = ctypes.sizeof(bases[0])
-                cls._fields_ = _generate_fields(own_fields, getattr(cls, "_total_size_", 0), base_size)
+                cls._fields = _generate_fields(own_fields, getattr(cls, "_total_size_", 0), base_size)
             else:
-                cls._fields_ = _generate_fields(inherited_fields, getattr(cls, "_total_size_", 0))
+                cls._fields = _generate_fields(inherited_fields, getattr(cls, "_total_size_", 0))
 
-        _resolve_pending()
         return cls
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _resolve_pending(True)
+        if hasattr(self, "_fields"):
+            self._fields_ = self._fields
+            # Delete it since we no longer need it and it's just duplicated memory at this point.
+            del self._fields
 
 
 def _generate_fields(
@@ -308,7 +320,7 @@ def _generate_fields(
     return _fields_
 
 
-def _resolve_pending():
+def _resolve_pending(pre_initialising: bool = False):
     """Resolve any pending struct _field_ definitions that we can by evaluating forward references."""
     still_pending = []
 
@@ -346,7 +358,11 @@ def _resolve_pending():
 
         # If we have resolved all types, finally construct the _fields_
         if not still_unresolved:
-            cls._fields_ = _generate_fields(cls._partial_fields_, getattr(cls, "_total_size_", 0))
+            _fields = _generate_fields(cls._partial_fields_, getattr(cls, "_total_size_", 0))
+            if pre_initialising:
+                cls._fields = _fields
+            else:
+                cls._fields_ = _fields
         else:
             still_pending.append(cls)
 

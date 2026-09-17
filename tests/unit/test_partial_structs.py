@@ -849,3 +849,30 @@ def test_override_name_in_subclass():
     assert t.b == 2
     assert t.c == 3
     assert bytes(t) == bytes(data)
+
+
+def test_initialisable_structs():
+    class MyVector(PartialStruct):
+        """Vector docstring"""
+
+        _total_size_ = 0x10
+        x: Annotated[int, Field(ctypes.c_uint32, 0x0)]
+        y: Annotated[int, Field(ctypes.c_uint32, 0x4)]
+        z: Annotated[int, Field(ctypes.c_uint32, 0x8)]
+
+        def __init__(self, x: int, y: int, z: int):
+            self.x = x
+            self.y = y
+            self.z = z
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00")
+    vec = MyVector.from_buffer(data)
+    assert vec.__doc__ == "Vector docstring"
+    assert vec.x == 1
+    assert vec.y == 2
+    assert vec.z == 3
+    other_vec = MyVector(5, 6, 7)
+    assert other_vec.x == 5
+    assert other_vec.y == 6
+    assert other_vec.z == 7
+    assert bytes(other_vec) == b"\x05\x00\x00\x00\x06\x00\x00\x00\x07\x00\x00\x00\x00\x00\x00\x00"
