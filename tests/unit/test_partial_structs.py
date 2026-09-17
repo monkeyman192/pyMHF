@@ -6,13 +6,20 @@ from typing import Annotated, Generic, Type, TypeVar, Union
 
 import pytest
 
-from pymhf.core.structs import Field, partial_struct
+import pymhf.core.structs
+from pymhf.core.structs import Field, PartialStruct, final_fields, finalize_pending_structs, partial_struct
 from pymhf.extensions.ctypes import c_enum32
 
 
+@pytest.fixture(autouse=True)
+def cleanup_pending_structs():
+    # Clean up the pending structs so one test case failure won't affect any others.
+    yield
+    pymhf.core.structs._pending_structs = []
+
+
 def test_simple_structure():
-    @partial_struct
-    class Test(ctypes.Structure):
+    class Test(PartialStruct):
         a: Annotated[ctypes.c_uint32, 0x0]
         b: Annotated[ctypes.c_uint32, 0x10]
 
@@ -33,6 +40,29 @@ def test_simple_structure():
     assert bytes(t) == b"\x2a\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00"
 
 
+def test_simple_structure2():
+    # Test the case of a partial struct which has a field which has its own intrinsic alignment which has the
+    # wrong offset specified. In this case it should still end up correct.
+    class Test(PartialStruct):
+        a: Annotated[ctypes.c_uint32, 0x0]
+        b: Annotated[ctypes.c_uint64, 0x4]
+
+    assert Test._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("b", ctypes.c_uint64),
+    ]
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00")
+    t = Test.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 0x4_00_00_00_03
+    assert bytes(t) == bytes(data)
+
+    # Also test modifying a value.
+    t.a = 42
+    assert bytes(t) == b"\x2a\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00"
+
+
 def test_simple_structure_with_enum():
     class Alphabet(IntEnum):
         A = 0
@@ -41,8 +71,7 @@ def test_simple_structure_with_enum():
         D = 3
         E = 4
 
-    @partial_struct
-    class Test(ctypes.Structure):
+    class Test(PartialStruct):
         a: Annotated[c_enum32[Alphabet], 0x0]
         b: Annotated[ctypes.c_uint32, 0x10]
 
@@ -66,10 +95,9 @@ def test_simple_structure_with_enum():
 
 def test_simple_structure_with_total_size():
     # Test case for the partial struct having a _total_size_ attribute.
-    @partial_struct
-    class Test(ctypes.Structure):
+    class Test(PartialStruct):
         _total_size_ = 0x18
-        a: Annotated[int, Field(ctypes.c_uint32)]
+        a: Annotated[int, Field(ctypes.c_uint32, 0x0)]
         b: Annotated[int, Field(ctypes.c_uint32, 0x10)]
 
     assert Test._fields_ == [
@@ -90,8 +118,7 @@ def test_simple_structure_with_total_size():
 
 def test_nested_structs():
     # Test for one of the fields being a struct nested within the currently defined one.
-    @partial_struct
-    class Test(ctypes.Structure):
+    class Test(PartialStruct):
         class Sub(ctypes.Structure):
             _fields_ = [
                 ("sub_a", ctypes.c_uint16),
@@ -99,8 +126,8 @@ def test_nested_structs():
             ]
 
         _total_size_ = 24
-        a: ctypes.c_uint32
-        b_sub: Sub
+        a: Annotated[ctypes.c_uint32, 0x0]
+        b_sub: Annotated[Sub, 0x4]
         c: Annotated[ctypes.c_uint32, 0x8]
         d: Annotated[int, Field(ctypes.c_uint32, 0x10)]
 
@@ -135,11 +162,10 @@ def test_annotated_struct():
             ("sub_b", ctypes.c_uint16),
         ]
 
-    @partial_struct
-    class Test(ctypes.Structure):
+    class Test(PartialStruct):
         _total_size_ = 24
-        a: ctypes.c_uint32
-        b_sub: "Sub"
+        a: Annotated[ctypes.c_uint32, 0x0]
+        b_sub: Annotated["Sub", 0x4]
         c: Annotated["Sub", 0x8]
         d: Annotated[int, Field(ctypes.c_uint32, 0x10)]
 
@@ -171,8 +197,7 @@ def test_structure_with_pointer():
     # Also implicitly test the case of putting an "invalid" offset.
     # In this case we put the pointer at 0xC, but because we're 64 bit it has to be aligned to 0x8 byte
     # boundary.
-    @partial_struct
-    class Test(ctypes.Structure):
+    class Test(PartialStruct):
         a: Annotated[ctypes.c_uint32, 0x0]
         a_bool: Annotated[ctypes.c_bool, 0xA]
         b: Annotated[ctypes._Pointer[ctypes.c_uint32], 0xB]
@@ -214,10 +239,9 @@ def test_structure_with_annotated_pointer():
             ("sub_b", ctypes.c_uint16),
         ]
 
-    @partial_struct
-    class Test(ctypes.Structure):
-        a: ctypes._Pointer[Sub]
-        b: "ctypes._Pointer[Sub]"
+    class Test(PartialStruct):
+        a: Annotated[ctypes._Pointer[Sub], 0x0]
+        b: Annotated["ctypes._Pointer[Sub]", 0x8]
 
     assert Test._fields_ == [("a", ctypes.POINTER(Sub)), ("b", ctypes.POINTER(Sub))]
 
@@ -236,6 +260,33 @@ def test_structure_with_annotated_pointer():
     assert bytes(t) == bytes(data)
 
 
+def test_structure_with_pointer_after_def():
+    # Test a struct which has an annotated pointer in it.
+    class Test(PartialStruct):
+        a: Annotated["ctypes._Pointer[Sub]", 0x0]
+
+    class Sub(ctypes.Structure):
+        _fields_ = [
+            ("sub_a", ctypes.c_uint16),
+            ("sub_b", ctypes.c_uint16),
+        ]
+
+    finalize_pending_structs()
+
+    assert Test._fields_ == [("a", ctypes.POINTER(Sub))]
+
+    assert ctypes.sizeof(Test) == 8
+
+    # Check all of our offsets are also correct in the type.
+    assert Test.a.offset == 0
+
+    data = bytearray(b"\x00\x00\x00\x00\x00\x00\x00\x00")
+    t = Test.from_buffer(data)
+    with pytest.raises(ValueError, match="NULL pointer access"):
+        t.a.contents
+    assert bytes(t) == bytes(data)
+
+
 def test_annotated_arrays():
     # Test the case of an array of some other type.
 
@@ -245,12 +296,11 @@ def test_annotated_arrays():
             ("sub_b", ctypes.c_uint16),
         ]
 
-    @partial_struct
-    class Test(ctypes.Structure):
+    class Test(PartialStruct):
         _total_size_ = 24
-        a: ctypes.c_uint32
-        b: "Sub * 2"
-        c: Annotated[list[Sub], Field(Sub * 3)]
+        a: Annotated[ctypes.c_uint32, 0x0]
+        b: Annotated["Sub * 2", 0x4]
+        c: Annotated[list[Sub], Field(Sub * 3, 0xC)]
 
     assert Test._fields_ == [
         ("a", ctypes.c_uint32),
@@ -276,19 +326,16 @@ def test_annotated_arrays():
 
 def test_inheritence():
     # Test the case of a one partial struct inheriting from another.
-    @partial_struct
-    class Base(ctypes.Structure):
+    class Base(PartialStruct):
         a: Annotated[ctypes.c_uint32, 0x0]
         b: Annotated[ctypes.c_bool, 0x8]
 
-    @partial_struct
     class Parent(Base):
         c: Annotated[ctypes.c_uint32, 0x10]
-        d: ctypes.c_uint32
+        d: Annotated[ctypes.c_uint32, 0x14]
 
-    @partial_struct
     class GrandParent(Parent):
-        e: ctypes.c_bool
+        e: Annotated[ctypes.c_bool, 0x18]
 
     data_base = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00")
     data_parent = bytearray(
@@ -342,11 +389,10 @@ def test_inheritence2():
     @partial_struct
     class Parent(Base):
         c: Annotated[ctypes.c_uint32, 0x10]
-        d: ctypes.c_uint32
+        d: Annotated[ctypes.c_uint32, 0x14]
 
-    @partial_struct
     class GrandParent(Parent):
-        e: ctypes.c_bool
+        e: Annotated[ctypes.c_bool, 0x18]
 
     data_base = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00")
     data_parent = bytearray(
@@ -382,18 +428,16 @@ def test_inheritence2():
 
 def test_total_size_inheritence():
     # Test the case of a base and parent class having different _total_size_'s.
-    @partial_struct
-    class Base(ctypes.Structure):
+    class Base(PartialStruct):
         _total_size_ = 0x10
 
-        a: Annotated[int, Field(ctypes.c_uint32)]
+        a: Annotated[int, Field(ctypes.c_uint32, 0x0)]
         b: Annotated[bool, Field(ctypes.c_bool, 0x8)]
 
-    @partial_struct
     class Parent(Base):
         _total_size_ = 0x40
         c: Annotated[ctypes.c_uint32, 0x20]
-        d: ctypes.c_uint32  # Will be at 0x24
+        d: Annotated[ctypes.c_uint32, 0x24]
         e: Annotated[bool, Field(ctypes.c_bool, 0x30)]
 
     # Check the sizes and reading for the base class.
@@ -436,17 +480,13 @@ def test_total_size_inheritence():
 
 
 def test_invalid_cases():
-    # Invalid type type
-    with pytest.raises(ValueError, match=re.escape("The field 'a' has an invalid type: <class 'int'>")):
+    # Invalid type
+    with pytest.raises(
+        ValueError,
+        match=re.escape("The field 'a' has an invalid annotation: typing.Annotated[int, <class 'int'>]"),
+    ):
 
-        @partial_struct
-        class Test1(ctypes.Structure):
-            a: int
-
-    with pytest.raises(ValueError, match=re.escape("The field 'a' has an invalid type: <class 'int'>")):
-
-        @partial_struct
-        class Test2(ctypes.Structure):
+        class Test2(PartialStruct):
             a: Annotated[int, int]
 
     # Invalid annotation
@@ -457,15 +497,16 @@ def test_invalid_cases():
         ),
     ):
 
-        @partial_struct
-        class Test3(ctypes.Structure):
+        class Test3(PartialStruct):
             a: Annotated[int, str, float]
 
     # Invalid offset
-    with pytest.raises(ValueError, match=re.escape("The field 'a' has an invalid offset: 'hi'")):
+    with pytest.raises(
+        ValueError,
+        match=re.escape("The field 'a' has an invalid annotation: typing.Annotated[ctypes.c_long, 'hi']"),
+    ):
 
-        @partial_struct
-        class Test4(ctypes.Structure):
+        class Test4(PartialStruct):
             a: Annotated[ctypes.c_int32, "hi"]
 
 
@@ -501,8 +542,7 @@ class cTkDynamicArray(ctypes.Structure, Generic[T]):
 def test_self_referential_struct():
     # Test the case of the struct having a data type which is itself.
     # To do this we'll need to introduce a serializable list.
-    @partial_struct
-    class SelfRef(ctypes.Structure):
+    class SelfRef(PartialStruct):
         a: Annotated[ctypes.c_uint32, 0x0]
         children: Annotated["cTkDynamicArray[SelfRef]", 0x4]
 
@@ -525,3 +565,314 @@ def test_self_referential_struct():
     assert sub_child._type_ == SelfRef
     assert children[1].a == 3
     assert children[1].children.count == 0
+
+
+def test_misordered_fields():
+    class Test(PartialStruct):
+        b: Annotated[ctypes.c_uint32, 0x10]
+        a: Annotated[ctypes.c_uint32, 0x0]
+
+    assert Test._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("_padding_0x4", ctypes.c_ubyte * 0xC),
+        ("b", ctypes.c_uint32),
+    ]
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00")
+    t = Test.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 5
+    assert bytes(t) == bytes(data)
+
+
+def test_added_field_in_subclass():
+    # one scenario we'd like to support is having subclasses which add new fields in the middle of fields
+    # defined in the parent class.
+    class Parent(PartialStruct):
+        a: Annotated[int, Field(ctypes.c_uint32, 0x0)]
+        c: Annotated[ctypes.c_uint32, 0x10]
+
+    class ImprovedParent(Parent):
+        _total_size_ = 0x20
+        b: Annotated[ctypes.c_uint32, 0x8]
+
+    assert Parent._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("_padding_0x4", ctypes.c_ubyte * 0xC),
+        ("c", ctypes.c_uint32),
+    ]
+    assert ctypes.sizeof(Parent) == 0x14
+
+    assert ImprovedParent._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("_padding_0x4", ctypes.c_ubyte * 0x4),
+        ("b", ctypes.c_uint32),
+        ("_padding_0xC", ctypes.c_ubyte * 0x4),
+        ("c", ctypes.c_uint32),
+        ("_padding_0x14", ctypes.c_ubyte * 0xC),
+    ]
+    assert ctypes.sizeof(ImprovedParent) == 0x20
+
+    data = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00"
+        b"\x05\x00\x00\x00\x06\x00\x00\x00\x07\x00\x00\x00\x08\x00\x00\x00"
+    )
+    t = ImprovedParent.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 3
+    assert bytes(t) == bytes(data)
+
+
+def test_added_field_in_subclass2():
+    # Test the case of having subclasses which add new fields after the fields defined in the parent class.
+    class Parent(PartialStruct):
+        a: Annotated[ctypes.c_uint32, 0x0]
+        b: Annotated[ctypes.c_uint32, 0x10]
+
+        def callme(self):
+            return 2
+
+    class ImprovedParent(Parent):
+        c: Annotated[ctypes.c_uint32, 0x18]
+
+    assert Parent._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("_padding_0x4", ctypes.c_ubyte * 0xC),
+        ("b", ctypes.c_uint32),
+    ]
+    assert ctypes.sizeof(Parent) == 0x14
+
+    assert ImprovedParent._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("_padding_0x4", ctypes.c_ubyte * 0xC),
+        ("b", ctypes.c_uint32),
+        ("_padding_0x14", ctypes.c_ubyte * 0x4),
+        ("c", ctypes.c_uint32),
+    ]
+    assert ctypes.sizeof(ImprovedParent) == 0x1C
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00")
+    t = Parent.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 5
+    assert bytes(t) == bytes(data)
+
+    data = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00"
+        b"\x05\x00\x00\x00\x06\x00\x00\x00\x07\x00\x00\x00"
+    )
+    t = ImprovedParent.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 5
+    assert t.c == 7
+    assert bytes(t) == bytes(data)
+
+    assert t.callme() == 2
+
+
+def test_overwritten_field_in_subclass():
+    # Test the case of a field being overwritten by a subclass.
+    class Parent(PartialStruct):
+        a: Annotated[int, Field(ctypes.c_uint32, 0x0)]
+        b: Annotated[int, Field(ctypes.c_uint32, 0x8)]
+
+    class ImprovedParent(Parent):
+        b: Annotated[int, Field(ctypes.c_uint64, 0x8)]
+
+    assert Parent._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("_padding_0x4", ctypes.c_ubyte * 0x4),
+        ("b", ctypes.c_uint32),
+    ]
+    assert ctypes.sizeof(Parent) == 0xC
+
+    assert ImprovedParent._fields_ == [
+        ("a", ctypes.c_uint32),
+        # Note: Padding is not added because it doesn't need it.
+        ("b", ctypes.c_uint64),
+    ]
+    assert ctypes.sizeof(ImprovedParent) == 0x10
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00")
+    t = ImprovedParent.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 0x4_00_00_00_03
+    assert bytes(t) == bytes(data)
+
+
+def test_finalised_struct():
+    @final_fields
+    class Parent(PartialStruct):
+        a: Annotated[int, Field(ctypes.c_uint32, 0x0)]
+        b: Annotated[int, Field(ctypes.c_uint32, 0x8)]
+
+    assert Parent._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("_padding_0x4", ctypes.c_ubyte * 0x4),
+        ("b", ctypes.c_uint32),
+    ]
+    assert ctypes.sizeof(Parent) == 0xC
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00")
+    t = Parent.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 3
+    assert bytes(t) == bytes(data)
+
+    # This should not be allowed.
+    with pytest.raises(
+        TypeError,
+        match=re.escape("'BadParent' defines new fields which would be overriding existing fields: {'b'}"),
+    ):
+
+        class BadParent(Parent):
+            b: Annotated[int, Field(ctypes.c_uint64, 0x8)]
+
+    # We can subclass to add fields at the end like normal struct inheritence.
+    # This also checks that if we specify a field type at the wrong alignment it will still get it right.
+    class GoodParent(Parent):
+        c: Annotated[int, Field(ctypes.c_uint64, 0xC)]
+
+    data = bytearray(
+        b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x06\x00\x00\x00"
+    )
+    t = GoodParent.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 3
+    assert t.c == 0x6_00_00_00_05
+    assert bytes(t) == bytes(data)
+
+    class MethodParent(Parent):
+        def something(self):
+            return self.a
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00")
+    t = MethodParent.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 3
+    assert bytes(t) == bytes(data)
+    assert t.something() == 1
+
+
+def test_middle_finalised_struct():
+    # Test a inheritence chain where the bottom class is not finalised, but the middle one is.
+    class Child(PartialStruct):
+        a: Annotated[int, Field(ctypes.c_uint32, 0x0)]
+        c: Annotated[int, Field(ctypes.c_uint32, 0x8)]
+
+    class Alphabet(IntEnum):
+        A = 0
+        B = 1
+        C = 2
+        D = 3
+        E = 4
+
+    @final_fields
+    class Parent(Child):
+        b: Annotated[int, Field(ctypes.c_uint32, 0x4)]
+        # A type checker will complain about this, but we don't care because we are "correcting" it here.
+        c: Annotated[c_enum32[Alphabet], 0x8]
+
+    class GrandParent(Parent):
+        d: Annotated[int, Field(ctypes.c_uint32, 0x10)]
+
+    # Test the Child data.
+    assert Child._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("_padding_0x4", ctypes.c_ubyte * 0x4),
+        ("c", ctypes.c_uint32),
+    ]
+    assert ctypes.sizeof(Child) == 0xC
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00")
+    t = Child.from_buffer(data)
+    assert t.a == 1
+    assert t.c == 3
+    assert bytes(t) == bytes(data)
+
+    # Test the Parent data
+    assert Parent._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("b", ctypes.c_uint32),
+        ("c", c_enum32[Alphabet]),
+    ]
+    assert ctypes.sizeof(Parent) == 0xC
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00")
+    t = Parent.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 2
+    assert t.c == Alphabet.D
+    assert bytes(t) == bytes(data)
+
+    # Test the GrandParent data.
+    # Can't check the `_fields_` attribute because it won't be a combination as per usual ctypes.Structure
+    # inheritence.
+    assert ctypes.sizeof(GrandParent) == 0x14
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00")
+    t = GrandParent.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 2
+    assert t.c == 3
+    assert t.d == 5
+    assert bytes(t) == bytes(data)
+
+
+def test_override_name_in_subclass():
+    # Test the case of a subclass defining a function at the same offset as a base class will retain the name
+    # of the subclass, not the base class.
+    class Parent(PartialStruct):
+        a: Annotated[int, Field(ctypes.c_uint32, 0x0)]
+        unknown: Annotated[ctypes.c_uint32, 0x4]
+
+    class ImprovedParent(Parent):
+        b: Annotated[ctypes.c_uint32, 0x4]
+        c: Annotated[ctypes.c_uint32, 0x8]
+
+    assert Parent._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("unknown", ctypes.c_uint32),
+    ]
+    assert ctypes.sizeof(Parent) == 0x8
+
+    assert ImprovedParent._fields_ == [
+        ("a", ctypes.c_uint32),
+        ("b", ctypes.c_uint32),
+        ("c", ctypes.c_uint32),
+    ]
+    assert ctypes.sizeof(ImprovedParent) == 0xC
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00")
+    t = ImprovedParent.from_buffer(data)
+    assert t.a == 1
+    assert t.b == 2
+    assert t.c == 3
+    assert bytes(t) == bytes(data)
+
+
+def test_initialisable_structs():
+    class MyVector(PartialStruct):
+        """Vector docstring"""
+
+        _total_size_ = 0x10
+        x: Annotated[int, Field(ctypes.c_uint32, 0x0)]
+        y: Annotated[int, Field(ctypes.c_uint32, 0x4)]
+        z: Annotated[int, Field(ctypes.c_uint32, 0x8)]
+
+        def __init__(self, x: int, y: int, z: int):
+            self.x = x
+            self.y = y
+            self.z = z
+
+    data = bytearray(b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00")
+    vec = MyVector.from_buffer(data)
+    assert vec.__doc__ == "Vector docstring"
+    assert vec.x == 1
+    assert vec.y == 2
+    assert vec.z == 3
+    other_vec = MyVector(5, 6, 7)
+    assert other_vec.x == 5
+    assert other_vec.y == 6
+    assert other_vec.z == 7
+    assert bytes(other_vec) == b"\x05\x00\x00\x00\x06\x00\x00\x00\x07\x00\x00\x00\x00\x00\x00\x00"

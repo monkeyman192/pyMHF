@@ -29,7 +29,7 @@ class c_char_p64(ctypes.c_uint64):
         return b""
 
     def __str__(self):
-        return self._value.decode()
+        return self._value.decode(errors="backslashreplace")
 
     def __bytes__(self):
         return self._value
@@ -48,7 +48,7 @@ class c_char_p32(ctypes.c_uint32):
         return b""
 
     def __str__(self):
-        return self._value.decode()
+        return self._value.decode(errors="backslashreplace")
 
     def __bytes__(self):
         return self._value
