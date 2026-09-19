@@ -5,7 +5,7 @@ import os.path as op
 import string
 import sys
 from types import ModuleType
-from typing import Optional
+from typing import NamedTuple, Optional
 
 from pymhf.gui.widget_data import ctx_group, ctx_group_counter
 
@@ -49,45 +49,78 @@ def library_path_from_name(name: str) -> Optional[str]:
             return op.dirname(spec.origin)
 
 
-def get_mod_name(data: str) -> Optional[str]:
-    """Parse the provided data and return the name of the first mod class defined in it.
+class ModInfo(NamedTuple):
+    """Details of a mod class which can be determined without importing the file it's defined in."""
 
-    This allows the name of a mod to be determined without importing the file it's defined in.
-    ``None`` is returned if no mod class can be found.
+    name: str
+    disabled: bool
+
+
+def _is_disable_decorator(decorator: ast.expr, disable_names: set[str]) -> bool:
+    if isinstance(decorator, ast.Name):
+        return decorator.id in disable_names
+    if isinstance(decorator, ast.Attribute):
+        return _fully_unpack_ast_attr(decorator) in disable_names
+    return False
+
+
+def get_mod_infos(data: str) -> list[ModInfo]:
+    """Parse the provided data and return the details of every mod class defined in it.
+
+    This allows the name of each mod, and whether it has been decorated with ``@disable``, to be determined
+    without importing the file they are defined in.
     """
     tree = ast.parse(data)
-    mod_class_name = None
+    # A file may import the names we are looking for in more than one way, so keep track of every name each
+    # object may be referred to as.
+    mod_class_names: set[str] = set()
+    disable_names: set[str] = set()
+    mods: list[ModInfo] = []
     for node in tree.body:
-        # First, determine the name the Mod object is imported as.
+        # First, determine the names the Mod class and the disable decorator are imported as.
         if isinstance(node, ast.Import):
             for node_ in node.names:
                 if isinstance(node_, ast.alias):
+                    name = node_.asname or node_.name
                     if node_.name in ("pymhf", "pymhf.core.mod_loader"):
-                        mod_class_name = (node_.asname or node_.name) + ".Mod"
+                        mod_class_names.add(f"{name}.Mod")
+                    if node_.name == "pymhf":
+                        # `disable` isn't exposed at the top level, but the submodule it's in is reachable.
+                        disable_names.add(f"{name}.core.hooking.disable")
+                    elif node_.name == "pymhf.core.hooking":
+                        disable_names.add(f"{name}.disable")
         if isinstance(node, ast.ImportFrom):
             if node.module in ("pymhf", "pymhf.core.mod_loader"):
                 for node_ in node.names:
                     if isinstance(node_, ast.alias):
                         if node_.name == "Mod":
-                            mod_class_name = node_.asname or node_.name
+                            mod_class_names.add(node_.asname or node_.name)
+            if node.module == "pymhf.core.hooking":
+                for node_ in node.names:
+                    if isinstance(node_, ast.alias):
+                        if node_.name == "disable":
+                            disable_names.add(node_.asname or node_.name)
         # Now, when we go over the class nodes, check the base classes.
         if isinstance(node, ast.ClassDef):
             for base in node.bases:
                 # For a simple name, it's easy - just match it.
                 if isinstance(base, ast.Name):
-                    if base.id == mod_class_name:
-                        return node.name
+                    resolved_base = base.id
                 # If it's an attribute it's a bit trickier...
                 elif isinstance(base, ast.Attribute):
                     resolved_base = _fully_unpack_ast_attr(base)
-                    if resolved_base == mod_class_name:
-                        return node.name
-    return None
+                else:
+                    continue
+                if resolved_base in mod_class_names:
+                    disabled = any(_is_disable_decorator(d, disable_names) for d in node.decorator_list)
+                    mods.append(ModInfo(node.name, disabled))
+                    break
+    return mods
 
 
 def parse_file_for_mod(data: str) -> bool:
     """Parse the provided data and determine if there is at least one mod class in it."""
-    return get_mod_name(data) is not None
+    return bool(get_mod_infos(data))
 
 
 def import_file(fpath: str) -> Optional[ModuleType]:

@@ -48,7 +48,7 @@ try:
     HTTP_API_ALLOWED = True
 except ImportError:
     HTTP_API_ALLOWED = False
-from pymhf.core.importing import get_mod_name, import_file, parse_file_for_mod
+from pymhf.core.importing import ModInfo, get_mod_infos, import_file, parse_file_for_mod
 from pymhf.core.memutils import get_addressof, map_struct
 from pymhf.core.utils import does_pid_have_focus, saferun
 from pymhf.gui.widget_data import (
@@ -72,17 +72,17 @@ def _is_mod_predicate(obj, ref_module) -> bool:
     return False
 
 
-def _mod_name_from_file(fpath: str) -> Optional[str]:
-    """Determine the name of the mod defined in the provided file without importing it.
+def _mod_infos_from_file(fpath: str) -> list[ModInfo]:
+    """Determine the mods defined in the provided file, and whether they are disabled, without importing it.
 
-    ``None`` is returned if the file cannot be read or parsed, or if it contains no mod. In this case the file
-    will be imported as usual so that any issue with it is reported by the normal loading process.
+    An empty list is returned if the file cannot be read or parsed, or if it contains no mods. In this case
+    the file will be imported as usual so that any issue with it is reported by the normal loading process.
     """
     try:
         with open(fpath, "r", encoding="utf-8") as f:
-            return get_mod_name(f.read())
+            return get_mod_infos(f.read())
     except (OSError, SyntaxError, ValueError):
-        return None
+        return []
 
 
 def _is_mod_state_predicate(obj) -> bool:
@@ -529,31 +529,38 @@ class ModManager:
             Whether to search down into sub-folders.
         disabled_mods
             An optional collection of mod names (ie. the name of the class which subclasses ``Mod``) which
-            are not to be loaded. The files these mods are defined in are not imported at all, so no code
-            within them is run.
+            are not to be loaded. Mods decorated with ``@disable`` are also not loaded. If every mod in a
+            file is disabled then the file isn't imported at all, so no code within it is run.
 
         Returns
         -------
         A tuple of 2 ints. The first value is the number of mods loaded, and the second is the number of hooks
         loaded.
         """
+        disabled_names = set(disabled_mods or ())
         for file in os.listdir(folder):
             fullpath = op.join(folder, file)
             if file.endswith(".py"):
-                # Only determine the name of the mod ahead of time if we actually have some mods to disable
-                # since it requires the file to be read and parsed.
-                if disabled_mods:
-                    mod_name = _mod_name_from_file(fullpath)
-                    if mod_name is not None and mod_name in disabled_mods:
-                        logger.info(f"Not loading mod {mod_name!r} ({fullpath}) as it has been disabled")
-                        self._disabled_mods_found.add(mod_name)
-                        continue
+                # Determine what mods are in the file, and whether they are disabled, without importing it.
+                # This way the file only has to be imported if something in it will actually be loaded.
+                mod_infos = _mod_infos_from_file(fullpath)
+                self._disabled_mods_found.update(
+                    info.name for info in mod_infos if info.name in disabled_names
+                )
+                skipped = [info for info in mod_infos if info.disabled or info.name in disabled_names]
+                # Only skip the file if every mod in it is disabled, otherwise it still has to be imported
+                # for the mods which aren't. Any disabled mod within it is skipped when the module is loaded.
+                if mod_infos and len(skipped) == len(mod_infos):
+                    for info in skipped:
+                        reason = "is decorated with `@disable`" if info.disabled else "has been disabled"
+                        logger.info(f"Not loading mod {info.name!r} ({fullpath}) as it {reason}")
+                    continue
                 self.load_mod(fullpath)
             elif deep_search:
                 # Search down one more layer for mods and then stop.
                 # Don't bind any since we'll always call bind later.
                 if op.isdir(fullpath):
-                    self.load_mod_folder(fullpath, False, False, disabled_mods)
+                    self.load_mod_folder(fullpath, False, False, disabled_names)
 
         # Once all the mods in the folder have been loaded, then parse the mod for function hooks and register
         # then with the hook loader.
@@ -564,7 +571,7 @@ class ModManager:
         if bind:
             # This is the outer-most call, so every folder has been searched by now and we can tell whether
             # any of the configured mod names didn't match a mod.
-            if unmatched := set(disabled_mods or ()) - self._disabled_mods_found:
+            if unmatched := disabled_names - self._disabled_mods_found:
                 logger.warning(
                     f"The following mods are configured to be disabled but weren't found: {sorted(unmatched)}"
                 )
