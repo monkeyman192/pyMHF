@@ -553,7 +553,7 @@ class ModManager:
                 if mod_infos and len(skipped) == len(mod_infos):
                     for info in skipped:
                         reason = "is decorated with `@disable`" if info.disabled else "has been disabled"
-                        logger.info(f"Not loading mod {info.name!r} ({fullpath}) as it {reason}")
+                        logger.debug(f"Not loading mod {info.name!r} ({fullpath}) as it {reason}")
                     continue
                 self.load_mod(fullpath)
             elif deep_search:

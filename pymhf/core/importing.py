@@ -77,11 +77,15 @@ def get_mod_infos(data: str) -> list[ModInfo]:
     disable_names: set[str] = set()
     mods: list[ModInfo] = []
     for node in tree.body:
-        # First, determine the names the Mod class and the disable decorator are imported as.
-        if isinstance(node, ast.Import):
+        # First, determine the names the Mod class and the disable decorator are imported as. Both node
+        # types list the aliases they bind in `names`, so the name each object is referred to by is found
+        # the same way for either of them.
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
             for node_ in node.names:
-                if isinstance(node_, ast.alias):
-                    name = node_.asname or node_.name
+                if not isinstance(node_, ast.alias):
+                    continue
+                name = node_.asname or node_.name
+                if isinstance(node, ast.Import):
                     if node_.name in ("pymhf", "pymhf.core.mod_loader"):
                         mod_class_names.add(f"{name}.Mod")
                     if node_.name == "pymhf":
@@ -89,17 +93,11 @@ def get_mod_infos(data: str) -> list[ModInfo]:
                         disable_names.add(f"{name}.core.hooking.disable")
                     elif node_.name == "pymhf.core.hooking":
                         disable_names.add(f"{name}.disable")
-        if isinstance(node, ast.ImportFrom):
-            if node.module in ("pymhf", "pymhf.core.mod_loader"):
-                for node_ in node.names:
-                    if isinstance(node_, ast.alias):
-                        if node_.name == "Mod":
-                            mod_class_names.add(node_.asname or node_.name)
-            if node.module == "pymhf.core.hooking":
-                for node_ in node.names:
-                    if isinstance(node_, ast.alias):
-                        if node_.name == "disable":
-                            disable_names.add(node_.asname or node_.name)
+                else:
+                    if node_.name == "Mod" and node.module in ("pymhf", "pymhf.core.mod_loader"):
+                        mod_class_names.add(name)
+                    elif node_.name == "disable" and node.module == "pymhf.core.hooking":
+                        disable_names.add(name)
         # Now, when we go over the class nodes, check the base classes.
         if isinstance(node, ast.ClassDef):
             for base in node.bases:
@@ -120,7 +118,7 @@ def get_mod_infos(data: str) -> list[ModInfo]:
 
 def parse_file_for_mod(data: str) -> bool:
     """Parse the provided data and determine if there is at least one mod class in it."""
-    return bool(get_mod_infos(data))
+    return len(get_mod_infos(data)) != 0
 
 
 def import_file(fpath: str) -> Optional[ModuleType]:
