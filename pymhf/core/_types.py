@@ -26,6 +26,7 @@ class pymhfConfig(TypedDict):
     start_paused: NotRequired[bool]
     default_mod_save_dir: NotRequired[str]
     internal_mod_dir: NotRequired[str]
+    disabled_mods: NotRequired[list[str]]
     start_exe: NotRequired[bool]
     interactive_console: NotRequired[bool]
     logging: NotRequired[pymhfLoggingConfig]
