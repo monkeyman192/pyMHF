@@ -392,6 +392,8 @@
 <section id="current-0-2-5-dev">
 <h2>Current (0.2.5.dev)<a class="headerlink" href="#current-0-2-5-dev" title="Link to this heading">#</a></h2>
 <ul class="simple">
+<li><p>Added the <code class="docutils literal notranslate"><span class="pre">disabled_mods</span></code> setting which takes a list of mod names which will not be loaded. The files these mods are defined in aren’t imported at all, so no code in them is run. See <a class="reference internal" href="settings.html"><span class="doc">here</span></a> for more details.</p></li>
+<li><p>Mods decorated with <code class="docutils literal notranslate"><span class="pre">&#64;disable</span></code> are now also detected before their file is imported, so their file isn’t imported at all (previously the file was imported and only the mod class itself was skipped).</p></li>
 <li><p>Cleaned up the <code class="docutils literal notranslate"><span class="pre">c_enum</span></code> implementation to have a single base class to ensure consistency across inheriting types.</p></li>
 <li><p>Changed the string representation of <code class="docutils literal notranslate"><span class="pre">c_enum</span></code> types (eg. <code class="docutils literal notranslate"><span class="pre">c_enum8</span></code>, etc.) so that the value is now the name of the associated enum value. The old form is now available via <code class="docutils literal notranslate"><span class="pre">repr()</span></code>.</p></li>
 </ul>

@@ -511,10 +511,16 @@ By setting this value to <code class="docutils literal notranslate"><span class=
 <section id="pymhf-local-config-section">
 <h2><code class="docutils literal notranslate"><span class="pre">pymhf.local_config</span></code> section:<a class="headerlink" href="#pymhf-local-config-section" title="Link to this heading">#</a></h2>
 <p>These settings are set by calling <code class="docutils literal notranslate"><span class="pre">pymhf</span> <span class="pre">--config</span> <span class="pre">&lt;libraryname&gt;</span></code> or on first run of <code class="docutils literal notranslate"><span class="pre">pymhf</span> <span class="pre">&lt;libraryname&gt;</span></code>.</p>
-<ul class="simple">
+<ul>
 <li><p><strong>mod_dir</strong>: [Can use magic path] [Library only] The path to the directory which contains the mods to be run by the library.</p></li>
 <li><p><strong>mod_save_dir</strong>: [Can use magic path] [Overrides <code class="docutils literal notranslate"><span class="pre">default_mod_save_dir</span></code>] The path to the directory within which mod saves are to be placed. If this is not an absolute path and instead a “magic” path, <code class="docutils literal notranslate"><span class="pre">MOD_SAVES</span></code> will be appended to the magic path for the final path.</p></li>
 <li><p><strong>log_dir</strong> [Can use magic path] [Overrides <code class="docutils literal notranslate"><span class="pre">default_log_dir</span></code>] The path to save the logs under. If not an absolute path, a subdirectory called <code class="docutils literal notranslate"><span class="pre">LOGS</span></code> will be created under this directory.</p></li>
+<li><p><strong>disabled_mods</strong>: A list of mod names which will not be loaded. The name is the name of the class which subclasses <code class="docutils literal notranslate"><span class="pre">Mod</span></code>, ie. the name shown on the mod’s tab in the GUI. Files containing these mods are not imported at all, so nothing in them is run:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[pymhf.local_config]</span>
+<span class="n">disabled_mods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;MyMod&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SomeOtherMod&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</li>
 </ul>
 </section>
 </section>
