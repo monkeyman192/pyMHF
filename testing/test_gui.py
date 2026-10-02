@@ -13,6 +13,7 @@ def run_gui():
     mod_manager.hook_manager = hook_manager
     mod_manager.load_single_mod(op.join(op.dirname(__file__), "gui_test_mod_simple.py"))
     gui = GUI(mod_manager, {"gui": {"scale": 1}})
+    mod_manager._gui = gui
     for mod in mod_manager.mods.values():
         gui.add_tab(mod)
     gui.add_hex_tab()

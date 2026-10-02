@@ -74,7 +74,7 @@ class Widget(ABC):
         surrounding_widgets: Optional[WidgetSurrounds] = None,
     ):
         """Based on the widget behaviour, clean up from the previous widgets, or attach to them, and then
-        retrn some (optional) extra information which may be required later.
+        return some (optional) extra information which may be required later.
         """
         extra = {}
         manual_parent_id = None
@@ -366,10 +366,12 @@ class Group(Widget):
                 self.ids["SELF"],
                 label=new_widget.label,
             )
+            self.label = new_widget.label
         for line in new_sub_config["deletions"]:
             gui.handle_diff_row(mod, line)
         for line in new_sub_config["changes"]:
             gui.handle_diff_row(mod, line)
+        self.mod = mod
 
     def remove(self):
         for widget in self.child_widgets:
@@ -399,6 +401,7 @@ class Button(Widget):
         widget_data = new_widget._widget_data
         if widget_data.label != self.label:
             new_config["label"] = widget_data.label
+            self.label = widget_data.label
         # The callback will ALWAYS change because we have a new instance of the Mod.
         new_config["callback"] = new_widget
         if new_config:
@@ -406,6 +409,7 @@ class Button(Widget):
                 self.ids["BUTTON"],
                 **new_config,
             )
+        self.mod = mod
 
 
 class Variable(Widget):
@@ -459,6 +463,7 @@ class Variable(Widget):
         widget_data = new_widget._widget_data
         if widget_data.label != self.label:
             dpg.set_value(self.ids["LABEL"], widget_data.label)
+            self.label = widget_data.label
         self.mod = mod
 
         # Handle the case of the variable having a setter change.

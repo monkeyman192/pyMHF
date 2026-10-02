@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import ctypes
 import logging
 import os.path as op
@@ -78,7 +80,7 @@ class GUI:
         self.always_on_top = config.get("gui", {}).get("always_on_top", False)
         self.is_debug = config.get("logging", {}).get("log_level") == "debug"
         self.scale = config.get("gui", {}).get("scale", 1)
-        self.module_reload_enabled = False
+        self.submodule_reload_enabled = False
         dpg.create_context()
         dpg.create_viewport(
             title=WINDOW_TITLE,
@@ -93,9 +95,12 @@ class GUI:
             self.default_font = dpg.add_font(op.join(FONT_DIR, "JetBrainsMono[wght].ttf"), 32)
 
         self.tracking_variables: dict[str, dict[str, VariableData]] = defaultdict(lambda: {})
-        self.redrawing_widgets: dict[str, dict[str, CustomWidget]] = defaultdict(lambda: {})
+        self.redrawing_widgets: dict[str | int, dict[str, CustomWidget]] = defaultdict(lambda: {})
         self.broken_widgets: dict[str, list[VariableData]] = {}
-        self.tabs: dict[Union[int, str], str] = {}
+        self.disabled_mods: set[str] = set()
+        # Keep track of the tabs. The values will be the ids of the main table all the widgets are drawn in
+        # for that tab.
+        self.tabs: dict[str, str | int | None] = {}
         self._shown = True
         self._handle = None
         self._current_tab = ""
@@ -116,6 +121,16 @@ class GUI:
         #     [150, 150, 150, 255],
         #     parent=collapsing_header_theme_component
         # )
+
+        # Create a theme for disabled buttons.
+        with dpg.theme() as disabled_button_theme:
+            with dpg.theme_component(dpg.mvButton, enabled_state=False):
+                # Background color when disabled (dark grey).
+                dpg.add_theme_color(dpg.mvThemeCol_Button, (60, 60, 60))
+                # Text color when disabled (light grey).
+                dpg.add_theme_color(dpg.mvThemeCol_Text, (120, 120, 120))
+
+        dpg.bind_theme(disabled_button_theme)
 
         # Keep track of the viewport dimensions and position.
         # NOTE: These are ONLY updated when the viewport is minimised by the `hide_window` method.
@@ -164,7 +179,7 @@ class GUI:
             rootLogger.setLevel(logging.INFO)
 
     def toggle_module_reload(self, _sender, reload_module):
-        self.module_reload_enabled = reload_module
+        self.submodule_reload_enabled = reload_module
 
     def toggle_show_gui(self, _sender, show_gui):
         if "gui" in self.config:
@@ -174,8 +189,7 @@ class GUI:
 
     def add_hex_tab(self):
         dpg.add_tab(label="Hex View", tag=HEX_NAME, parent="tabbar")
-        tab_alias = dpg.get_alias_id(HEX_NAME)
-        self.tabs[tab_alias] = HEX_NAME
+        self.tabs[HEX_NAME] = None
 
         self.hex_view = HexView(HEX_NAME)
         self.hex_view._setup()
@@ -185,11 +199,10 @@ class GUI:
         with dpg.value_registry():
             dpg.add_bool_value(tag="always_on_top", default_value=self.always_on_top)
             dpg.add_bool_value(tag="is_debug", default_value=self.is_debug)
-            dpg.add_bool_value(tag="module_reload", default_value=self.module_reload_enabled)
+            dpg.add_bool_value(tag="module_reload", default_value=self.submodule_reload_enabled)
             dpg.add_bool_value(tag="show_gui", default_value=True)
         dpg.add_tab(label="Settings", tag=SETTINGS_NAME, parent="tabbar")
-        tab_alias = dpg.get_alias_id(SETTINGS_NAME)
-        self.tabs[tab_alias] = SETTINGS_NAME
+        self.tabs[SETTINGS_NAME] = None
 
         with dpg.table(
             header_row=False,
@@ -248,8 +261,7 @@ class GUI:
 
     def add_details_tab(self):
         dpg.add_tab(label="Details", tag=DETAILS_NAME, parent="tabbar")
-        tab_alias = dpg.get_alias_id(DETAILS_NAME)
-        self.tabs[tab_alias] = DETAILS_NAME
+        self.tabs[DETAILS_NAME] = None
 
         imports = _internal.imports
         tree = dpg.add_tree_node(label="Imports", parent=DETAILS_NAME)
@@ -279,6 +291,10 @@ class GUI:
         widgets = self.widget_data.pop(mod_name, [])
 
         changes, deletions = self.diff_widgets(widgets, mod._gui_widgets)
+
+        print(changes)
+        print("-0--------------")
+        print(deletions)
 
         # Add the current tab to the stack so that any drawing knows it's within this context.
         dpg.push_container_stack(mod_name)
@@ -477,30 +493,43 @@ class GUI:
         mod.pymhf_gui = self
 
         dpg.add_tab(label=mod_name, tag=mod_name, parent="tabbar")
-        tab_alias = dpg.get_alias_id(mod_name)
         dpg.set_item_user_data(mod_name, mod)
-        self.tabs[tab_alias] = mod_name
+        self.tabs[mod_name] = None
         self.widget_mapping[mod_name] = {}
 
-        dpg.add_button(
-            label="Reload Mod",
-            callback=self.mod_manager._gui_reload,
-            user_data=(mod._mod_name, self),
-            parent=mod_name,
-        )
+        with dpg.group(horizontal=True, parent=mod_name):
+            dpg.add_button(
+                label="Reload Mod",
+                callback=self._reload_mod,
+                user_data=mod_name,
+            )
+            if mod._disabled:
+                dpg.add_button(
+                    label="Enable",
+                    callback=self._enable_mod,
+                    user_data=mod_name,
+                )
+            else:
+                dpg.add_button(
+                    label="Disable",
+                    callback=self._disable_mod,
+                    user_data=mod_name,
+                )
 
         dpg.add_separator(parent=mod_name)
 
-        # Push the mod name to the container stack so that we can draw everthing under it.
-        dpg.push_container_stack(mod_name)
+        with dpg.group(parent=mod_name) as mod_widget_group:
+            # Push the mod name to the container stack so that we can draw everthing under it.
+            dpg.push_container_stack(mod_widget_group)
 
-        # Go over all the widget data and create the actual widget instances for the gui.
-        self.widget_data[mod_name] = mod._gui_widgets
-        widget_mapping = self.widget_mapping[mod_name]
-        for func in mod._gui_widgets:
-            widget = Widget.create(func, widget_mapping)
-            widget._draw(widget_mapping)
-        dpg.pop_container_stack()
+            # Go over all the widget data and create the actual widget instances for the gui.
+            self.widget_data[mod_name] = mod._gui_widgets
+            widget_mapping = self.widget_mapping[mod_name]
+            for func in mod._gui_widgets:
+                widget = Widget.create(func, widget_mapping)
+                widget._draw(widget_mapping)
+            dpg.pop_container_stack()
+        self.tabs[mod_name] = mod_widget_group
 
         # Parse the widgets and extract any tracking info out.
         for widget_id, widget in self.widget_mapping[mod_name].items():
@@ -514,8 +543,30 @@ class GUI:
                 if isinstance(widget, CustomWidget):
                     self.redrawing_widgets[mod_name][widget_id] = widget
 
-    def change_tab(self, _: str, app_data: int):
-        self._current_tab = self.tabs[app_data]
+    def _reload_mod(self, _sender, _keyword, user_data: str):
+        dpg.configure_item(_sender, enabled=False)
+        self.mod_manager.reload(user_data)
+        self.mod_manager._assign_mod_instances(user_data)
+        dpg.configure_item(_sender, enabled=True)
+
+    def _disable_mod(self, _sender, _keyword, user_data: str):
+        self.mod_manager.disable(user_data)
+        self.disabled_mods.add(user_data)
+        if (group_id := self.tabs[user_data]) is not None:
+            dpg.hide_item(group_id)
+        dpg.set_item_label(_sender, "Enable")
+        dpg.set_item_callback(_sender, self._enable_mod)
+
+    def _enable_mod(self, _sender, _keyword, user_data: str):
+        self.mod_manager.enable(user_data)
+        self.disabled_mods.discard(user_data)
+        if (group_id := self.tabs[user_data]) is not None:
+            dpg.show_item(group_id)
+        dpg.set_item_label(_sender, "Disable")
+        dpg.set_item_callback(_sender, self._disable_mod)
+
+    def change_tab(self, _: str, app_data: str):
+        self._current_tab = app_data
 
     def add_window(self):
         with dpg.window(
@@ -530,7 +581,7 @@ class GUI:
     def remove_tab(self, mod: Mod):
         """Remove the tab associated with the provided class."""
         name = mod.__class__.__name__
-        self.tabs.pop(dpg.get_alias_id(name))
+        self.tabs.pop(name)
         dpg.delete_item(name)
 
     def run(self):
@@ -541,42 +592,43 @@ class GUI:
             dpg.set_primary_window(WINDOW_TITLE, True)
             self.hwnd = win32gui.FindWindow(None, WINDOW_TITLE)
             if self.tabs:
-                self._current_tab = list(self.tabs.values())[0]
+                self._current_tab = list(self.tabs.keys())[0]
             while dpg.is_dearpygui_running():
-                # For each tracking variable, update the value.
-                for tag, vars in self.tracking_variables.get(self._current_tab, {}).items():
-                    if vars in self.broken_widgets.get(self._current_tab, []):
-                        continue
-                    try:
-                        # Handle custom widgets first since they may also satisfy the other conditions.
-                        if vars.variable_type == VariableType.CUSTOM:
-                            # Call redraw on the widget.
-                            values = getattr(vars.mod, vars.variable_name)
-                            widget = self.redrawing_widgets[self._current_tab][tag]
-                            res = widget.redraw(**values)
-                            # If we get a return value from redraw and the property has a setter, pass the
-                            # value through to complete the cycle.
-                            if vars.has_setter and res:
-                                setattr(vars.mod, vars.variable_name, res)
-                        # Enum with setter.
-                        elif vars.variable_type == VariableType.ENUM and vars.has_setter:
-                            val = cast(Enum, getattr(vars.mod, vars.variable_name))
-                            dpg.set_value(tag, val.name)
-                        # Read-only variable.
-                        elif vars.variable_type == VariableType.STRING or not vars.has_setter:
-                            dpg.set_value(tag, str(getattr(vars.mod, vars.variable_name)))
-                        # "Normal" variable.
-                        else:
-                            dpg.set_value(tag, getattr(vars.mod, vars.variable_name))
-                    except Exception:
-                        # If we can't set the value, don't crash the whole program.
-                        logger.exception(
-                            f"There was an exception handling the variable {vars.variable_name}. It will be "
-                            "removed from the pool of variables which get updated."
-                        )
-                        if self._current_tab not in self.broken_widgets:
-                            self.broken_widgets[self._current_tab] = []
-                        self.broken_widgets[self._current_tab].append(vars)
+                # For each tracking variable, update the value if the mod isn't disabled.
+                if self._current_tab not in self.disabled_mods:
+                    for tag, vars in self.tracking_variables.get(self._current_tab, {}).items():
+                        if vars in self.broken_widgets.get(self._current_tab, []):
+                            continue
+                        try:
+                            # Handle custom widgets first since they may also satisfy the other conditions.
+                            if vars.variable_type == VariableType.CUSTOM:
+                                # Call redraw on the widget.
+                                values = getattr(vars.mod, vars.variable_name)
+                                widget = self.redrawing_widgets[self._current_tab][tag]
+                                res = widget.redraw(**values)
+                                # If we get a return value from redraw and the property has a setter, pass the
+                                # value through to complete the cycle.
+                                if vars.has_setter and res:
+                                    setattr(vars.mod, vars.variable_name, res)
+                            # Enum with setter.
+                            elif vars.variable_type == VariableType.ENUM and vars.has_setter:
+                                val = cast(Enum, getattr(vars.mod, vars.variable_name))
+                                dpg.set_value(tag, val.name)
+                            # Read-only variable.
+                            elif vars.variable_type == VariableType.STRING or not vars.has_setter:
+                                dpg.set_value(tag, str(getattr(vars.mod, vars.variable_name)))
+                            # "Normal" variable.
+                            else:
+                                dpg.set_value(tag, getattr(vars.mod, vars.variable_name))
+                        except Exception:
+                            # If we can't set the value, don't crash the whole program.
+                            logger.exception(
+                                f"There was an exception handling the variable {vars.variable_name}. It will "
+                                "be removed from the pool of variables which get updated."
+                            )
+                            if self._current_tab not in self.broken_widgets:
+                                self.broken_widgets[self._current_tab] = []
+                            self.broken_widgets[self._current_tab].append(vars)
                 dpg.render_dearpygui_frame()
             dpg.destroy_context()
         except Exception:

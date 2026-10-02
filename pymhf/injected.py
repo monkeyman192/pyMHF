@@ -133,6 +133,7 @@ try:
     except ModuleNotFoundError:
         # If we can't import this, then DearPyGUI is missing, so we won't create the GUI.
         GUI = None
+    from pymhf.gui.proxy import _GUIProxy
     from pymhf.utils.imports import get_imports
 
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -360,6 +361,7 @@ try:
 
     if _internal.CONFIG.get("gui", {}).get("shown", True) and GUI is not None:
         gui = GUI(mod_manager, _internal.CONFIG)
+        mod_manager._gui = gui
         # For each mod, add the corresponding tab to the gui.
         for mod in mod_manager.mods.values():
             gui.add_tab(mod)
@@ -371,6 +373,10 @@ try:
         # TODO: This needs to have some exception handling because if something
         # goes wrong in here it will just fail "silently".
         futures.append(executor.submit(gui.run))
+    else:
+        # Just assign the proxy so that type checking works nicely, and so that if a mod would call something
+        # in the gui it doesn't raise an actual exception.
+        mod_manager._gui = _GUIProxy()
 
     logging.info(f"Serving on executor {server.sockets[0].getsockname()}")
 

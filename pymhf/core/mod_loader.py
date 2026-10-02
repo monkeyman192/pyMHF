@@ -1,8 +1,8 @@
-# Main functionality for loading mods.
+from __future__ import annotations
 
+# Main functionality for loading mods.
 # Mods will consist of a single file which will generally contain a number of
 # hooks.
-
 import ctypes
 import importlib
 import inspect
@@ -13,10 +13,11 @@ import os.path as op
 import sys
 import traceback
 from abc import ABC
+from collections.abc import Collection
 from dataclasses import fields
 from functools import partial
 from types import MethodType, ModuleType
-from typing import TYPE_CHECKING, Any, ClassVar, Collection, Optional, Type, TypeVar, Union, cast, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Type, TypeVar, Union, cast, overload
 
 import keyboard
 from packaging.version import InvalidVersion
@@ -51,6 +52,7 @@ except ImportError:
 from pymhf.core.importing import ModInfo, get_mod_infos, import_file, parse_file_for_mod
 from pymhf.core.memutils import get_addressof, map_struct
 from pymhf.core.utils import does_pid_have_focus, saferun
+from pymhf.gui.proxy import _GUIProxy
 from pymhf.gui.widget_data import (
     CustomWidgetData,
     GroupWidgetData,
@@ -68,7 +70,7 @@ logger = logging.getLogger(__name__)
 
 def _is_mod_predicate(obj, ref_module) -> bool:
     if inspect.getmodule(obj) == ref_module and inspect.isclass(obj):
-        return issubclass(obj, Mod) and not getattr(obj, "_disabled", False)
+        return issubclass(obj, Mod)
     return False
 
 
@@ -228,7 +230,7 @@ class Mod(ABC):
     __version__: str = "Mod version"
     __dependencies__: list[str] = []
     # Minimum required pyMHF version for this mod.
-    __pymhf_required_version__: Optional[str] = None
+    __pymhf_required_version__: str | None = None
 
     _custom_callbacks: set[CustomTriggerProtocol]
     _gui_widgets: list[Union[GUIElementProtocol[WidgetData], GroupWidgetData]]
@@ -312,7 +314,7 @@ class Mod(ABC):
                         )
                     self._http_endpoints[method].append(func)
 
-        self.pymhf_gui: Optional[GUI] = None
+        self.pymhf_gui: GUI | None = None
 
     @property
     def _mod_name(self):
@@ -368,6 +370,7 @@ class _Proxy:
 
 class ModManager:
     hook_manager: HookManager
+    _gui: "GUI | _GUIProxy"
 
     def __init__(self):
         # Internal mapping of mods.
@@ -383,9 +386,7 @@ class ModManager:
         self.hotkey_callbacks: dict[tuple[str, str], Any] = {}
         # Keep track of whether we have any mods when mods are initially loaded that require the http server.
         self.any_http_endpoints = False
-        # The names of the mods which were skipped because they have been disabled. This is used to warn about
-        # any configured mod names which don't match a mod.
-        self._disabled_mods_found: set[str] = set()
+        self._disabled_mods: set[str] = set()
 
     @overload
     def __getitem__(self, key: str) -> _Proxy: ...
@@ -410,19 +411,24 @@ class ModManager:
         This will be called when initially loading the mods, and also when we
         wish to reload a mod.
         """
-        d: dict[str, type[Mod]] = dict(
+        mods_in_file: dict[str, type[Mod]] = dict(
             inspect.getmembers(module, partial(_is_mod_predicate, ref_module=module))
         )
-        if len(d) == 0:
+        if len(mods_in_file) == 0:
             # No mod in the file. Just return
             return False
-        elif len(d) > 1:
+        elif len(mods_in_file) > 1:
             logger.error(
                 f"The file {module.__file__} has more than one mod defined in it. "
                 "Only define one mod per file."
             )
-        mod_name = list(d.keys())[0]
-        mod = d[mod_name]
+        mod_name = list(mods_in_file.keys())[0]
+        mod = mods_in_file[mod_name]
+        if mod._disabled:
+            # Note down that we have tried to import a disabled mod and then return False.
+            self._mod_paths[mod_name] = module
+            self._disabled_mods.add(mod_name)
+            return False
         if mod.__pymhf_required_version__ is not None:
             from pymhf import __version__ as _pymhf_version
 
@@ -457,7 +463,7 @@ class ModManager:
             self._mod_paths[mod_name] = module
         return True
 
-    def load_mod(self, fpath: str) -> Optional[ModuleType]:
+    def load_mod(self, fpath: str) -> ModuleType | None:
         """Load a mod from the given filepath.
 
         This returns the loaded module if it contains a valid mod and can be loaded correctly.
@@ -510,7 +516,7 @@ class ModManager:
         folder: str,
         bind: bool = True,
         deep_search: bool = False,
-        disabled_mods: Optional[Collection[str]] = None,
+        disabled_mods: Collection[str] | None = None,
     ) -> tuple[int, int]:
         """Load the mod folder.
 
@@ -544,9 +550,7 @@ class ModManager:
                 # Determine what mods are in the file, and whether they are disabled, without importing it.
                 # This way the file only has to be imported if something in it will actually be loaded.
                 mod_infos = _mod_infos_from_file(fullpath)
-                self._disabled_mods_found.update(
-                    info.name for info in mod_infos if info.name in disabled_names
-                )
+                self._disabled_mods.update(info.name for info in mod_infos if info.name in disabled_names)
                 skipped = [info for info in mod_infos if info.disabled or info.name in disabled_names]
                 # Only skip the file if every mod in it is disabled, otherwise it still has to be imported
                 # for the mods which aren't. Any disabled mod within it is skipped when the module is loaded.
@@ -571,11 +575,11 @@ class ModManager:
         if bind:
             # This is the outer-most call, so every folder has been searched by now and we can tell whether
             # any of the configured mod names didn't match a mod.
-            if unmatched := disabled_names - self._disabled_mods_found:
+            if unmatched := disabled_names - self._disabled_mods:
                 logger.warning(
                     f"The following mods are configured to be disabled but weren't found: {sorted(unmatched)}"
                 )
-            self._disabled_mods_found.clear()
+            self._disabled_mods.clear()
             for _mod in self._preloaded_mods.values():
                 self.instantiate_mod(_mod)
             self._preloaded_mods.clear()
@@ -584,7 +588,7 @@ class ModManager:
 
         return loaded_mods, bound_hooks
 
-    def instantiate_mod(self, mod: type[Mod], quiet: bool = False) -> Optional[Mod]:
+    def instantiate_mod(self, mod: type[Mod], quiet: bool = False) -> Mod | None:
         """Register all the functions within the mod as hooks."""
         _mod = mod()
         # Detect whether or not the mod has called __init__ on the parent class.
@@ -624,12 +628,7 @@ class ModManager:
         self.mods[_mod._mod_name] = _mod
         return _mod
 
-    def _gui_reload(self, _sender, _keyword, user_data: tuple[str, "GUI"]):
-        # Callback to register with the GUI to enable reloading of mods from there.
-        self.reload(*user_data)
-        self._assign_mod_instances(user_data[0])
-
-    def _assign_mod_instances(self, specific_mod: Optional[str] = None):
+    def _assign_mod_instances(self, specific_mod: str | None = None):
         """Assign the types of the mod classes in each mod to all of the mods which are loaded."""
         # Loop over the loaded mods. If it has any dependencies, get the module it belongs to and assign those
         # dependencies to it.
@@ -648,133 +647,22 @@ class ModManager:
                             f"Dependency {dependency!r} is unsatisfied. There may be issues when running."
                         )
 
-    def reload(self, name: str, gui: "GUI"):
+    def reload(self, name: str):
         """Reload a mod with the given name."""
         try:
             if (mod := self.mods.get(name)) is not None:
                 # First, remove everything.
-                for hook in mod.hooks:
-                    if (fh := self.hook_manager._get_funchook(hook)) is not None:
-                        logger.info(f"Removing hook {hook}: {hook._hook_func_name}")
-                        fh.remove_detour(hook)
-                        # Tell the hook manager to try and remove the hook if it can.
-                        self.hook_manager.try_remove_hook(hook)
-
-                self.hook_manager._remove_custom_callbacks(mod._custom_callbacks)
-                for hotkey_func in mod._hotkey_funcs:
-                    cb = self.hotkey_callbacks.pop(
-                        (hotkey_func._hotkey, hotkey_func._hotkey_press),
-                        None,
-                    )
-                    if cb is not None:
-                        keyboard.unhook(cb)
+                self._disable(mod)
 
                 # Then, reload the module.
-                module = self._mod_paths[name]
-                del sys.modules[module.__name__]
-
-                # Then, add everything back.
-                if not module.__file__:
-                    return
-
-                modules_to_reload = []
-                if gui.module_reload_enabled:
-                    logger.debug(f"reloading {module.__file__} and related modules")
-                    mod_dir = op.dirname(module.__file__)
-                    venv_dir = op.join(mod_dir, ".venv")
-                    # Loop through sys.modules and find any files in the same directory.
-                    for _module_name, _module_path in sys.modules.items():
-                        if hasattr(_module_path, "__file__"):
-                            try:
-                                # Check to make sure the file is in the same directory and isn't inside a venv
-                                _module_fpath = _module_path.__file__
-                                if (
-                                    _module_fpath
-                                    and op.commonpath([_module_fpath, mod_dir]) == mod_dir
-                                    and not op.commonpath([_module_fpath, venv_dir]) == venv_dir
-                                ):
-                                    # Ignore files containing mods.
-                                    # This will probably be added as an optional feature in the future, but
-                                    # for now I think simpler to not reload them and log a warning instead.
-                                    with open(_module_fpath, "r") as f:
-                                        if parse_file_for_mod(f.read()):
-                                            logger.warning(
-                                                "Cannot reload file containing mod definitions currently. "
-                                                f"{_module_fpath} is being skipped."
-                                            )
-                                            continue
-                                    # Remove the file from the system modules and reload it.
-                                    modules_to_reload.append((_module_name, _module_fpath))
-                            except ValueError:
-                                # Could be a couple of things, any of which we don't care about.
-                                pass
-                    for _module_name, _module_fpath in modules_to_reload:
-                        del sys.modules[_module_name]
-                        import_file(_module_fpath)
-                        logger.debug(f"Reimported {_module_name} at {_module_fpath}")
-                new_module = self.load_mod(module.__file__)
-                for _mod in self._preloaded_mods.values():
-                    mod = self.instantiate_mod(_mod)
-                    if mod is None:
-                        # If the mod isn't instantiated for any reason, skip it.
-                        continue
-                    # Get the mod states for the mod if there are any and reapply them to the new mod
-                    # instance.
-                    if mod_state := self.mod_states.get(name):
-                        for ms in mod_state:
-                            field, state = ms
-                            member_req_reinst = {}
-                            for x in inspect.getmembers(state):
-                                member, member_type = x
-                                if not member.startswith("__"):
-                                    if (
-                                        _module := getattr(member_type.__class__, "__module__", None)
-                                    ) is not None and isinstance(member_type, ctypes.Structure):
-                                        if module.__spec__ and _module == module.__spec__.name:
-                                            # In this case, the instance of the attribute in the ModState was
-                                            # defined in the module that is being reloaded. We need to
-                                            # re-instantiate it so that we can get any potential changes to
-                                            # it.
-                                            member_req_reinst[member] = member_type
-                                            logger.debug(f"{member}: {_module}")
-                            logger.debug(
-                                f"Reinstantiating the following members: {list(member_req_reinst.keys())}"
-                            )
-                            deleted_types = set()
-                            for _name, type_ in member_req_reinst.items():
-                                data_offset = get_addressof(type_)
-                                new_obj_type_name = type_.__class__.__name__
-                                logger.debug(f"{_name} is of type {new_obj_type_name}")
-                                new_obj_type = getattr(new_module, new_obj_type_name)
-                                new_obj = map_struct(data_offset, new_obj_type)
-                                setattr(state, _name, new_obj)
-                                if new_obj_type_name not in deleted_types:
-                                    del type_
-                                    deleted_types.add(new_obj_type_name)
-                            setattr(mod, field, state)
-
-                    # Return to GUI land to reload the mod.
-                    gui.reload_tab(mod)
-
-                    # Get the HTTP router if there is one for this mod.
-                    if (mod_router := router_mapping.get(mod._mod_name)) is not None:
-                        mod_router.load_routes(mod._http_endpoints)
-                    else:
-                        mod_router = CleanableAPIRouter(mod._mod_name, prefix=f"/{mod._mod_name}")
-                        mod_router.load_routes(mod._http_endpoints)
-                        api_app.include_router(mod_router, tags=[mod._mod_name])
-                        router_mapping[mod._mod_name] = mod_router
-
-                self._preloaded_mods.clear()
-
-                self.hook_manager.initialize_hooks()
+                modules_reloaded = self._enable(name)
 
                 # TODO: Add ability to check whether the attributes of the mod state have changed. If so,
                 # remove or add these attributes as required. Might want to have some kind of "copy" method to
                 # actually create a new instance each time but persist the data across.
 
-                if gui.module_reload_enabled:
-                    msg = f"Finished reloading {name} and {len(modules_to_reload)} related module(s)"
+                if self._gui.submodule_reload_enabled is True:
+                    msg = f"Finished reloading {name} and {modules_reloaded} related module(s)"
                 else:
                     msg = f"Finished reloading {name}"
                 logger.info(msg)
@@ -782,6 +670,140 @@ class ModManager:
                 logger.error(f"Cannot find mod {name}")
         except Exception:
             logger.error(traceback.format_exc())
+
+    def enable(self, name: str, enable_submodules: bool = False):
+        """Enable the mod with the specified name."""
+        if name in self.mods:
+            self._enable(name, enable_submodules)
+        else:
+            raise ValueError(f"Cannot enable mod {name} - it doesn't exist")
+
+    def _enable(self, name: str, enable_submodules: bool = False) -> int:
+        module = self._mod_paths[name]
+        del sys.modules[module.__name__]
+        if not module.__file__:
+            return 0
+
+        modules_to_reload = []
+        if self._gui.submodule_reload_enabled is True or enable_submodules:
+            logger.debug(f"reloading {module.__file__} and related modules")
+            mod_dir = op.dirname(module.__file__)
+            venv_dir = op.join(mod_dir, ".venv")
+            # Loop through sys.modules and find any files in the same directory.
+            for _module_name, _module_path in sys.modules.items():
+                if hasattr(_module_path, "__file__"):
+                    try:
+                        # Check to make sure the file is in the same directory and isn't inside a venv
+                        _module_fpath = _module_path.__file__
+                        if (
+                            _module_fpath
+                            and op.commonpath([_module_fpath, mod_dir]) == mod_dir
+                            and not op.commonpath([_module_fpath, venv_dir]) == venv_dir
+                        ):
+                            # Ignore files containing mods.
+                            # This will probably be added as an optional feature in the future, but
+                            # for now I think simpler to not reload them and log a warning instead.
+                            with open(_module_fpath, "r") as f:
+                                if parse_file_for_mod(f.read()):
+                                    logger.warning(
+                                        "Cannot reload file containing mod definitions currently. "
+                                        f"{_module_fpath} is being skipped."
+                                    )
+                                    continue
+                            # Remove the file from the system modules and reload it.
+                            modules_to_reload.append((_module_name, _module_fpath))
+                    except ValueError:
+                        # Could be a couple of things, any of which we don't care about.
+                        pass
+            for _module_name, _module_fpath in modules_to_reload:
+                del sys.modules[_module_name]
+                import_file(_module_fpath)
+                logger.debug(f"Reimported {_module_name} at {_module_fpath}")
+
+        new_module = self.load_mod(module.__file__)
+        for _mod in self._preloaded_mods.values():
+            mod = self.instantiate_mod(_mod)
+            if mod is None:
+                # If the mod isn't instantiated for any reason, skip it.
+                continue
+            # Get the mod states for the mod if there are any and reapply them to the new mod
+            # instance.
+            if mod_state := self.mod_states.get(name):
+                for ms in mod_state:
+                    field, state = ms
+                    member_req_reinst = {}
+                    for x in inspect.getmembers(state):
+                        member, member_type = x
+                        if not member.startswith("__"):
+                            if (
+                                _module := getattr(member_type.__class__, "__module__", None)
+                            ) is not None and isinstance(member_type, ctypes.Structure):
+                                if module.__spec__ and _module == module.__spec__.name:
+                                    # In this case, the instance of the attribute in the ModState was
+                                    # defined in the module that is being reloaded. We need to
+                                    # re-instantiate it so that we can get any potential changes to
+                                    # it.
+                                    member_req_reinst[member] = member_type
+                                    logger.debug(f"{member}: {_module}")
+                    logger.debug(f"Reinstantiating the following members: {list(member_req_reinst.keys())}")
+                    deleted_types = set()
+                    for _name, type_ in member_req_reinst.items():
+                        data_offset = get_addressof(type_)
+                        new_obj_type_name = type_.__class__.__name__
+                        logger.debug(f"{_name} is of type {new_obj_type_name}")
+                        new_obj_type = getattr(new_module, new_obj_type_name)
+                        new_obj = map_struct(data_offset, new_obj_type)
+                        setattr(state, _name, new_obj)
+                        if new_obj_type_name not in deleted_types:
+                            del type_
+                            deleted_types.add(new_obj_type_name)
+                    setattr(mod, field, state)
+
+            # Get the GUI to reload the tab if there is a GUI.
+            if not isinstance(self._gui, _GUIProxy):
+                self._gui.reload_tab(mod)
+
+            # Get the HTTP router if there is one for this mod.
+            if (mod_router := router_mapping.get(mod._mod_name)) is not None:
+                mod_router.load_routes(mod._http_endpoints)
+            else:
+                mod_router = CleanableAPIRouter(mod._mod_name, prefix=f"/{mod._mod_name}")
+                mod_router.load_routes(mod._http_endpoints)
+                api_app.include_router(mod_router, tags=[mod._mod_name])
+                router_mapping[mod._mod_name] = mod_router
+
+            mod._disabled = False
+
+        self._preloaded_mods.clear()
+        self.hook_manager.initialize_hooks()
+
+        return len(modules_to_reload)
+
+    def disable(self, name: str):
+        """Disable the mod with the specified name."""
+        if (mod := self.mods.get(name)) is not None:
+            self._disable(mod)
+        else:
+            raise ValueError(f"Cannot disable mod {name} - it doesn't exist")
+
+    def _disable(self, mod: Mod):
+        for hook in mod.hooks:
+            if (fh := self.hook_manager._get_funchook(hook)) is not None:
+                logger.debug(f"Removing hook {hook}: {hook._hook_func_name}")
+                fh.remove_detour(hook)
+                # Tell the hook manager to try and remove the hook if it can.
+                self.hook_manager.try_remove_hook(hook)
+
+        self.hook_manager._remove_custom_callbacks(mod._custom_callbacks)
+        for hotkey_func in mod._hotkey_funcs:
+            cb = self.hotkey_callbacks.pop(
+                (hotkey_func._hotkey, hotkey_func._hotkey_press),
+                None,
+            )
+            if cb is not None:
+                keyboard.unhook(cb)
+
+        mod._disabled = True
 
 
 mod_manager = ModManager()
