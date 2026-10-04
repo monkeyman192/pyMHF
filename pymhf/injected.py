@@ -109,7 +109,7 @@ try:
     mod_folder = _internal.CONFIG.get("mod_dir")
     mod_folder = canonicalize_setting(mod_folder, "pymhf", _module_path, _binary_dir)
 
-    disabled_mods = _internal.CONFIG.get("disabled_mods") or []
+    disabled_mods = _internal.CONFIG.get("disabled_mods")
 
     import keyboard._winkeyboard as kwk
 

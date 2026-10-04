@@ -13,7 +13,6 @@ import os.path as op
 import sys
 import traceback
 from abc import ABC
-from collections.abc import Collection
 from dataclasses import fields
 from functools import partial
 from types import MethodType, ModuleType
@@ -516,7 +515,7 @@ class ModManager:
         folder: str,
         bind: bool = True,
         deep_search: bool = False,
-        disabled_mods: Collection[str] | None = None,
+        disabled_mods: list[str] | None = None,
     ) -> tuple[int, int]:
         """Load the mod folder.
 
