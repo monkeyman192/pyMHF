@@ -100,6 +100,14 @@ By setting this value to ``false``, pyMHF will not attempt to start the binary a
 
 If set to ``false`` then there will be no interactive python terminal created in the initial terminal.
 
+``disabled_mods``
+"""""""""""""""""
+
+*Optional* - Default []
+
+A list of mod names which will not be loaded. The name is the name of the class which subclasses ``Mod``, ie. the name shown on the mod's tab in the GUI.
+Files containing these mods are not imported at all, so nothing in them is run.
+
 ``pymhf.logging`` section:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
