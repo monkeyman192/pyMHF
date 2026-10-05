@@ -1,12 +1,14 @@
 import os.path as op
-from logging import StreamHandler, getLogger
+from logging import StreamHandler, getLogger, DEBUG
+import sys
 
 from pymhf.core.hooking import hook_manager
 from pymhf.core.mod_loader import mod_manager
 from pymhf.gui.gui import GUI
 
 logger = getLogger()
-logger.addHandler(StreamHandler())
+logger.addHandler(StreamHandler(sys.stdout))
+logger.setLevel(DEBUG)
 
 
 def run_gui():

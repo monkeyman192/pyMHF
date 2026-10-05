@@ -97,7 +97,6 @@ class GUI:
         self.tracking_variables: dict[str, dict[str, VariableData]] = defaultdict(lambda: {})
         self.redrawing_widgets: dict[str | int, dict[str, CustomWidget]] = defaultdict(lambda: {})
         self.broken_widgets: dict[str, list[VariableData]] = {}
-        self.disabled_mods: set[str] = set()
         # Keep track of the tabs. The values will be the ids of the main table all the widgets are drawn in
         # for that tab.
         self.tabs: dict[str, str | int | None] = {}
@@ -142,6 +141,10 @@ class GUI:
         self._hide_pyd_modules = True
 
         self.add_window()
+
+    @property
+    def disabled_mods(self):
+        return self.mod_manager._disabled_mods
 
     def alpha_callback(self, sender, app_data):
         set_window_transparency(self.hwnd, app_data)
@@ -284,17 +287,23 @@ class GUI:
         for func_name in names:
             dpg.add_tree_node(label=func_name, parent=module_tree, leaf=True, bullet=True)
 
-    def reload_tab(self, mod: Mod):
-        """Reload the tab for the specific mod."""
+    def reload_tab(self, mod: Mod | str):
+        """Reload the tab for the specific mod. If the mod is actually the string name then we don't draw the
+        widgets and set the tab to a disabled state."""
+        if isinstance(mod, str):
+            # If just the name of the mod is passed, this will indicate that the tab is being disabled as we
+            # have no mod instance (it's been disabled).
+            self.disabled_mods.add(mod)
+            if (group_id := self.tabs[mod]) is not None:
+                dpg.hide_item(group_id)
+            dpg.set_item_label(f"_enable_button_{mod}", "Enable")
+            dpg.set_item_callback(f"_enable_button_{mod}", self._enable_mod)
+            return
         mod_name = mod._mod_name
         mod.pymhf_gui = self
         widgets = self.widget_data.pop(mod_name, [])
 
         changes, deletions = self.diff_widgets(widgets, mod._gui_widgets)
-
-        print(changes)
-        print("-0--------------")
-        print(deletions)
 
         # Add the current tab to the stack so that any drawing knows it's within this context.
         dpg.push_container_stack(mod_name)
@@ -508,12 +517,14 @@ class GUI:
                     label="Enable",
                     callback=self._enable_mod,
                     user_data=mod_name,
+                    tag=f"_enable_button_{mod_name}",
                 )
             else:
                 dpg.add_button(
                     label="Disable",
                     callback=self._disable_mod,
                     user_data=mod_name,
+                    tag=f"_enable_button_{mod_name}",
                 )
 
         dpg.add_separator(parent=mod_name)
@@ -558,7 +569,7 @@ class GUI:
         dpg.set_item_callback(_sender, self._enable_mod)
 
     def _enable_mod(self, _sender, _keyword, user_data: str):
-        self.mod_manager.enable(user_data)
+        self.mod_manager.enable(user_data, from_gui=True)
         self.disabled_mods.discard(user_data)
         if (group_id := self.tabs[user_data]) is not None:
             dpg.show_item(group_id)

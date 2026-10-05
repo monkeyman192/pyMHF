@@ -404,7 +404,7 @@ class ModManager:
         # Set the fallback return object to be a proxy in the case of the mod not having been loaded by pyMHF.
         return self.mods.get(key.__name__, _Proxy(key.__name__))
 
-    def _load_module(self, module: ModuleType) -> bool:
+    def _load_module(self, module: ModuleType, from_gui: bool = False) -> bool:
         """Load a mod from the provided module.
 
         This will be called when initially loading the mods, and also when we
@@ -423,8 +423,10 @@ class ModManager:
             )
         mod_name = list(mods_in_file.keys())[0]
         mod = mods_in_file[mod_name]
-        if mod._disabled:
+        if mod._disabled and not from_gui:
             # Note down that we have tried to import a disabled mod and then return False.
+            # If we have had this called from the GUI then we don't want to do this so that we can enable mods
+            # which have a @disabled decorator on them.
             self._mod_paths[mod_name] = module
             self._disabled_mods.add(mod_name)
             return False
@@ -462,7 +464,7 @@ class ModManager:
             self._mod_paths[mod_name] = module
         return True
 
-    def load_mod(self, fpath: str) -> ModuleType | None:
+    def load_mod(self, fpath: str, from_gui: bool = False) -> ModuleType | None:
         """Load a mod from the given filepath.
 
         This returns the loaded module if it contains a valid mod and can be loaded correctly.
@@ -470,7 +472,7 @@ class ModManager:
         module = import_file(fpath)
         if module is None:
             return None
-        if self._load_module(module):
+        if self._load_module(module, from_gui):
             return module
 
     # TODO: Can probably move the duplicated functionality between this and the next method into a single
@@ -515,7 +517,7 @@ class ModManager:
         folder: str,
         bind: bool = True,
         deep_search: bool = False,
-        disabled_mods: list[str] | None = None,
+        disabled_mods: set[str] | None = None,
     ) -> tuple[int, int]:
         """Load the mod folder.
 
@@ -670,14 +672,15 @@ class ModManager:
         except Exception:
             logger.error(traceback.format_exc())
 
-    def enable(self, name: str, enable_submodules: bool = False):
+    def enable(self, name: str, enable_submodules: bool = False, from_gui: bool = False):
         """Enable the mod with the specified name."""
         if name in self.mods:
-            self._enable(name, enable_submodules)
+            logger.debug(f"Enabling mod {name}")
+            self._enable(name, enable_submodules, from_gui)
         else:
             raise ValueError(f"Cannot enable mod {name} - it doesn't exist")
 
-    def _enable(self, name: str, enable_submodules: bool = False) -> int:
+    def _enable(self, name: str, enable_submodules: bool = False, from_gui: bool = False) -> int:
         module = self._mod_paths[name]
         del sys.modules[module.__name__]
         if not module.__file__:
@@ -719,59 +722,67 @@ class ModManager:
                 import_file(_module_fpath)
                 logger.debug(f"Reimported {_module_name} at {_module_fpath}")
 
-        new_module = self.load_mod(module.__file__)
-        for _mod in self._preloaded_mods.values():
-            mod = self.instantiate_mod(_mod)
-            if mod is None:
-                # If the mod isn't instantiated for any reason, skip it.
-                continue
-            # Get the mod states for the mod if there are any and reapply them to the new mod
-            # instance.
-            if mod_state := self.mod_states.get(name):
-                for ms in mod_state:
-                    field, state = ms
-                    member_req_reinst = {}
-                    for x in inspect.getmembers(state):
-                        member, member_type = x
-                        if not member.startswith("__"):
-                            if (
-                                _module := getattr(member_type.__class__, "__module__", None)
-                            ) is not None and isinstance(member_type, ctypes.Structure):
-                                if module.__spec__ and _module == module.__spec__.name:
-                                    # In this case, the instance of the attribute in the ModState was
-                                    # defined in the module that is being reloaded. We need to
-                                    # re-instantiate it so that we can get any potential changes to
-                                    # it.
-                                    member_req_reinst[member] = member_type
-                                    logger.debug(f"{member}: {_module}")
-                    logger.debug(f"Reinstantiating the following members: {list(member_req_reinst.keys())}")
-                    deleted_types = set()
-                    for _name, type_ in member_req_reinst.items():
-                        data_offset = get_addressof(type_)
-                        new_obj_type_name = type_.__class__.__name__
-                        logger.debug(f"{_name} is of type {new_obj_type_name}")
-                        new_obj_type = getattr(new_module, new_obj_type_name)
-                        new_obj = map_struct(data_offset, new_obj_type)
-                        setattr(state, _name, new_obj)
-                        if new_obj_type_name not in deleted_types:
-                            del type_
-                            deleted_types.add(new_obj_type_name)
-                    setattr(mod, field, state)
-
-            # Get the GUI to reload the tab if there is a GUI.
+        # Back up the set of disabled mods we have before reload so we can check if it has had any added.
+        disabled_mods_before = set(self._disabled_mods)
+        new_module = self.load_mod(module.__file__, from_gui)
+        if diff := (self._disabled_mods - disabled_mods_before):
             if not isinstance(self._gui, _GUIProxy):
-                self._gui.reload_tab(mod)
+                for mod_name in diff:
+                    self._gui.reload_tab(mod_name)
+        else:
+            for _mod in self._preloaded_mods.values():
+                mod = self.instantiate_mod(_mod)
+                if mod is None:
+                    # If the mod isn't instantiated for any reason, skip it.
+                    continue
+                # Get the mod states for the mod if there are any and reapply them to the new mod instance.
+                if mod_state := self.mod_states.get(name):
+                    for ms in mod_state:
+                        field, state = ms
+                        member_req_reinst = {}
+                        for x in inspect.getmembers(state):
+                            member, member_type = x
+                            if not member.startswith("__"):
+                                if (
+                                    _module := getattr(member_type.__class__, "__module__", None)
+                                ) is not None and isinstance(member_type, ctypes.Structure):
+                                    if module.__spec__ and _module == module.__spec__.name:
+                                        # In this case, the instance of the attribute in the ModState was
+                                        # defined in the module that is being reloaded. We need to
+                                        # re-instantiate it so that we can get any potential changes to
+                                        # it.
+                                        member_req_reinst[member] = member_type
+                                        logger.debug(f"{member}: {_module}")
+                        logger.debug(
+                            f"Reinstantiating the following members: {list(member_req_reinst.keys())}"
+                        )
+                        deleted_types = set()
+                        for _name, type_ in member_req_reinst.items():
+                            data_offset = get_addressof(type_)
+                            new_obj_type_name = type_.__class__.__name__
+                            logger.debug(f"{_name} is of type {new_obj_type_name}")
+                            new_obj_type = getattr(new_module, new_obj_type_name)
+                            new_obj = map_struct(data_offset, new_obj_type)
+                            setattr(state, _name, new_obj)
+                            if new_obj_type_name not in deleted_types:
+                                del type_
+                                deleted_types.add(new_obj_type_name)
+                        setattr(mod, field, state)
 
-            # Get the HTTP router if there is one for this mod.
-            if (mod_router := router_mapping.get(mod._mod_name)) is not None:
-                mod_router.load_routes(mod._http_endpoints)
-            else:
-                mod_router = CleanableAPIRouter(mod._mod_name, prefix=f"/{mod._mod_name}")
-                mod_router.load_routes(mod._http_endpoints)
-                api_app.include_router(mod_router, tags=[mod._mod_name])
-                router_mapping[mod._mod_name] = mod_router
+                # Get the GUI to reload the tab if there is a GUI.
+                if not isinstance(self._gui, _GUIProxy):
+                    self._gui.reload_tab(mod)
 
-            mod._disabled = False
+                # Get the HTTP router if there is one for this mod.
+                if (mod_router := router_mapping.get(mod._mod_name)) is not None:
+                    mod_router.load_routes(mod._http_endpoints)
+                else:
+                    mod_router = CleanableAPIRouter(mod._mod_name, prefix=f"/{mod._mod_name}")
+                    mod_router.load_routes(mod._http_endpoints)
+                    api_app.include_router(mod_router, tags=[mod._mod_name])
+                    router_mapping[mod._mod_name] = mod_router
+
+                mod._disabled = False
 
         self._preloaded_mods.clear()
         self.hook_manager.initialize_hooks()
@@ -781,6 +792,7 @@ class ModManager:
     def disable(self, name: str):
         """Disable the mod with the specified name."""
         if (mod := self.mods.get(name)) is not None:
+            logger.debug(f"Disabling mod {name}")
             self._disable(mod)
         else:
             raise ValueError(f"Cannot disable mod {name} - it doesn't exist")

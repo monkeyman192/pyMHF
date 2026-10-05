@@ -3,6 +3,7 @@ import math
 import dearpygui.dearpygui as dpg
 
 from pymhf import Mod
+from pymhf.core.hooking import disable
 from pymhf.gui.decorators import COLOUR, FLOAT
 from pymhf.gui.widgets import CustomWidget, WidgetBehaviour
 
