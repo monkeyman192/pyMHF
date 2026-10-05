@@ -4,10 +4,12 @@ Change Log
 Current (0.2.5.dev)
 -------------------
 
-- Added the ``disabled_mods`` setting which takes a list of mod names which will not be loaded. The files these mods are defined in aren't imported at all, so no code in them is run. See :doc:`here </docs/settings>` for more details.
-- Mods decorated with ``@disable`` are now also detected before their file is imported, so their file isn't imported at all (previously the file was imported and only the mod class itself was skipped).
 - Cleaned up the ``c_enum`` implementation to have a single base class to ensure consistency across inheriting types.
 - Changed the string representation of ``c_enum`` types (eg. ``c_enum8``, etc.) so that the value is now the name of the associated enum value. The old form is now available via ``repr()``.
+- Added the ``disabled_mods`` setting which takes a list of mod names which will not be loaded. The files these mods are defined in aren't imported at all, so no code in them is run. See :doc:`here </docs/settings>` for more details. (c/o `@Carbonster <https://https://github.com/Carbonster>`_)
+- Mods decorated with ``@disable`` are now also detected before their file is imported, so their file isn't imported at all (previously the file was imported and only the mod class itself was skipped). (c/o `@Carbonster <https://https://github.com/Carbonster>`_)
+- Added API for enabling and disabling mods via the ``mod_manager`` instance. Mods can also be enabled and disabled from the GUI. (`#118 <https://github.com/monkeyman192/pyMHF/issues/118>`_)
+- Fixed an issue with GUI widget labels not being able to be reverted back to their original name after being modified.
 
 0.2.4 (16/08/2026)
 ------------------
@@ -58,7 +60,7 @@ The API for hooking functions should be considered "stable" from this point onwa
 Next release set will focus on UI/UX as well as utilities, both in terms of the GUI and in the code.
 
 - Further improved partial structs to allow nesting references to themselves as a type (must be "indirect", ie. the type of a pointer, or dynamic array for example).
-- Added a fallback method to calculate the binary hash in case opening the file fails. Thanks to `@sparrow <https://github.com/samjviana>`_ for implementing this.
+- Added a fallback method to calculate the binary hash in case opening the file fails. (c/o `@sparrow <https://github.com/samjviana>`_)
 - Fixed some inssues around running python files directly with ``pymhf run``
 - Added the option to pass command line arguments to the function when ``pymhf`` starts the process itself.
 - Added the ``config_overrides`` argument to :py:func:`~pymhf.main.load_mod_file` to allow overriding the static config values.

@@ -1,0 +1,7 @@
+pymhf.gui.proxy module
+======================
+
+.. automodule:: pymhf.gui.proxy
+   :members:
+   :show-inheritance:
+   :undoc-members:

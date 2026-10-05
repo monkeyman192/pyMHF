@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>pymhf.gui package &#8212; pyMHF  documentation</title>
+    <title>pymhf.gui.proxy module &#8212; pyMHF  documentation</title>
   
   
   
@@ -41,12 +41,12 @@
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf.gui';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/pymhf.gui.proxy';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="pymhf.gui.decorators module" href="pymhf.gui.decorators.html" />
-    <link rel="prev" title="pymhf.extensions.ctypes module" href="pymhf.extensions.ctypes.html" />
+    <link rel="next" title="pymhf.gui.widget_data module" href="pymhf.gui.widget_data.html" />
+    <link rel="prev" title="pymhf.gui.hexview module" href="pymhf.gui.hexview.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -325,11 +325,11 @@
 <li class="toctree-l3"><a class="reference internal" href="pymhf.extensions.ctypes.html">pymhf.extensions.ctypes module</a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">pymhf.gui package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="pymhf.gui.html">pymhf.gui package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.decorators.html">pymhf.gui.decorators module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.gui.html">pymhf.gui.gui module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.hexview.html">pymhf.gui.hexview module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="pymhf.gui.proxy.html">pymhf.gui.proxy module</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">pymhf.gui.proxy module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widget_data.html">pymhf.gui.widget_data module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="pymhf.gui.widgets.html">pymhf.gui.widgets module</a></li>
 </ul>
@@ -391,7 +391,10 @@
     
     <li class="breadcrumb-item"><a href="pymhf.html" class="nav-link">pymhf package</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pymhf.gui package</span></li>
+    
+    <li class="breadcrumb-item"><a href="pymhf.gui.html" class="nav-link">pymhf.gui package</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pymhf.gui.proxy module</span></li>
   </ul>
 </nav>
 </div>
@@ -408,24 +411,8 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="pymhf-gui-package">
-<h1>pymhf.gui package<a class="headerlink" href="#pymhf-gui-package" title="Link to this heading">#</a></h1>
-<section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="pymhf.gui.decorators.html">pymhf.gui.decorators module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pymhf.gui.gui.html">pymhf.gui.gui module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pymhf.gui.hexview.html">pymhf.gui.hexview module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pymhf.gui.proxy.html">pymhf.gui.proxy module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pymhf.gui.widget_data.html">pymhf.gui.widget_data module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pymhf.gui.widgets.html">pymhf.gui.widgets module</a></li>
-</ul>
-</div>
-</section>
-<section id="module-pymhf.gui">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pymhf.gui" title="Link to this heading">#</a></h2>
-</section>
+  <section id="module-pymhf.gui.proxy">
+<span id="pymhf-gui-proxy-module"></span><h1>pymhf.gui.proxy module<a class="headerlink" href="#module-pymhf.gui.proxy" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -439,20 +426,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="pymhf.extensions.ctypes.html"
+       href="pymhf.gui.hexview.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">pymhf.extensions.ctypes module</p>
+        <p class="prev-next-title">pymhf.gui.hexview module</p>
       </div>
     </a>
     <a class="right-next"
-       href="pymhf.gui.decorators.html"
+       href="pymhf.gui.widget_data.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">pymhf.gui.decorators module</p>
+        <p class="prev-next-title">pymhf.gui.widget_data module</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

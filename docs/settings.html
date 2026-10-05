@@ -447,6 +447,12 @@ By setting this value to <code class="docutils literal notranslate"><span class=
 <p><em>Optional</em> - Default <code class="docutils literal notranslate"><span class="pre">true</span></code></p>
 <p>If set to <code class="docutils literal notranslate"><span class="pre">false</span></code> then there will be no interactive python terminal created in the initial terminal.</p>
 </section>
+<section id="disabled-mods">
+<h4><code class="docutils literal notranslate"><span class="pre">disabled_mods</span></code><a class="headerlink" href="#disabled-mods" title="Link to this heading">#</a></h4>
+<p><em>Optional</em> - Default []</p>
+<p>A list of mod names which will not be loaded. The name is the name of the class which subclasses <code class="docutils literal notranslate"><span class="pre">Mod</span></code>, ie. the name shown on the mod’s tab in the GUI.
+Files containing these mods are not imported at all, so nothing in them is run.</p>
+</section>
 </section>
 <section id="pymhf-logging-section">
 <h3><code class="docutils literal notranslate"><span class="pre">pymhf.logging</span></code> section:<a class="headerlink" href="#pymhf-logging-section" title="Link to this heading">#</a></h3>
