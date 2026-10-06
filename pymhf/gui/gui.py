@@ -287,21 +287,22 @@ class GUI:
         for func_name in names:
             dpg.add_tree_node(label=func_name, parent=module_tree, leaf=True, bullet=True)
 
-    def reload_tab(self, mod: Mod | str):
+    def reload_tab(self, mod: Mod | str, is_enabled: bool | None = None):
         """Reload the tab for the specific mod. If the mod is actually the string name then we don't draw the
-        widgets and set the tab to a disabled state."""
+        widgets and set the tab to the `is_enabled` state."""
         if isinstance(mod, str):
             # If just the name of the mod is passed, this will indicate that the tab is being disabled as we
             # have no mod instance (it's been disabled).
-            self.disabled_mods.add(mod)
-            if (group_id := self.tabs[mod]) is not None:
-                dpg.hide_item(group_id)
-            dpg.set_item_label(f"_enable_button_{mod}", "Enable")
-            dpg.set_item_callback(f"_enable_button_{mod}", self._enable_mod)
+            if is_enabled is True:
+                self._enable_mod(f"_enable_button_{mod}", mod)
+            elif is_enabled is False:
+                self._disable_mod(f"_enable_button_{mod}", mod)
             return
         mod_name = mod._mod_name
         mod.pymhf_gui = self
         widgets = self.widget_data.pop(mod_name, [])
+
+        self._enable_mod(f"_enable_button_{mod_name}", mod_name)
 
         changes, deletions = self.diff_widgets(widgets, mod._gui_widgets)
 
@@ -515,14 +516,14 @@ class GUI:
             if mod._disabled:
                 dpg.add_button(
                     label="Enable",
-                    callback=self._enable_mod,
+                    callback=self.enable_mod,
                     user_data=mod_name,
                     tag=f"_enable_button_{mod_name}",
                 )
             else:
                 dpg.add_button(
                     label="Disable",
-                    callback=self._disable_mod,
+                    callback=self.disable_mod,
                     user_data=mod_name,
                     tag=f"_enable_button_{mod_name}",
                 )
@@ -560,21 +561,25 @@ class GUI:
         self.mod_manager._assign_mod_instances(user_data)
         dpg.configure_item(_sender, enabled=True)
 
-    def _disable_mod(self, _sender, _keyword, user_data: str):
+    def disable_mod(self, _sender, _keyword, user_data: str):
         self.mod_manager.disable(user_data)
-        self.disabled_mods.add(user_data)
-        if (group_id := self.tabs[user_data]) is not None:
+
+    def _disable_mod(self, _sender, mod_name: str):
+        self.disabled_mods.add(mod_name)
+        if (group_id := self.tabs[mod_name]) is not None:
             dpg.hide_item(group_id)
         dpg.set_item_label(_sender, "Enable")
-        dpg.set_item_callback(_sender, self._enable_mod)
+        dpg.set_item_callback(_sender, self.enable_mod)
 
-    def _enable_mod(self, _sender, _keyword, user_data: str):
+    def enable_mod(self, _sender, _keyword, user_data: str):
         self.mod_manager.enable(user_data, from_gui=True)
-        self.disabled_mods.discard(user_data)
-        if (group_id := self.tabs[user_data]) is not None:
+
+    def _enable_mod(self, _sender: int | str, mod_name: str):
+        self.disabled_mods.discard(mod_name)
+        if (group_id := self.tabs[mod_name]) is not None:
             dpg.show_item(group_id)
         dpg.set_item_label(_sender, "Disable")
-        dpg.set_item_callback(_sender, self._disable_mod)
+        dpg.set_item_callback(_sender, self.disable_mod)
 
     def change_tab(self, _: str, app_data: str):
         self._current_tab = app_data
