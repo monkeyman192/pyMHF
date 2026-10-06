@@ -10,6 +10,7 @@ Current (0.2.5.dev)
 - Mods decorated with ``@disable`` are now also detected before their file is imported, so their file isn't imported at all (previously the file was imported and only the mod class itself was skipped). (c/o `@Carbonster <https://https://github.com/Carbonster>`_)
 - Added API for enabling and disabling mods via the ``mod_manager`` instance. Mods can also be enabled and disabled from the GUI. (`#118 <https://github.com/monkeyman192/pyMHF/issues/118>`_)
 - Fixed an issue with GUI widget labels not being able to be reverted back to their original name after being modified.
+- Added the ``__main__.py`` file back so that ``pyMHF`` can be evoked by ``python -m pyMHF``.
 
 0.2.4 (16/08/2026)
 ------------------

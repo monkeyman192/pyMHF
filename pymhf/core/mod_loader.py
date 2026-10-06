@@ -728,7 +728,7 @@ class ModManager:
         if diff := (self._disabled_mods - disabled_mods_before):
             if not isinstance(self._gui, _GUIProxy):
                 for mod_name in diff:
-                    self._gui.reload_tab(mod_name)
+                    self._gui.reload_tab(mod_name, is_enabled=False)
         else:
             for _mod in self._preloaded_mods.values():
                 mod = self.instantiate_mod(_mod)
@@ -771,7 +771,7 @@ class ModManager:
 
                 # Get the GUI to reload the tab if there is a GUI.
                 if not isinstance(self._gui, _GUIProxy):
-                    self._gui.reload_tab(mod)
+                    self._gui.reload_tab(mod, is_enabled=True)
 
                 # Get the HTTP router if there is one for this mod.
                 if (mod_router := router_mapping.get(mod._mod_name)) is not None:
@@ -794,6 +794,8 @@ class ModManager:
         if (mod := self.mods.get(name)) is not None:
             logger.debug(f"Disabling mod {name}")
             self._disable(mod)
+            if not isinstance(self._gui, _GUIProxy):
+                self._gui.reload_tab(name, is_enabled=False)
         else:
             raise ValueError(f"Cannot disable mod {name} - it doesn't exist")
 
