@@ -3,8 +3,7 @@ import math
 import dearpygui.dearpygui as dpg
 
 from pymhf import Mod
-from pymhf.core.hooking import disable
-from pymhf.gui.decorators import COLOUR, FLOAT
+from pymhf.gui.decorators import COLOUR, FLOAT, gui_group
 from pymhf.gui.widgets import CustomWidget, WidgetBehaviour
 
 
@@ -100,6 +99,9 @@ class GUITest(Mod):
         self._radius = 10
         self.center_pos = (200, 200)
         self._dot_colour = (255, 0, 255, 255)
+        self._a = 5
+        self._b = 15
+        self._c = 25
 
     @property
     @COLOUR("dot colour", has_alpha=True, display_type=float, display_mode="HEX")
@@ -141,3 +143,33 @@ class GUITest(Mod):
     @radius.setter
     def radius(self, value):
         self._radius = value
+
+    with gui_group("Outer group"):
+        @property
+        @FLOAT("B")
+        def b(self):
+            return self._b
+
+        @b.setter
+        def b(self, value):
+            self._b = value
+
+        with gui_group("Inner group"):
+            with gui_group("Innerer group"):
+                @property
+                @FLOAT("A")
+                def a(self):
+                    return self._a
+
+                @a.setter
+                def a(self, value):
+                    self._a = value
+
+            @property
+            @FLOAT("C")
+            def c(self):
+                return self._c
+
+            @c.setter
+            def c(self, value):
+                self._c = value

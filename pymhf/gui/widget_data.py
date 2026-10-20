@@ -10,10 +10,7 @@ class GroupData(NamedTuple):
     # group_id is auto-generated
     group_id: str
     group_label: Optional[str]
-
-    @property
-    def indentation(self) -> int:
-        return len(self.group_id.split("."))
+    parent: "Optional[GroupData]"
 
 
 ctx_group = ContextVar[Optional[GroupData]]("group", default=None)

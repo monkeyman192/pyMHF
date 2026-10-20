@@ -906,6 +906,12 @@ class Structure(ctypes.Structure):
         addr = get_addressof(buffer)
         return map_struct(addr, cls)
 
+    def equals(self, other: ctypes.Structure | ctypes._Pointer) -> bool:
+        """Compare to another struct to see if they are the same object. If the argument is a pointer it will
+        be dereferenced (ie. we check if the address of the object at the pointer is the same as the address
+        of this object)"""
+        return get_addressof(self) == get_addressof(other)
+
 
 P = ParamSpec("P")
 R = TypeVar("R")
