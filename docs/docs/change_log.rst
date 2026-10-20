@@ -1,8 +1,8 @@
 Change Log
 ==========
 
-Current (0.2.5.dev)
--------------------
+0.2.5 (21/10/2026)
+------------------
 
 - Cleaned up the ``c_enum`` implementation to have a single base class to ensure consistency across inheriting types.
 - Changed the string representation of ``c_enum`` types (eg. ``c_enum8``, etc.) so that the value is now the name of the associated enum value. The old form is now available via ``repr()``.
