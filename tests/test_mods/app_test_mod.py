@@ -16,7 +16,6 @@
 # log_level = "info"
 # window_name_override = "Test mod"
 # ///
-from __future__ import annotations
 
 import ctypes
 import logging
