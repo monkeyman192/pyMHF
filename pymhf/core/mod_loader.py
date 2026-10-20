@@ -330,24 +330,30 @@ class Mod(ABC):
         # Read the widget data for the particular function and add it to the widget data for the mod.
         wd = func._widget_data
         if wd.group is not None:
-            if (group_id := wd.group.group_id) not in group_data:
-                # Create a new group and if it's a top level one, add it to the gui widgets.
-                group_data[group_id] = GroupWidgetData(
-                    group_id,
-                    wd.group.group_label,
-                    [],
-                )
-                if "." not in group_id:
+            # Iterate over the group data, going upwards from the bottom, adding any groups that weren't
+            # already found to the group data.
+            _current_group = wd.group
+            _prev_group = None
+            while _current_group is not None:
+                if (group_id := _current_group.group_id) in group_data:
+                    # If the group id is already in the group data, then we can stop since everything else
+                    # above it also will be.
+                    if _prev_group is not None:
+                        group_data[group_id].child_widgets.append(group_data[_prev_group.group_id])
+                    break
+                # Create a new group and add the previous group to it if there was one.
+                group_data[group_id] = GroupWidgetData(group_id, _current_group.group_label, [])
+                if _prev_group is not None:
+                    group_data[group_id].child_widgets.append(group_data[_prev_group.group_id])
+
+                # If we are at the top level, add the group to the list of widgets.
+                if _current_group.parent is None:
                     self._gui_widgets.append(group_data[group_id])
-                # Check to see if the parent is in the group data (it should be!) and add the new
-                # group as a child.
-                if "." in group_id:
-                    if (parent_group_name := ".".join(group_id.split(".")[:-1])) in group_data:
-                        group_data[parent_group_name].child_widgets.append(group_data[group_id])
-                group_data[group_id].child_widgets.append(func)
-            else:
-                # Add to the exiting group
-                group_data[group_id].child_widgets.append(func)
+
+                _prev_group = _current_group
+                _current_group = _current_group.parent
+            # Add the widget to the actual group. We know from the above that it must exist.
+            group_data[wd.group.group_id].child_widgets.append(func)
         else:
             self._gui_widgets.append(func)
 

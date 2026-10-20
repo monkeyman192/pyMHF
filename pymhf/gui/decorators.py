@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 from contextlib import contextmanager
 from enum import Enum
 from hashlib import md5
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Type, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Literal, Type, Union, cast
 
 from pymhf.gui.widget_data import (
     ButtonWidgetData,
@@ -23,7 +25,7 @@ if TYPE_CHECKING:
 
 
 @contextmanager
-def gui_group(group_label: Optional[str] = None):
+def gui_group(group_label: str | None = None):
     """Add all the gui elements defined within this context manager to the same group.
     This can be nested to create sub-groups to arbitrary depth."""
     # Generate a group id based on the index of the group in the mod.
@@ -31,10 +33,8 @@ def gui_group(group_label: Optional[str] = None):
     # will be deleted and redrawn rather than simply moved, but this is an unlikely case to happen too often.
     group_id = md5(str(ctx_group_counter.get()).encode()).hexdigest()
     ctx_group_counter.set(ctx_group_counter.get() + 1)
-    if (curr_ctx_group := ctx_group.get()) is None:
-        meta = GroupData(group_id, group_label)
-    else:
-        meta = GroupData(curr_ctx_group.group_id + "." + group_id, group_label)
+    curr_ctx_group = ctx_group.get()
+    meta = GroupData(group_id, group_label, curr_ctx_group)
     ctx_group.set(meta)
     yield
     ctx_group.set(curr_ctx_group)
