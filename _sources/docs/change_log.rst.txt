@@ -4,6 +4,8 @@ Change Log
 Current (0.2.5.dev)
 -------------------
 
+**Note**: This will be the last version that supports python 3.9.
+
 - Cleaned up the ``c_enum`` implementation to have a single base class to ensure consistency across inheriting types.
 - Changed the string representation of ``c_enum`` types (eg. ``c_enum8``, etc.) so that the value is now the name of the associated enum value. The old form is now available via ``repr()``.
 - Added the ``disabled_mods`` setting which takes a list of mod names which will not be loaded. The files these mods are defined in aren't imported at all, so no code in them is run. See :doc:`here </docs/settings>` for more details. (c/o `@Carbonster <https://https://github.com/Carbonster>`_)
@@ -11,6 +13,7 @@ Current (0.2.5.dev)
 - Added API for enabling and disabling mods via the ``mod_manager`` instance. Mods can also be enabled and disabled from the GUI. (`#118 <https://github.com/monkeyman192/pyMHF/issues/118>`_)
 - Fixed an issue with GUI widget labels not being able to be reverted back to their original name after being modified.
 - Added the ``__main__.py`` file back so that ``pyMHF`` can be evoked by ``python -m pyMHF``.
+- Fixed an issue with nested groups. (`#123 <https://github.com/monkeyman192/pyMHF/issues/123>`_)
 
 0.2.4 (16/08/2026)
 ------------------
