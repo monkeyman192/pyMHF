@@ -406,8 +406,11 @@ def run_module(
         else:
             binary_hash = 0
 
-        def close_callback(x):
+        def close_callback(x: concurrent.futures.Future):
             print("pyMHF exiting...")
+            if injected_exception := x.exception(0):
+                print("An exception was raised:")
+                print(injected_exception)
             for _pid in {pm_binary.process_id, log_pid}:
                 if _pid:
                     try:

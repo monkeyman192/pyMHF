@@ -2,7 +2,7 @@
 name = "pyMHF"
 description = "python Modding and Hooking Framework"
 readme = "README.md"
-requires-python = ">=3.9, <4"
+requires-python = ">=3.10, <4"
 license = "MIT"
 license-files = ["LICENSE"]
 keywords = ["hooking", "games", "hacking", "modding"]
@@ -13,14 +13,14 @@ maintainers = [
   {name = "monkeyman192"}
 ]
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 4 - Beta",
   "Environment :: Win32 (MS Windows)",
   "Operating System :: Microsoft",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies = [
@@ -36,7 +36,7 @@ dependencies = [
   "pefile",
   "iced_x86",
   "typing_extensions",
-  "pyrun-injected==0.2.0",
+  "pyrun-injected==0.2.1",
   "importlib_metadata; python_version < '3.10'"
 ]
 dynamic = ["version"]

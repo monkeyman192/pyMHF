@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 # Main functionality for loading mods.
 # Mods will consist of a single file which will generally contain a number of
 # hooks.
