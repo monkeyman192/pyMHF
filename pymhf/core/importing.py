@@ -1,4 +1,5 @@
 import ast
+import importlib.machinery
 import importlib.util
 import logging
 import os.path as op
@@ -132,7 +133,9 @@ def import_file(fpath: str) -> Optional[ModuleType]:
             # If a directory is passed in, then add __init__.py to it so that
             # we may correctly import it.
             fpath = op.join(fpath, "__init__.py")
-        if spec := importlib.util.spec_from_file_location(module_name, fpath):
+        # Use a source file loader instead of loading from file to avoid case-sensitive issues.
+        loader = importlib.machinery.SourceFileLoader(module_name, fpath)
+        if spec := importlib.util.spec_from_loader(module_name, loader):
             module = importlib.util.module_from_spec(spec)
             module.__name__ = module_name
             module.__spec__ = spec
@@ -141,6 +144,6 @@ def import_file(fpath: str) -> Optional[ModuleType]:
                 spec.loader.exec_module(module)
                 return module
         else:
-            print("failed")
+            logger.error(f"Failed to load {fpath}")
     except Exception:
         logger.exception(f"Error loading {fpath}")

@@ -118,7 +118,7 @@ def canonicalize_setting(
         return op.realpath(op.join(module_dir, *_suffix))
 
 
-def merge_configs(src: pymhfConfig, dst: pymhfConfig):
+def merge_configs(src: pymhfConfig | dict, dst: pymhfConfig):
     """Merge the source config into the dest config. Overwriting any values."""
     for key, value in src.items():
         if not isinstance(value, dict):

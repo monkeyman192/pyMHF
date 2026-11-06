@@ -266,6 +266,15 @@ class FuncHook(cyminhook.MinHook):
             logger.error(e.status.name[3:].replace("_", " ") + f" ({e})")
             self.state = "failed"
             return False
+        except RuntimeError:
+            if self._func_def:
+                logger.exception(
+                    f"There was an error hooking {self.name} at address 0x{self.target:X}. "
+                    f"One of the function arguments in {self._func_def.argtypes} may be invalid."
+                )
+            else:
+                logger.exception(f"There was an error hooking {self.name} at address 0x{self.target:X}")
+            return False
         self.state = "initialized"
         return True
 

@@ -5,6 +5,7 @@ Usage guide
    :maxdepth: 1
 
    usage
+   command_line
    settings
    writing_mods
    creating_hook_definitions

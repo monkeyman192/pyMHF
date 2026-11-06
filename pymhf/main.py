@@ -130,9 +130,7 @@ def get_process_when_ready(
                 pass
     else:
         creationflags = 0x4 if start_paused else 0
-        process_handle, thread_handle, found_pid, tid = start_process(  # noqa
-            cmd, creationflags=creationflags
-        )
+        _, thread_handle, found_pid, _ = start_process(cmd, creationflags=creationflags)
         target_process = WrappedProcess(thread_handle=thread_handle)
 
     if target_process is not None:
@@ -159,17 +157,27 @@ def load_mod_file(filepath: str, config_overrides: Optional[dict] = None):
         It is generally recommended to pass an absolute path as it will be more reliable.
     config_overrides
         An optional dictionary containing values which will override any existing config values read from the
-        specified file.
+        specified file or from the pymhf.local.toml file.
     """
     pymhf_settings = read_pymhf_settings(filepath, True)
     if config_overrides:
-        pymhf_settings.update(config_overrides)
+        merge_configs(config_overrides, pymhf_settings)
     run_module(filepath, pymhf_settings, None, None)
 
 
-def load_module(plugin_name: str, module_path: str):
+def load_module(plugin_name: str, module_path: str, config_overrides: Optional[dict] = None):
     """Load a module.
     This should be used when loading an entire folder or a plugin based on name.
+
+    Parameters
+    ----------
+    plugin_name
+        The name of either the plugin being loaded, or the name of the individual mod file.
+    module_path
+        The absolute path to the plugin or mod file.
+    config_overrides
+        An optional dictionary containing values which will override any existing config values read from the
+        specified file or from the pymhf.local.toml file.
     """
     config_dir = op.join(APPDATA_DIR, "pymhf", plugin_name)
     local_cfg_file = op.join(config_dir, "pymhf.local.toml")
@@ -180,6 +188,8 @@ def load_module(plugin_name: str, module_path: str):
     module_cfg_file = op.join(module_path, "pymhf.toml")
     module_cfg = read_pymhf_settings(module_cfg_file)
     module_cfg.update(local_cfg)
+    if config_overrides:
+        merge_configs(config_overrides, module_cfg)
     run_module(module_path, module_cfg, plugin_name, config_dir)
 
 
@@ -250,7 +260,7 @@ def run_module(
     for i, _arg in enumerate(cmd_args):
         cmd_args[i] = str(_arg)
     to_load_pid: Optional[int] = config.get("pid", None)
-    interactive_console = config.get("interactive_console", True)
+    interactive_console = config.get("interactive_console", False)
     logging_config = config.get("logging", {}) or {}
     show_log_window = logging_config.get("shown", True)
     if to_load_pid is None and binary_exe is None:
@@ -506,7 +516,7 @@ def run_module(
                     for _fpath in os.listdir(mod_folder):
                         fpath = op.join(mod_folder, _fpath)
                         if op.isdir(fpath):
-                            for pyfile in glob.iglob(op.join(fpath, "*.py")):
+                            for pyfile in glob.iglob(op.join(fpath, "*.[p][y]")):
                                 with open(pyfile, "r") as f:
                                     if parse_file_for_mod(f.read()):
                                         # Once we know that at least one file contains a mod, stop iterating

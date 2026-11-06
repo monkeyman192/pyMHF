@@ -273,10 +273,6 @@ def find_pattern_in_binary(
     binary we ran, but it could be some other dll under the same process.)
     """
     if (_cached_offset := cache.offset_cache.get(pattern, binary)) is not None:
-        logger.debug(
-            f"Using cached offset 0x{_cached_offset:X} for pattern {pattern}"
-            f" and binary {binary or _internal.EXE_NAME}"
-        )
         return _cached_offset
     if binary is None:
         binary = _internal.EXE_NAME
