@@ -304,6 +304,7 @@
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="command_line.html">Command Line Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="settings.html">Configuring pyMHF</a></li>
 <li class="toctree-l1"><a class="reference internal" href="writing_mods.html">Writing Mods</a></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Creating hook definitions</a></li>
@@ -510,7 +511,7 @@ If the binary receives updates, then the <code class="docutils literal notransla
 <div class="code-block-caption"><span class="caption-text">normal_hook_mod.py</span><a class="headerlink" href="#id4" title="Link to this code">#</a></div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
 <span class="linenos"> 4</span>
 <span class="linenos"> 5</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
 <span class="linenos"> 6</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf.core.hooking</span><span class="w"> </span><span class="kn">import</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">function_hook</span>
@@ -523,7 +524,7 @@ If the binary receives updates, then the <code class="docutils literal notransla
 <span class="linenos">13</span>
 <span class="linenos">14</span><span class="nd">@partial_struct</span>
 <span class="linenos">15</span><span class="k">class</span><span class="w"> </span><span class="nc">TkAudioID</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
-<span class="linenos">16</span>    <span class="n">mpacName</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">)]</span>
+<span class="linenos">16</span>    <span class="n">mpacName</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">)]</span>
 <span class="linenos">17</span>    <span class="n">muID</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">)]</span>
 <span class="linenos">18</span>    <span class="n">mbValid</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">)]</span>
 <span class="linenos">19</span>
@@ -601,7 +602,7 @@ The methods also need the <code class="docutils literal notranslate"><span class
 <div class="code-block-caption"><span class="caption-text">overloaded_mod.py</span><a class="headerlink" href="#id5" title="Link to this code">#</a></div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">overload</span>
+<span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">overload</span>
 <span class="linenos"> 4</span>
 <span class="linenos"> 5</span><span class="kn">import</span><span class="w"> </span><span class="nn">pymhf.core._internal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_internal</span>
 <span class="linenos"> 6</span><span class="kn">from</span><span class="w"> </span><span class="nn">pymhf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mod</span>
@@ -615,7 +616,7 @@ The methods also need the <code class="docutils literal notranslate"><span class
 <span class="linenos">14</span>
 <span class="linenos">15</span><span class="nd">@partial_struct</span>
 <span class="linenos">16</span><span class="k">class</span><span class="w"> </span><span class="nc">TkAudioID</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
-<span class="linenos">17</span>    <span class="n">mpacName</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">)]</span>
+<span class="linenos">17</span>    <span class="n">mpacName</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_char_p</span><span class="p">)]</span>
 <span class="linenos">18</span>    <span class="n">muID</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_uint32</span><span class="p">)]</span>
 <span class="linenos">19</span>    <span class="n">mbValid</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_bool</span><span class="p">)]</span>
 <span class="linenos">20</span>

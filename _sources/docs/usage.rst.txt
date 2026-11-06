@@ -6,7 +6,7 @@ There are a number of convenient ways to use pyMHF:
 Command line
 ------------
 
-pyMHF registers ``pymhf`` as a command which can be called from your shell. This command has a number of options (call ``pymhf --help`` for more details).
+pyMHF registers ``pymhf`` as a command which can be called from your shell. This command has a number of options (call ``pymhf --help`` for more details) or see :doc:`here </docs/command_line>`.
 
 From code
 ---------

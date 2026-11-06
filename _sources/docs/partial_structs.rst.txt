@@ -13,7 +13,7 @@ The ``Field`` class is defined as follows:
     @dataclass
     class Field:
         datatype: ctypes.Structure
-        offset: Optional[int] = None
+        offset: int | None = None
 
 When using this class, the ``datatype`` must be provided, however the ``offset`` doesn't need to be. If it isn't provided then the field will be placed directly after the field before it at a location determined based on the usual alignment and packing rules.
 If the ``offset`` is provided, then the number of padding bytes required between this field and the previous one (if there is one) will be determined and inserted automatically.

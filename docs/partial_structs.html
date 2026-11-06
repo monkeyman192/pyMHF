@@ -304,6 +304,7 @@
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="command_line.html">Command Line Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="settings.html">Configuring pyMHF</a></li>
 <li class="toctree-l1"><a class="reference internal" href="writing_mods.html">Writing Mods</a></li>
 <li class="toctree-l1"><a class="reference internal" href="creating_hook_definitions.html">Creating hook definitions</a></li>
@@ -396,7 +397,7 @@ Often this would then require adding many <code class="docutils literal notransl
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Field</span><span class="p">:</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span>
-    <span class="n">offset</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </pre></div>
 </div>
 <p>When using this class, the <code class="docutils literal notranslate"><span class="pre">datatype</span></code> must be provided, however the <code class="docutils literal notranslate"><span class="pre">offset</span></code> doesn’t need to be. If it isn’t provided then the field will be placed directly after the field before it at a location determined based on the usual alignment and packing rules.

@@ -304,6 +304,7 @@
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="command_line.html">Command Line Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="settings.html">Configuring pyMHF</a></li>
 <li class="toctree-l1"><a class="reference internal" href="writing_mods.html">Writing Mods</a></li>
 <li class="toctree-l1"><a class="reference internal" href="creating_hook_definitions.html">Creating hook definitions</a></li>
@@ -399,8 +400,8 @@ If a mod is updatad to have an endpoint added after startup and then reloaded no
 <section id="decorators">
 <h2>Decorators<a class="headerlink" href="#decorators" title="Link to this heading">#</a></h2>
 <p>The functionality is implemented using the following decorator:</p>
-<section id="endpoint-route-optional-str-none-method-optional-literal-get-put-websocket-none-dont-extend-bool-false">
-<h3><a class="reference internal" href="../api/pymhf.core.http_api.html#pymhf.core.http_api.endpoint" title="pymhf.core.http_api.endpoint"><code class="xref py py-func docutils literal notranslate"><span class="pre">endpoint(route:</span> <span class="pre">Optional[str]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">method:</span> <span class="pre">Optional[Literal[&quot;GET&quot;,</span> <span class="pre">&quot;PUT&quot;,</span> <span class="pre">&quot;WEBSOCKET&quot;]]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">dont_extend:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False)</span></code></a>:<a class="headerlink" href="#endpoint-route-optional-str-none-method-optional-literal-get-put-websocket-none-dont-extend-bool-false" title="Link to this heading">#</a></h3>
+<section id="endpoint-route-str-none-none-method-literal-get-put-websocket-none-none-dont-extend-bool-false">
+<h3><a class="reference internal" href="../api/pymhf.core.http_api.html#pymhf.core.http_api.endpoint" title="pymhf.core.http_api.endpoint"><code class="xref py py-func docutils literal notranslate"><span class="pre">endpoint(route:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">method:</span> <span class="pre">Literal[&quot;GET&quot;,</span> <span class="pre">&quot;PUT&quot;,</span> <span class="pre">&quot;WEBSOCKET&quot;]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">dont_extend:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False)</span></code></a>:<a class="headerlink" href="#endpoint-route-str-none-none-method-literal-get-put-websocket-none-none-dont-extend-bool-false" title="Link to this heading">#</a></h3>
 <p>This decorator marks the function or property as one which will be exposed as a HTTP endpoint.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">route</span></code> is an optional parameter which, if not provided will fall-back to the name of the function or property being decorated.
 This value will be prefixed with the name of the mod, so in the following code, the endpoint will be <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">MyMod/location</span></code>:</p>

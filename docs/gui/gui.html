@@ -304,6 +304,7 @@
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line.html">Command Line Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../settings.html">Configuring pyMHF</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../writing_mods.html">Writing Mods</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../creating_hook_definitions.html">Creating hook definitions</a></li>
@@ -438,8 +439,8 @@ To see what extra arguments are available, see the DearPyGUI documentation <a cl
 <p>Create an enum entry field which can take extra arguments.
 To see what extra arguments are available, see the DearPyGUI documentation <a class="reference external" href="https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_combo">here</a>.</p>
 </section>
-<section id="colour-label-str-has-alpha-bool-true-display-type-union-type-int-type-float-int-display-mode-literal-rgb-hex-rgb-kwargs">
-<h3><a class="reference internal" href="../../api/pymhf.gui.decorators.html#pymhf.gui.decorators.COLOUR" title="pymhf.gui.decorators.COLOUR"><code class="xref py py-func docutils literal notranslate"><span class="pre">COLOUR(label:</span> <span class="pre">str,</span> <span class="pre">has_alpha:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">display_type:</span> <span class="pre">Union[type[int],</span> <span class="pre">type[float]]</span> <span class="pre">=</span> <span class="pre">int,</span> <span class="pre">display_mode:</span> <span class="pre">Literal[&quot;RGB&quot;,</span> <span class="pre">&quot;HEX&quot;]</span> <span class="pre">=</span> <span class="pre">&quot;RGB&quot;,**kwargs)</span></code></a><a class="headerlink" href="#colour-label-str-has-alpha-bool-true-display-type-union-type-int-type-float-int-display-mode-literal-rgb-hex-rgb-kwargs" title="Link to this heading">#</a></h3>
+<section id="colour-label-str-has-alpha-bool-true-display-type-type-int-type-float-int-display-mode-literal-rgb-hex-rgb-kwargs">
+<h3><a class="reference internal" href="../../api/pymhf.gui.decorators.html#pymhf.gui.decorators.COLOUR" title="pymhf.gui.decorators.COLOUR"><code class="xref py py-func docutils literal notranslate"><span class="pre">COLOUR(label:</span> <span class="pre">str,</span> <span class="pre">has_alpha:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">display_type:</span> <span class="pre">type[int]</span> <span class="pre">|</span> <span class="pre">type[float]</span> <span class="pre">=</span> <span class="pre">int,</span> <span class="pre">display_mode:</span> <span class="pre">Literal[&quot;RGB&quot;,</span> <span class="pre">&quot;HEX&quot;]</span> <span class="pre">=</span> <span class="pre">&quot;RGB&quot;,**kwargs)</span></code></a><a class="headerlink" href="#colour-label-str-has-alpha-bool-true-display-type-type-int-type-float-int-display-mode-literal-rgb-hex-rgb-kwargs" title="Link to this heading">#</a></h3>
 <p>Create a colour entry field in the form of a colour editor which can take extra arguments.
 A few common options are able to be specified separately:</p>
 <blockquote>
