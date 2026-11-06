@@ -2,7 +2,7 @@ import ctypes
 import inspect
 from dataclasses import dataclass
 from logging import getLogger
-from typing import Literal, Optional, Type, TypeVar, Union, _AnnotatedAlias, get_args
+from typing import Literal, Type, TypeVar, _AnnotatedAlias, get_args
 
 from typing_extensions import get_type_hints
 
@@ -19,18 +19,18 @@ logger = getLogger(__name__)
 @dataclass
 class Field:
     datatype: CTYPES
-    offset: Optional[int] = None
+    offset: int | None = None
 
 
 @dataclass
 class Pattern:
     pattern: str
     address_offset: int = 3
-    address_dtype: Union[
-        type[ctypes.c_uint16],  # for 32 bit binaries... Maybe?
-        type[ctypes.c_uint32],  # For 64 bit binaries normally.
-        type[ctypes.c_uint64],
-    ] = ctypes.c_uint32
+    address_dtype: (
+        type[ctypes.c_uint16]  # for 32 bit binaries... Maybe?
+        | type[ctypes.c_uint32]  # For 64 bit binaries normally.
+        | type[ctypes.c_uint64]
+    ) = ctypes.c_uint32
     address_type: Literal["relative", "absolute"] = "relative"
 
 

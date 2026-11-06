@@ -2,7 +2,7 @@ import ctypes
 import struct
 from datetime import datetime
 from logging import getLogger
-from typing import Iterable, Optional, TypedDict, Union
+from typing import Iterable, TypedDict
 
 import dearpygui.dearpygui as dpg
 from pymem.ressources.structure import MEMORY_STATE
@@ -35,7 +35,7 @@ def chunks(lst: Iterable, n: int):
 
 
 class HexView:
-    def __init__(self, parent: Union[str, int]):
+    def __init__(self, parent: str | int):
         self.parent = parent
         self.prev_selected_coords = set()
         self.curr_selected_coords = set()
@@ -54,7 +54,7 @@ class HexView:
         self._memory_cache_repeated_tags: dict[str, int] = {}
         self._selected_snapshot_tag = None
 
-    def add_snapshot(self, address: int, size: Optional[int] = None, tag: Optional[str] = None) -> bool:
+    def add_snapshot(self, address: int, size: int | None = None, tag: str | None = None) -> bool:
         """Add a snapshot of the data at the specified address to the hex viewer. These memory snapshots will
         be viewable later from a drop down in the hex viewer.
 
@@ -125,7 +125,7 @@ class HexView:
 
         return True
 
-    def load_address(self, address: int, size: Optional[int] = None) -> bool:
+    def load_address(self, address: int, size: int | None = None) -> bool:
         """Load the provided address into the hex viewer.
 
         Parameters
@@ -243,7 +243,7 @@ class HexView:
             dpg.configure_item("_snapshot_details_text", show=False)
             dpg.set_value("_snapshot_dropdown", None)
 
-    def _inspect_memory_region(self, address: int) -> Optional[MemoryInfo]:
+    def _inspect_memory_region(self, address: int) -> MemoryInfo | None:
         """Inspect a memory address and determine if its ok to store or display."""
         try:
             addr_data = QueryAddress(address)
@@ -274,7 +274,7 @@ class HexView:
         self,
         address: int,
         addr_data: MemoryInfo,
-        size: Optional[int] = None,
+        size: int | None = None,
     ) -> tuple[int, bytes]:
         """Load the data from the address."""
         # Align the requested address to the nearest 0x10 byte boundary before-hand, and then determine how

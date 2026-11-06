@@ -3,7 +3,7 @@ import logging
 import sys
 from gc import get_referents
 from types import FunctionType, ModuleType
-from typing import Literal, Optional, Sequence, Type, TypeVar, Union, overload
+from typing import Literal, Sequence, Type, TypeVar, overload
 
 import pymem
 import pymem.pattern
@@ -62,7 +62,7 @@ def getsize(obj):
     return size, _len
 
 
-def chunks(lst: Union[Sequence, ctypes.Array], n: int):
+def chunks(lst: Sequence | ctypes.Array, n: int):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i : i + n]
@@ -80,7 +80,7 @@ def get_mem(offset: int, size: int) -> ctypes.Array[ctypes.c_char]:
     return (ctypes.c_char * size).from_address(offset)
 
 
-def pprint_mem(offset: int, size: int, stride: Optional[int] = None) -> str:
+def pprint_mem(offset: int, size: int, stride: int | None = None) -> str:
     # TODO: Make this print a much nicer output... It sucks right now...
     if not offset:
         # If we are passed in an offset of 0, don't even try.
@@ -176,7 +176,7 @@ def _get_memview(offset: int, type_: Type[ctypes.Structure]) -> memoryview:
     )
 
 
-def _get_memview_with_size(offset: int, size: int) -> Optional[memoryview]:
+def _get_memview_with_size(offset: int, size: int) -> memoryview | None:
     """Return a memoryview which covers the region of memory specified by the size.
 
     Parameters
@@ -196,7 +196,7 @@ def _get_memview_with_size(offset: int, size: int) -> Optional[memoryview]:
 
 
 def map_struct(
-    offset: Union[int, ctypes.c_uint64, ctypes.c_uint32, ctypes._Pointer], type_: Type[Struct]
+    offset: int | ctypes.c_uint64 | ctypes.c_uint32 | ctypes._Pointer, type_: Type[Struct]
 ) -> Struct:
     r"""Return an instance of the ``type_`` struct provided which shares memory
     with the provided offset.
@@ -231,7 +231,7 @@ def pattern_to_bytes(patt: str) -> bytes:
     return b"".join([f"\\x{x}".encode() if (x != "??" and x != "?") else b"." for x in split])
 
 
-def _get_binary_info(binary: str) -> Optional[tuple[int, MODULEINFO]]:
+def _get_binary_info(binary: str) -> tuple[int, MODULEINFO] | None:
     if binary not in cache.hm_cache:
         try:
             pm_process = pymem.Pymem(_internal.EXE_NAME, exact_match=True)
@@ -250,23 +250,23 @@ def _get_binary_info(binary: str) -> Optional[tuple[int, MODULEINFO]]:
 def find_pattern_in_binary(
     pattern: str,
     return_multiple: Literal[False],
-    binary: Optional[str] = None,
-) -> Optional[int]: ...
+    binary: str | None = None,
+) -> int | None: ...
 
 
 @overload
 def find_pattern_in_binary(
     pattern: str,
     return_multiple: Literal[True],
-    binary: Optional[str] = None,
-) -> Optional[list[int]]: ...
+    binary: str | None = None,
+) -> list[int] | None: ...
 
 
 def find_pattern_in_binary(
     pattern: str,
     return_multiple: bool = False,
-    binary: Optional[str] = None,
-) -> Union[int, list[int], None]:
+    binary: str | None = None,
+) -> int | list[int] | None:
     """
     Find a pattern in the specified binary. This is for the most part a wrapper around pymem's
     pattern_scan_module function so that we can just call this with a module name (often the name of the

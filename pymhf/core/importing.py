@@ -6,7 +6,7 @@ import os.path as op
 import string
 import sys
 from types import ModuleType
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 from pymhf.gui.widget_data import ctx_group, ctx_group_counter
 
@@ -44,7 +44,7 @@ def _fully_unpack_ast_attr(obj: ast.Attribute) -> str:
     return name
 
 
-def library_path_from_name(name: str) -> Optional[str]:
+def library_path_from_name(name: str) -> str | None:
     if (spec := importlib.util.find_spec(name)) is not None:
         if spec.origin is not None:
             return op.dirname(spec.origin)
@@ -122,7 +122,7 @@ def parse_file_for_mod(data: str) -> bool:
     return len(get_mod_infos(data)) != 0
 
 
-def import_file(fpath: str) -> Optional[ModuleType]:
+def import_file(fpath: str) -> ModuleType | None:
     try:
         # Ensure the context variables relating to groups are reset before each import to ensure they are
         # clean before this next import

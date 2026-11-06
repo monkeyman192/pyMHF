@@ -2,7 +2,6 @@ import os
 import os.path as op
 import re
 from logging import getLogger
-from typing import Optional
 
 from pymhf.core._types import pymhfConfig
 
@@ -14,17 +13,17 @@ logger = getLogger(__name__)
 
 def canonicalize_settings_inline(
     config: pymhfConfig,
-    plugin_name: Optional[str],
+    plugin_name: str | None,
     module_dir: str,
-    exe_dir: Optional[str] = None,
-    suffix: Optional[str] = None,
-    filter: Optional[list[str]] = None,
+    exe_dir: str | None = None,
+    suffix: str | None = None,
+    filter: list[str] | None = None,
 ):
     """Canonicalize all the settings in a config file. This will mutate the original config object.
 
     To only modify values containing a particular value, specify this in the `filter` argument."""
 
-    def allow_value(value: str, filter: Optional[list[str]]):
+    def allow_value(value: str, filter: list[str] | None):
         if filter is not None:
             return any(f in value for f in filter)
         else:
@@ -54,12 +53,12 @@ def canonicalize_settings_inline(
 
 
 def canonicalize_setting(
-    value: Optional[str],
-    plugin_name: Optional[str],
+    value: str | None,
+    plugin_name: str | None,
     module_dir: str,
-    exe_dir: Optional[str] = None,
-    suffix: Optional[str] = None,
-) -> Optional[str]:
+    exe_dir: str | None = None,
+    suffix: str | None = None,
+) -> str | None:
     """Convert the "magic" names into real values.
 
     Possible keys:

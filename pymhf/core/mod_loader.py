@@ -14,7 +14,7 @@ from abc import ABC
 from dataclasses import fields
 from functools import partial
 from types import MethodType, ModuleType
-from typing import TYPE_CHECKING, Any, ClassVar, Type, TypeVar, Union, cast, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Type, TypeVar, cast, overload
 
 import keyboard
 from packaging.version import InvalidVersion
@@ -230,7 +230,7 @@ class Mod(ABC):
     __pymhf_required_version__: str | None = None
 
     _custom_callbacks: set[CustomTriggerProtocol]
-    _gui_widgets: list[Union[GUIElementProtocol[WidgetData], GroupWidgetData]]
+    _gui_widgets: list[GUIElementProtocol[WidgetData] | GroupWidgetData]
     _disabled: bool = False
     _no_gui: bool
 

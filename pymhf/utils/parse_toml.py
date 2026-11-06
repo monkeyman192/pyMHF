@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Optional, Union, cast
+from typing import cast
 
 import tomlkit
 
@@ -9,7 +9,7 @@ from pymhf.core._types import pymhfConfig
 REGEX = r"(?m)^# /// (?P<type>[a-zA-Z0-9-]+)$\s(?P<content>(^#(| .*)$\s)+)^# ///$"
 
 
-def read_inline_metadata(script: str) -> Optional[tomlkit.TOMLDocument]:
+def read_inline_metadata(script: str) -> tomlkit.TOMLDocument | None:
     """Read a file and extract the toml info contained in the script if there is one.
     This is taken directly from the reference implementation in https://peps.python.org/pep-0723/
     and modified to use `tomlkit` to ensure compatibility for python 3.9+
@@ -28,7 +28,7 @@ def read_inline_metadata(script: str) -> Optional[tomlkit.TOMLDocument]:
         return None
 
 
-def _parse_toml(fpath: Union[os.PathLike[str], str], standalone: bool = False) -> Optional[pymhfConfig]:
+def _parse_toml(fpath: os.PathLike[str] | str, standalone: bool = False) -> pymhfConfig | None:
     settings = {}
     with open(fpath, "r") as f:
         if standalone:
@@ -39,7 +39,7 @@ def _parse_toml(fpath: Union[os.PathLike[str], str], standalone: bool = False) -
         return cast(pymhfConfig, settings.value)
 
 
-def read_pymhf_settings(fpath: Union[os.PathLike[str], str], standalone: bool = False) -> pymhfConfig:
+def read_pymhf_settings(fpath: os.PathLike[str] | str, standalone: bool = False) -> pymhfConfig:
     settings = _parse_toml(fpath, standalone)
     if not settings:
         return {}

@@ -14,7 +14,7 @@ Decorators
 
 The functionality is implemented using the following decorator:
 
-:py:func:`endpoint(route: Optional[str] = None, method: Optional[Literal["GET", "PUT", "WEBSOCKET"]] = None, dont_extend: bool = False) <pymhf.core.http_api.endpoint>`:
+:py:func:`endpoint(route: str | None = None, method: Literal["GET", "PUT", "WEBSOCKET"] | None = None, dont_extend: bool = False) <pymhf.core.http_api.endpoint>`:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This decorator marks the function or property as one which will be exposed as a HTTP endpoint.

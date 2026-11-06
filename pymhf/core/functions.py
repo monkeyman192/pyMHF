@@ -1,7 +1,7 @@
 import ctypes
 import inspect
 from functools import lru_cache
-from typing import Any, Callable, NamedTuple, Optional, Type, _AnnotatedAlias, get_args
+from typing import Any, Callable, NamedTuple, Type, _AnnotatedAlias, get_args
 
 from typing_extensions import get_type_hints
 
@@ -15,7 +15,7 @@ class ArgData(NamedTuple):
 
 
 class FuncDef:
-    def __init__(self, restype: Any, argtypes: list[ArgData], defaults: Optional[dict] = None):
+    def __init__(self, restype: Any, argtypes: list[ArgData], defaults: dict | None = None):
         self.restype = restype
         self._arg_names = [x.name for x in argtypes]
         self._arg_types = [x.arg_type for x in argtypes]

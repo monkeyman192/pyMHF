@@ -5,18 +5,12 @@ import importlib.resources as impres
 import os
 import os.path as op
 import subprocess
-import sys
 import time
 import webbrowser
 from functools import partial
+from importlib.metadata import entry_points
 from signal import SIGTERM
 from threading import Event
-from typing import Optional
-
-if sys.version_info < (3, 10):
-    from importlib_metadata import entry_points
-else:
-    from importlib.metadata import entry_points
 
 import psutil
 import pymem
@@ -46,7 +40,7 @@ END_EVENT = Event()
 
 
 class WrappedProcess:
-    def __init__(self, proc: Optional[psutil.Process] = None, thread_handle: Optional[int] = None):
+    def __init__(self, proc: psutil.Process | None = None, thread_handle: int | None = None):
         self.proc = proc
         self.thread_handle = thread_handle
         self._is_self_started = False
@@ -82,10 +76,10 @@ def _wait_until_process_running(target: str):
 def get_process_when_ready(
     cmd: list[str],
     target: str,
-    required_assemblies: Optional[list[str]] = None,
+    required_assemblies: list[str] | None = None,
     start_paused: bool = False,
-) -> tuple[Optional[dllinject.pyRunner], Optional[WrappedProcess]]:
-    target_process: Optional[WrappedProcess] = None
+) -> tuple[dllinject.pyRunner | None, WrappedProcess | None]:
+    target_process: WrappedProcess | None = None
     parent_process = None
     # If we are running something which is under steam, make sure steam is
     # running first.
@@ -147,7 +141,7 @@ def get_process_when_ready(
         return None, None
 
 
-def load_mod_file(filepath: str, config_overrides: Optional[dict] = None):
+def load_mod_file(filepath: str, config_overrides: dict | None = None):
     """Load an individual file as a mod.
 
     Parameters
@@ -165,7 +159,7 @@ def load_mod_file(filepath: str, config_overrides: Optional[dict] = None):
     run_module(filepath, pymhf_settings, None, None)
 
 
-def load_module(plugin_name: str, module_path: str, config_overrides: Optional[dict] = None):
+def load_module(plugin_name: str, module_path: str, config_overrides: dict | None = None):
     """Load a module.
     This should be used when loading an entire folder or a plugin based on name.
 
@@ -196,8 +190,8 @@ def load_module(plugin_name: str, module_path: str, config_overrides: Optional[d
 def run_module(
     module_path: str,
     config: pymhfConfig,
-    plugin_name: Optional[str] = None,
-    config_dir: Optional[str] = None,
+    plugin_name: str | None = None,
+    config_dir: str | None = None,
 ):
     """Run the module provided.
 
@@ -259,7 +253,7 @@ def run_module(
     # Ensure each value is a string.
     for i, _arg in enumerate(cmd_args):
         cmd_args[i] = str(_arg)
-    to_load_pid: Optional[int] = config.get("pid", None)
+    to_load_pid: int | None = config.get("pid", None)
     interactive_console = config.get("interactive_console", False)
     logging_config = config.get("logging", {}) or {}
     show_log_window = logging_config.get("shown", True)

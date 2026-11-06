@@ -14,11 +14,11 @@ The ``pymhf_gui`` property of the mod is a :py:class:`~pymhf.gui.gui.GUI` instan
 
 This :py:class:`~pymhf.gui.hexview.HexView` instance has two methods which are useful:
 
-:py:meth:`add_snapshot(address: int, size: Optional[int] = None, tag: Optional[str] = None) -> bool <pymhf.gui.hexview.HexView.add_snapshot>`
+:py:meth:`add_snapshot(address: int, size: int | None = None, tag: str | None = None) -> bool <pymhf.gui.hexview.HexView.add_snapshot>`
 
 and
 
-:py:meth:`load_address(address: int, size: Optional[int] = None) -> bool <pymhf.gui.hexview.HexView.load_address>`
+:py:meth:`load_address(address: int, size: int | None = None) -> bool <pymhf.gui.hexview.HexView.load_address>`
 
 The first method is useful to snapshot a memory region when a function is hooked.
 For example, if you have a detour which takes the pointer to some class as an argument, you may want to snapshot a few 100 bytes of this class to see what it's structure is.

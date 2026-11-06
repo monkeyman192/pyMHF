@@ -1,7 +1,6 @@
 import math
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Optional
 
 import dearpygui.dearpygui as dpg
 
@@ -88,7 +87,7 @@ class MovingCircle(CustomWidget):
 
         dpg.bind_item_handler_registry(self.ids["DRAWLIST"], ihr)
 
-    def redraw(self, theta: float, radius: float, center_pos: Optional[tuple[float, float]] = None):
+    def redraw(self, theta: float, radius: float, center_pos: tuple[float, float] | None = None):
         if self.clicked_on:
             self.center_pos = tuple(dpg.get_drawing_mouse_pos())
         elif center_pos:

@@ -1,6 +1,6 @@
 from contextvars import ContextVar
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Generic, Literal, NamedTuple, Optional, Protocol, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, Literal, NamedTuple, Protocol, Type, TypeVar
 
 if TYPE_CHECKING:
     from pymhf.gui.widgets import Widget
@@ -9,11 +9,11 @@ if TYPE_CHECKING:
 class GroupData(NamedTuple):
     # group_id is auto-generated
     group_id: str
-    group_label: Optional[str]
-    parent: "Optional[GroupData]"
+    group_label: str | None
+    parent: "GroupData | None"
 
 
-ctx_group = ContextVar[Optional[GroupData]]("group", default=None)
+ctx_group = ContextVar[GroupData | None]("group", default=None)
 ctx_group.set(None)
 ctx_group_counter = ContextVar[int]("group_counter", default=0)
 ctx_group_counter.set(0)
@@ -73,8 +73,8 @@ class GroupWidgetData(WidgetData):
     def __init__(
         self,
         id_: str,
-        label: Optional[str],
-        child_widgets: list[Union["GUIElementProtocol[WidgetData]", "GroupWidgetData"]],
+        label: str | None,
+        child_widgets: list["GUIElementProtocol[WidgetData] | GroupWidgetData"],
     ):
         super().__init__(id_, label or "")
         self.child_widgets = child_widgets
@@ -105,7 +105,7 @@ class VariableWidgetData(WidgetData):
         label: str,
         variable_type: VariableType = VariableType.NONE,
         is_slider: bool = False,
-        extra_args: Optional[dict] = None,
+        extra_args: dict | None = None,
     ):
         super().__init__(id_, label)
         self.variable_type = variable_type
@@ -130,7 +130,7 @@ class EnumVariableWidgetData(VariableWidgetData):
         id_: str,
         label: str,
         enum: Type[Enum],
-        extra_args: Optional[dict] = None,
+        extra_args: dict | None = None,
     ):
         super().__init__(id_, label, VariableType.ENUM, False, extra_args)
         self.enum = enum
@@ -148,9 +148,9 @@ class ColourVariableWidgetData(VariableWidgetData):
         id_: str,
         label: str,
         has_alpha: bool = True,
-        display_type: Union[type[int], type[float]] = int,
+        display_type: type[int] | type[float] = int,
         display_mode: Literal["RGB", "HEX"] = "RGB",
-        extra_args: Optional[dict] = None,
+        extra_args: dict | None = None,
     ):
         super().__init__(id_, label, VariableType.COLOUR, False, extra_args)
         self.has_alpha = has_alpha

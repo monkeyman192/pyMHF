@@ -1,5 +1,4 @@
 import asyncio
-from typing import Union
 
 # This escape sequence is arbitrarily the first 4 digits of Euler's number "e"
 # written as bytes from left to right.
@@ -23,7 +22,7 @@ def custom_exception_handler(loop: asyncio.AbstractEventLoop, context: dict):
 
 
 class TerminalProtocol(asyncio.Protocol):
-    def __init__(self, message: Union[str, bytes], future):
+    def __init__(self, message: str | bytes, future):
         super().__init__()
         self.message = message
         self._is_raw = isinstance(self.message, bytes)

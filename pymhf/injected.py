@@ -11,7 +11,7 @@ import sys
 import time
 import traceback
 from functools import partial
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if sys.version_info < (3, 10):
     from importlib_metadata import entry_points
@@ -212,7 +212,7 @@ try:
             # Once the connection is lost. Restore `print` back to normal.
             globals()["print"] = builtins.print
 
-    def top_globals(limit: Optional[int] = 10):
+    def top_globals(limit: int | None = 10):
         """Return the top N objects in globals() by size (in bytes)."""
         globs = globals()
         data = []

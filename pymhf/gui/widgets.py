@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Literal, Optional, Type, TypedDict, Union, cast
+from typing import TYPE_CHECKING, Any, Literal, Type, TypedDict, cast
 
 import dearpygui.dearpygui as dpg
 
@@ -26,9 +26,9 @@ INDENT = 32
 class WidgetSurrounds(TypedDict, total=False):
     """Simple container for info about the surrounding widgets."""
 
-    after: Optional[str]
-    before: Optional[str]
-    parent: Optional[str]
+    after: str | None
+    before: str | None
+    parent: str | None
 
 
 class WidgetBehaviour(Enum):
@@ -41,7 +41,7 @@ class Widget(ABC):
     widget_behaviour: WidgetBehaviour
 
     def __init__(self, id_: str):
-        self.ids: dict[str, Union[int, str]] = {}
+        self.ids: dict[str, int | str] = {}
         self.id_ = id_
         # This is the root DearPyGUI id of the widget. It will be either the group containing the widget, or
         # the id of the row depending on the widget behaviour.
@@ -55,7 +55,7 @@ class Widget(ABC):
             )
 
     @staticmethod
-    def _get_parent_table(item: Union[str, int, None] = None):
+    def _get_parent_table(item: str | int | None = None):
         """Get the first table containing the current widget."""
         if not item:
             return None
@@ -71,7 +71,7 @@ class Widget(ABC):
     def handle_widget_behaviour(
         self,
         widget_mapping: dict[str, "Widget"],
-        surrounding_widgets: Optional[WidgetSurrounds] = None,
+        surrounding_widgets: WidgetSurrounds | None = None,
     ):
         """Based on the widget behaviour, clean up from the previous widgets, or attach to them, and then
         return some (optional) extra information which may be required later.
@@ -163,7 +163,7 @@ class Widget(ABC):
     @classmethod
     def create(
         cls,
-        func: Union[GUIElementProtocol[WidgetData], GroupWidgetData],
+        func: GUIElementProtocol[WidgetData] | GroupWidgetData,
         widget_mapping: dict[str, "Widget"],
     ):
         if isinstance(func, GroupWidgetData):
@@ -246,7 +246,7 @@ class Widget(ABC):
     def _draw(
         self,
         widget_mapping: dict[str, "Widget"],
-        surrounding_widgets: Optional[WidgetSurrounds] = None,
+        surrounding_widgets: WidgetSurrounds | None = None,
     ):
         # This is the actual draw entry point.
         # It will wrap the draw call so that the widget behaviour is respected and any extra data is applied.
@@ -297,7 +297,7 @@ class CustomWidget(Widget, ABC):
     mod: "Mod"
     variable_name: str
 
-    def __init__(self, id_: Optional[str] = None):
+    def __init__(self, id_: str | None = None):
         super().__init__(id_ or "")
         self.variable_type = VariableType.CUSTOM
 
@@ -319,7 +319,7 @@ class CustomWidget(Widget, ABC):
         pass
 
     @abstractmethod
-    def redraw(self, *args: Any, **kwargs: Any) -> Optional[dict[str, Any]]:
+    def redraw(self, *args: Any, **kwargs: Any) -> dict[str, Any] | None:
         """Redraw the widget. This will be called each frame.
         This method is guaranteed not to be called before the original `draw` method.
         This method can be defined with any number of arguments but the function decorated by this class MUST
@@ -334,7 +334,7 @@ class CustomWidget(Widget, ABC):
 class Group(Widget):
     widget_behaviour = WidgetBehaviour.SEPARATE
 
-    def __init__(self, id_: str, label: Optional[str], child_widgets: Optional[list[Widget]]):
+    def __init__(self, id_: str, label: str | None, child_widgets: list[Widget] | None):
         super().__init__(id_)
         self.label = label
         self.child_widgets = child_widgets or []
@@ -423,7 +423,7 @@ class Variable(Widget):
         variable_name: str,
         variable_type: VariableType = VariableType.NONE,
         has_setter: bool = False,
-        extra_args: Optional[dict] = None,
+        extra_args: dict | None = None,
     ):
         super().__init__(id_)
         self.label = label
@@ -506,7 +506,7 @@ class IntVariable(Variable):
         variable_name: str,
         has_setter: bool = False,
         is_slider: bool = False,
-        extra_args: Optional[dict] = None,
+        extra_args: dict | None = None,
     ):
         super().__init__(id_, label, mod, variable_name, VariableType.INTEGER, has_setter, extra_args)
         self.is_slider = is_slider
@@ -545,7 +545,7 @@ class FloatVariable(Variable):
         variable_name: str,
         has_setter: bool = False,
         is_slider: bool = False,
-        extra_args: Optional[dict] = None,
+        extra_args: dict | None = None,
     ):
         super().__init__(id_, label, mod, variable_name, VariableType.FLOAT, has_setter, extra_args)
         self.is_slider = is_slider
@@ -583,7 +583,7 @@ class StringVariable(Variable):
         mod: "Mod",
         variable_name: str,
         has_setter: bool = False,
-        extra_args: Optional[dict] = None,
+        extra_args: dict | None = None,
     ):
         super().__init__(id_, label, mod, variable_name, VariableType.FLOAT, has_setter, extra_args)
 
@@ -611,7 +611,7 @@ class BoolVariable(Variable):
         mod: "Mod",
         variable_name: str,
         has_setter: bool = False,
-        extra_args: Optional[dict] = None,
+        extra_args: dict | None = None,
     ):
         super().__init__(id_, label, mod, variable_name, VariableType.BOOLEAN, has_setter, extra_args)
 
@@ -638,7 +638,7 @@ class EnumVariable(Variable):
         variable_name: str,
         enum: Type[Enum],
         has_setter: bool = False,
-        extra_args: Optional[dict] = None,
+        extra_args: dict | None = None,
     ):
         super().__init__(id_, label, mod, variable_name, VariableType.ENUM, has_setter, extra_args)
         self.enum = enum
@@ -676,9 +676,9 @@ class ColourVariable(Variable):
         variable_name: str,
         has_setter: bool = False,
         has_alpha: bool = False,
-        display_type: Union[type[int], type[float]] = int,
+        display_type: type[int] | type[float] = int,
         display_mode: Literal["RGB", "HEX"] = "RGB",
-        extra_args: Optional[dict] = None,
+        extra_args: dict | None = None,
     ):
         super().__init__(id_, label, mod, variable_name, VariableType.COLOUR, has_setter, extra_args)
         self.has_alpha = has_alpha
@@ -686,7 +686,7 @@ class ColourVariable(Variable):
         self.display_mode = display_mode
 
     def _add_variable_value(
-        self, tag: str, default_value: Union[tuple[float, float, float], tuple[float, float, float, float]]
+        self, tag: str, default_value: tuple[float, float, float] | tuple[float, float, float, float]
     ):
         dpg.add_color_value(tag=tag, default_value=default_value)
 
