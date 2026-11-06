@@ -3,7 +3,6 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from ctypes import byref, c_ulong, create_unicode_buffer, windll
 from functools import wraps
-from typing import Optional
 
 import psutil
 import pywinctl as pwc
@@ -15,7 +14,7 @@ import pymhf.core._internal as _internal
 logger = logging.getLogger(__name__)
 
 
-def get_main_window_handle() -> Optional[int]:
+def get_main_window_handle() -> int | None:
     """Return the handle of the main running application window if possible.
     This will correspond to the HWND for the window belonging to the PID of the main running process.
     """
@@ -50,12 +49,12 @@ def get_hwnds_for_pid(pid: int) -> list[int]:
     return hwnds
 
 
-def get_window_by_handle(handle: int) -> Optional[pwc.Window]:
+def get_window_by_handle(handle: int) -> pwc.Window | None:
     windows = {x.getHandle(): x for x in pwc.getAllWindows()}
     return windows.get(handle)
 
 
-def set_main_window_active(callback: Optional[Callable[[], None]] = None):
+def set_main_window_active(callback: Callable[[], None] | None = None):
     """Set the main window as active.
     If a callback is provided, it will be called after activating the window.
     This callback must not take any arguments and any return value will be ignored.
@@ -77,7 +76,7 @@ def is_main_window_foreground() -> bool:
     return win32gui.GetForegroundWindow() == _internal.MAIN_HWND
 
 
-def get_main_window() -> Optional[pwc.Window]:
+def get_main_window() -> pwc.Window | None:
     if _internal.MAIN_HWND is not None:
         main_window = get_window_by_handle(_internal.MAIN_HWND)
         return main_window
@@ -98,7 +97,7 @@ def safe_assign_enum(enum, index: int):
         return index
 
 
-def get_foreground_window_title() -> Optional[str]:
+def get_foreground_window_title() -> str | None:
     hWnd = windll.user32.GetForegroundWindow()
     length = windll.user32.GetWindowTextLengthW(hWnd)
     buf = create_unicode_buffer(length + 1)
@@ -127,7 +126,7 @@ def does_pid_have_focus(pid: int) -> bool:
 #     def __init__(self, *args, **kwargs):
 #         super().__init__(*args, **kwargs)
 #         self._filename: str
-#         self._encoding: Optional[str]
+#         self._encoding: str | None
 
 #     def read(self, filenames, encoding=None):
 #         super().read(filenames, encoding)
@@ -186,7 +185,7 @@ def _pause_or_resume_process(pid: int, pause: bool):
         proc.resume()
 
 
-def _pause_process(pid: Optional[int] = None):
+def _pause_process(pid: int | None = None):
     if not pid:
         pid = _internal.PID
     logger.info(f"Pausing process {pid}")
@@ -194,7 +193,7 @@ def _pause_process(pid: Optional[int] = None):
         exc.submit(_pause_or_resume_process, pid, True)
 
 
-def _resume_process(pid: Optional[int] = None):
+def _resume_process(pid: int | None = None):
     if not pid:
         pid = _internal.PID
     logger.info(f"Resuming process {pid}")

@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from enum import Enum
 from hashlib import md5
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, Callable, Literal, Type, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Literal, Type, cast
 
 from pymhf.gui.widget_data import (
     ButtonWidgetData,
@@ -51,7 +51,7 @@ def gui_button(label: str):
     return inner
 
 
-def gui_combobox(label: str, items: Union[list[str], None] = None):
+def gui_combobox(label: str, items: list[str] | None = None):
     logger.warning("@gui_combobox is no longer supported. Use @ENUM instead to bind to an enum or list.")
 
 
@@ -192,7 +192,7 @@ class gui_variable:
         cls,
         label: str,
         has_alpha: bool = True,
-        display_type: Union[type[int], type[float]] = int,
+        display_type: type[int] | type[float] = int,
         display_mode: Literal["RGB", "HEX"] = "RGB",
         **extra_args,
     ):

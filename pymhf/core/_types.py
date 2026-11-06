@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, NamedTuple, Optional, Protocol
+from typing import Any, NamedTuple, Protocol
 
 from typing_extensions import NotRequired, TypedDict
 
@@ -73,8 +73,8 @@ class KeyPressProtocol(Protocol):
 
 
 class CustomTriggerProtocol(Protocol):
-    _custom_trigger: Optional[str]
-    _description: Optional[str]
+    _custom_trigger: str | None
+    _description: str | None
     _hook_time: DetourTime
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
@@ -89,13 +89,13 @@ class HookProtocol(Protocol):
     _has__result_: bool
     _hook_func_name: str
     _hook_func_def: FUNCDEF
-    _hook_offset: Optional[int]
-    _hook_pattern: Optional[str]
+    _hook_offset: int | None
+    _hook_pattern: str | None
     _hook_time: DetourTime
-    _func_overload: Optional[str]
-    _get_caller: Optional[bool]
-    _noop: Optional[bool]
-    _dll_name: Optional[str]
+    _func_overload: str | None
+    _get_caller: bool | None
+    _noop: bool | None
+    _dll_name: str | None
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
 
@@ -113,4 +113,4 @@ class CallerHookProtocol(HookProtocol):
 
 # TODO: Remove once we have got the binary able to be specified for function_hook decorators.
 class ManualHookProtocol(HookProtocol):
-    _hook_binary: Optional[str]
+    _hook_binary: str | None

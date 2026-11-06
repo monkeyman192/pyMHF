@@ -58,7 +58,7 @@ To see what extra arguments are available, see the DearPyGUI documentation `here
 Create an enum entry field which can take extra arguments.
 To see what extra arguments are available, see the DearPyGUI documentation `here <https://dearpygui.readthedocs.io/en/latest/reference/dearpygui.html#dearpygui.dearpygui.add_combo>`__.
 
-:py:func:`COLOUR(label: str, has_alpha: bool = True, display_type: Union[type[int], type[float]] = int, display_mode: Literal["RGB", "HEX"] = "RGB",**kwargs) <pymhf.gui.decorators.COLOUR>`
+:py:func:`COLOUR(label: str, has_alpha: bool = True, display_type: type[int] | type[float] = int, display_mode: Literal["RGB", "HEX"] = "RGB",**kwargs) <pymhf.gui.decorators.COLOUR>`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Create a colour entry field in the form of a colour editor which can take extra arguments.
 A few common options are able to be specified separately:

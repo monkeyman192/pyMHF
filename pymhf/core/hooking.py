@@ -7,7 +7,7 @@ import traceback
 from collections import defaultdict
 from collections.abc import Callable
 from ctypes import CFUNCTYPE
-from typing import Any, Optional, Type, Union
+from typing import Any, Type
 
 import cyminhook
 from typing_extensions import Concatenate, Generic, ParamSpec, Self, TypeVar, deprecated
@@ -56,7 +56,7 @@ class FuncHook(cyminhook.MinHook):
     signature: Callable[..., Any]
     _name: str
     _invalid: bool = False
-    _func_def: Optional[FUNCDEF]
+    _func_def: FUNCDEF | None
     _offset_is_absolute: bool
 
     def __init__(
@@ -64,8 +64,8 @@ class FuncHook(cyminhook.MinHook):
         detour_name: str,
         offset: int,
         func_def: FUNCDEF,
-        overload: Optional[str] = None,
-        binary: Optional[str] = None,
+        overload: str | None = None,
+        binary: str | None = None,
         offset_is_absolute: bool = False,
     ):
         # First, handle the binary so we can know what our base is.
@@ -126,7 +126,7 @@ class FuncHook(cyminhook.MinHook):
         else:
             return self._name
 
-    def _determine_detour_list(self, detour: HookProtocol) -> Optional[list[Union[HookProtocol, Callable]]]:
+    def _determine_detour_list(self, detour: HookProtocol) -> list[HookProtocol | Callable] | None:
         # Determine when the hook should be run. Don't add the detour yet
         # because if the hook is a one-shot then we need to know when to run it.
         detour_list = None
@@ -179,7 +179,7 @@ class FuncHook(cyminhook.MinHook):
             def _one_shot(
                 *args,
                 detour: HookProtocol = detour,
-                detour_list: list[Union[HookProtocol, Callable]] = detour_list,
+                detour_list: list[HookProtocol | Callable] = detour_list,
             ):
                 # NOTE: This may not work well if the code is called from multiple threads at the same time.
                 try:
@@ -265,6 +265,15 @@ class FuncHook(cyminhook.MinHook):
             logger.error(f"Failed to initialize hook {self._name} at 0x{self.target:X}")
             logger.error(e.status.name[3:].replace("_", " ") + f" ({e})")
             self.state = "failed"
+            return False
+        except RuntimeError:
+            if self._func_def:
+                logger.exception(
+                    f"There was an error hooking {self.name} at address 0x{self.target:X}. "
+                    f"One of the function arguments in {self._func_def.argtypes} may be invalid."
+                )
+            else:
+                logger.exception(f"There was an error hooking {self.name} at address 0x{self.target:X}")
             return False
         self.state = "initialized"
         return True
@@ -355,8 +364,8 @@ class FuncHook(cyminhook.MinHook):
 @deprecated("Use @function_hook(signature=...) instead", category=DeprecationWarning)
 class HookFactory:
     _name: str
-    _templates: Optional[tuple[str]] = None
-    _overload: Optional[str] = None
+    _templates: tuple[str] | None = None
+    _overload: str | None = None
 
     @classmethod
     def overload(cls, overload_args):
@@ -367,8 +376,8 @@ class HookFactory:
     @staticmethod
     def _set_detour_as_funchook(
         detour: Callable[..., Any],
-        cls: Optional["HookFactory"] = None,
-        detour_name: Optional[str] = None,
+        cls: "HookFactory | None" = None,
+        detour_name: str | None = None,
     ):
         """Set all the standard attributes required for a function hook."""
         setattr(detour, "_is_funchook", True)
@@ -422,11 +431,11 @@ class HookFactory:
 )
 def manual_hook(
     name: str,
-    offset: Optional[int] = None,
-    pattern: Optional[str] = None,
-    func_def: Optional[FUNCDEF] = None,
+    offset: int | None = None,
+    pattern: str | None = None,
+    func_def: FuncDef | None = None,
     detour_time: str = "before",
-    binary: Optional[str] = None,
+    binary: str | None = None,
 ):
     """Manually hook a function.
 
@@ -638,7 +647,7 @@ class HookManager:
         self._hook_id_mapping: dict[HookProtocol, FunctionIdentifier] = {}
         self._get_caller_detours: set[FunctionIdentifier] = set()
 
-    def _get_funchook(self, hook: HookProtocol) -> Optional[FuncHook]:
+    def _get_funchook(self, hook: HookProtocol) -> FuncHook | None:
         """Return the associated function hook for the provided hook."""
         if (hook_id := self._hook_id_mapping.get(hook)) is not None:
             return self.hooks.get(hook_id)
@@ -682,8 +691,8 @@ class HookManager:
         self,
         callback_key: str,
         detour_time: DetourTime = DetourTime.NONE,
-        args: Optional[list] = None,
-        kwargs: Optional[dict] = None,
+        args: list | None = None,
+        kwargs: dict | None = None,
         alert_nonexist: bool = False,
     ):
         """Call the specified custom callback with the given detour_time.
@@ -918,25 +927,25 @@ R = TypeVar("R")
 S = TypeVar("S", bound=Structure)
 THIS = TypeVar(
     "THIS",
-    bound=Union[
-        ctypes.c_uint32,  # 32 bit "pointer" types.
-        ctypes.c_ulong,
-        ctypes.c_uint64,  # 64 bit "pointer" types.
-        ctypes.c_ulonglong,
-        ctypes._Pointer,  # Actual pointer type.
-    ],
+    bound=(
+        ctypes.c_uint32  # 32 bit "pointer" types.
+        | ctypes.c_ulong
+        | ctypes.c_uint64  # 64 bit "pointer" types.
+        | ctypes.c_ulonglong
+        | ctypes._Pointer  # Actual pointer type.
+    ),
 )
 
 
 class FunctionHook(Generic[P, R]):
     def __init__(
         self,
-        func: Union[Callable[P, R], Callable[Concatenate[S, THIS, P], R]],
-        signature: Optional[str] = None,
-        offset: Optional[int] = None,
-        exported_name: Optional[str] = None,
-        imported_name: Optional[str] = None,
-        overload_id: Optional[str] = None,
+        func: Callable[P, R] | Callable[Concatenate[S, THIS, P], R],
+        signature: str | None = None,
+        offset: int | None = None,
+        exported_name: str | None = None,
+        imported_name: str | None = None,
+        overload_id: str | None = None,
         is_static: bool = False,
     ):
         self._func = func
@@ -946,9 +955,9 @@ class FunctionHook(Generic[P, R]):
         self._imported_name = imported_name
         self._overload_id = overload_id
         self._is_static = is_static
-        self._this_is_pointer: Optional[bool] = None
-        self._bound_class: Optional[ctypes.Structure] = None
-        self._funcdef: Optional[FuncDef] = None
+        self._this_is_pointer: bool | None = None
+        self._bound_class: ctypes.Structure | None = None
+        self._funcdef: FuncDef | None = None
 
     @property
     def this_is_pointer(self):
@@ -963,7 +972,7 @@ class FunctionHook(Generic[P, R]):
         )
         return self._this_is_pointer
 
-    def _call(self, *args, **kwargs) -> Optional[R]:
+    def _call(self, *args, **kwargs) -> R | None:
         """Call the actual function. This will do some work to find where the function is in memory and then
         call it with the provided arguments.
         """
@@ -1020,7 +1029,7 @@ class FunctionHook(Generic[P, R]):
             logger.exception(f"There was an exception calling {self._func.__qualname__!r}")
             return None
 
-    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> Optional[R]:
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R | None:
         # This initial check is to check if the first argument was a function.
         # This will only happen if the function is being used as a decorator.
         # if this check fails, then we are calling the function under "normal" usage.
@@ -1049,7 +1058,7 @@ class FunctionHook(Generic[P, R]):
             else:
                 raise ValueError("Not bound to anything...")
 
-    def _decorate_detour(self, detour, hook_time: Optional[DetourTime] = None) -> HookProtocol:
+    def _decorate_detour(self, detour, hook_time: DetourTime | None = None) -> HookProtocol:
         if hook_time is None:
             raise ValueError(
                 f"Hook for detour {detour.__qualname__!r} must be specified as either `before` or `after`"
@@ -1115,11 +1124,11 @@ class FunctionHook(Generic[P, R]):
 class _function_hook:
     def __init__(
         self,
-        signature: Optional[str] = None,
-        offset: Optional[int] = None,
-        exported_name: Optional[str] = None,
-        imported_name: Optional[str] = None,
-        overload_id: Optional[str] = None,
+        signature: str | None = None,
+        offset: int | None = None,
+        exported_name: str | None = None,
+        imported_name: str | None = None,
+        overload_id: str | None = None,
     ):
         self.signature = signature
         self.offset = offset

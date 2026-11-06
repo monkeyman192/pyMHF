@@ -1,5 +1,3 @@
-from typing import Optional, Union
-
 from pymhf.core._types import FUNCDEF
 
 # Load order:
@@ -12,10 +10,10 @@ from pymhf.core._types import FUNCDEF
 
 
 class ModuleData:
-    FUNC_OFFSETS: dict[str, Union[int, dict[str, int]]] = {}
-    FUNC_PATTERNS: dict[str, Union[str, dict[str, str]]] = {}
-    FUNC_CALL_SIGS: dict[str, Union[FUNCDEF, dict[str, FUNCDEF]]] = {}
-    FUNC_BINARY: Optional[str] = None
+    FUNC_OFFSETS: dict[str, int | dict[str, int]] = {}
+    FUNC_PATTERNS: dict[str, str | dict[str, str]] = {}
+    FUNC_CALL_SIGS: dict[str, FUNCDEF | dict[str, FUNCDEF]] = {}
+    FUNC_BINARY: str | None = None
 
 
 # TODO: Remove.

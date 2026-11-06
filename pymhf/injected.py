@@ -11,7 +11,7 @@ import sys
 import time
 import traceback
 from functools import partial
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if sys.version_info < (3, 10):
     from importlib_metadata import entry_points
@@ -111,6 +111,9 @@ try:
 
     disabled_mods = set(_internal.CONFIG.get("disabled_mods", []))
 
+    # Whether to create the interactive console.
+    interactive_console = _internal.CONFIG.get("interactive_console", False)
+
     import keyboard._winkeyboard as kwk
 
     # Prefill the key name tables to avoid taking a hit when hooking.
@@ -209,7 +212,7 @@ try:
             # Once the connection is lost. Restore `print` back to normal.
             globals()["print"] = builtins.print
 
-    def top_globals(limit: Optional[int] = 10):
+    def top_globals(limit: int | None = 10):
         """Return the top N objects in globals() by size (in bytes)."""
         globs = globals()
         data = []
@@ -324,9 +327,12 @@ try:
         _data = (ctypes.c_char * 0x20).from_address(offset)
         rootLogger.error(f"Hook {func_name} first 0x20 bytes: {_data.value.hex()}")
 
-    # Each client connection will create a new protocol instance
-    coro = loop.create_server(ExecutingProtocol, "127.0.0.1", 6770)
-    server = loop.run_until_complete(coro)
+    if interactive_console and loop is not None:
+        # Each client connection will create a new protocol instance
+        coro = loop.create_server(ExecutingProtocol, "127.0.0.1", 6770)
+        executing_server = loop.run_until_complete(coro)
+    else:
+        executing_server = None
 
     futures = []
 
@@ -378,7 +384,8 @@ try:
         # in the gui it doesn't raise an actual exception.
         mod_manager._gui = _GUIProxy()
 
-    logging.info(f"Serving on executor {server.sockets[0].getsockname()}")
+    if interactive_console and executing_server:
+        logging.info(f"Serving on executor {executing_server.sockets[0].getsockname()}")
 
     # Finally, before we run forever, set the sentinel value to True so that if the main process was waiting
     # for the injected code to complete before starting the process it can now resume it.
@@ -387,8 +394,9 @@ try:
     loop.run_forever()
 
     # Close the server.
-    server.close()
-    loop.run_until_complete(server.wait_closed())
+    if executing_server is not None:
+        executing_server.close()
+        loop.run_until_complete(executing_server.wait_closed())
     loop.close()
 
     # Shut down futures and gui.

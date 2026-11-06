@@ -6,13 +6,8 @@ import subprocess
 import sys
 from enum import Enum
 from importlib import import_module
-from importlib.metadata import PackageNotFoundError, version
-from typing import Optional
-
-if sys.version_info < (3, 10):
-    from importlib_metadata import entry_points
-else:
-    from importlib.metadata import entry_points
+from importlib.metadata import PackageNotFoundError, entry_points, version
+from typing import Any
 
 import questionary
 
@@ -33,6 +28,9 @@ try:
     has_tkinter = True
 except ModuleNotFoundError:
     has_tkinter = False
+
+
+DEV_CONFIG_OVERRIDE = {"logging": {"shown": True}, "gui": {"shown": True}}
 
 
 class ModeEnum(Enum):
@@ -59,7 +57,7 @@ def _is_int(val: str) -> bool:
     return True
 
 
-def get_folder(title: str, q: questionary.Question, has_tkinter: bool, idir: Optional[str] = None) -> str:
+def get_folder(title: str, q: questionary.Question, has_tkinter: bool, idir: str | None = None) -> str:
     if has_tkinter:
         return filedialog.askdirectory(initialdir=idir, title=title)
     else:
@@ -110,7 +108,7 @@ def run():
 
     parser = argparse.ArgumentParser(
         prog="pymhf",
-        description="Run the registered plugin",
+        description="pyMHF - the python modding and hooking framework",
     )
 
     parser.add_argument("--version", action="store_true", help="Print the version of pyMHF and exit")
@@ -131,6 +129,30 @@ def run():
             "The name of the installed library to run, or the single-file script to run, or the path to a "
             "folder which contains a library to run locally."
         ),
+    )
+
+    run_parser.add_argument("--gui", action="store_true", help="Enables showing the gui for developer use.")
+
+    run_parser.add_argument(
+        "--log-console",
+        action="store_true",
+        help="Enables showing the log console. If not enabled logs will go in the configured folder.",
+    )
+
+    run_parser.add_argument(
+        "--debug-log", action="store_true", help="Enable debug logging for this particular run."
+    )
+
+    # Add a mutually exclusive group for the two dev flags.
+    dev_group = run_parser.add_mutually_exclusive_group()
+    dev_group.add_argument(
+        "--dev", action="store_true", help="Enable all development features (enables --gui and --log_console)"
+    )
+
+    dev_group.add_argument(
+        "--dev-debug",
+        action="store_true",
+        help="Enable all development and debugging features (enables --gui, --log_console, and --debug_log)",
     )
 
     config_parser = command_parser.add_parser(
@@ -208,6 +230,10 @@ def run():
 
     # TODO: The extras can be passed to the registered library in the future.
 
+    # A mapping of config overrides which are derived from command line args. There are passed into the load
+    # functions to override values read from the disk.
+    config_overrides: dict[str, dict[str, Any]] = {}
+
     try:
         plugin_name: str = args.plugin_name
     except AttributeError:
@@ -215,6 +241,24 @@ def run():
     command = args._command
     if command == "run":
         mode = ModeEnum.RUN
+        # Handle config overrides.
+        # --dev and --dev-debug are mutually exclusive.
+        if getattr(args, "dev", False):
+            config_overrides = DEV_CONFIG_OVERRIDE
+        elif getattr(args, "dev_debug", False):
+            config_overrides = DEV_CONFIG_OVERRIDE
+            config_overrides["logging"]["log_level"] = "DEBUG"
+        # These other flags are not and we can combine them to get the config override we want.
+        else:
+            if getattr(args, "gui", False):
+                config_overrides["gui"] = {"shown": True}
+            if getattr(args, "log_console", False):
+                config_overrides["logging"] = {"shown": True}
+            if getattr(args, "debug_log", False):
+                if "logging" in config_overrides:
+                    config_overrides["logging"]["log_level"] = "DEBUG"
+                else:
+                    config_overrides["logging"] = {"log_level": "DEBUG"}
     elif command == "config":
         mode = ModeEnum.CONFIG
     elif command == "init":
@@ -231,7 +275,7 @@ def run():
     if op.isfile(plugin_name) and op.exists(plugin_name):
         # In this case we are running in stand-alone mode
         standalone = True
-        if plugin_name.endswith(".py"):
+        if plugin_name.lower().endswith(".py"):
             plugin_name = op.realpath(plugin_name)
 
     if op.isdir(plugin_name) and op.exists(plugin_name):
@@ -248,7 +292,7 @@ def run():
                     "metadata. See https://monkeyman192.github.io/pyMHF/docs/settings.html"
                 )
             return
-        load_mod_file(plugin_name)
+        load_mod_file(plugin_name, config_overrides)
         return
 
     cmd_command = None
@@ -279,7 +323,7 @@ def run():
             return
         if folder_mode == FolderModeEnum.LIBRARY:
             settings = _parse_toml(pyproject_toml, False)
-            plugin_name = None
+            plugin_name = ""
             if (
                 project_cfg := settings.get("project", {}).get("entry-points", {}).get("pymhflib")
             ) is not None:
@@ -316,7 +360,7 @@ def run():
             settings = _parse_toml(pymhf_toml, False)
             # We'll set the plugin name as the name of the folder
             plugin_name = op.basename(local_plugin_dir)
-        if plugin_name is None:
+        if not plugin_name:
             print(
                 f"Cannot determine the project at the path specified {plugin_name}.\n"
                 "Please ensure the pyproject.toml file has the [project.entry-points.pymhflib] entry."
@@ -502,4 +546,4 @@ def run():
     # Final step: If we have either finished the initial config, or we didn't want to config at all, run the
     # binary.
     if not initial_config:
-        load_module(plugin_name, module_dir)
+        load_module(plugin_name, module_dir, config_overrides)

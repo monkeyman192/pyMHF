@@ -1,11 +1,12 @@
 import ast
+import importlib.machinery
 import importlib.util
 import logging
 import os.path as op
 import string
 import sys
 from types import ModuleType
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 from pymhf.gui.widget_data import ctx_group, ctx_group_counter
 
@@ -43,7 +44,7 @@ def _fully_unpack_ast_attr(obj: ast.Attribute) -> str:
     return name
 
 
-def library_path_from_name(name: str) -> Optional[str]:
+def library_path_from_name(name: str) -> str | None:
     if (spec := importlib.util.find_spec(name)) is not None:
         if spec.origin is not None:
             return op.dirname(spec.origin)
@@ -121,7 +122,7 @@ def parse_file_for_mod(data: str) -> bool:
     return len(get_mod_infos(data)) != 0
 
 
-def import_file(fpath: str) -> Optional[ModuleType]:
+def import_file(fpath: str) -> ModuleType | None:
     try:
         # Ensure the context variables relating to groups are reset before each import to ensure they are
         # clean before this next import
@@ -132,7 +133,9 @@ def import_file(fpath: str) -> Optional[ModuleType]:
             # If a directory is passed in, then add __init__.py to it so that
             # we may correctly import it.
             fpath = op.join(fpath, "__init__.py")
-        if spec := importlib.util.spec_from_file_location(module_name, fpath):
+        # Use a source file loader instead of loading from file to avoid case-sensitive issues.
+        loader = importlib.machinery.SourceFileLoader(module_name, fpath)
+        if spec := importlib.util.spec_from_loader(module_name, loader):
             module = importlib.util.module_from_spec(spec)
             module.__name__ = module_name
             module.__spec__ = spec
@@ -141,6 +144,6 @@ def import_file(fpath: str) -> Optional[ModuleType]:
                 spec.loader.exec_module(module)
                 return module
         else:
-            print("failed")
+            logger.error(f"Failed to load {fpath}")
     except Exception:
         logger.exception(f"Error loading {fpath}")

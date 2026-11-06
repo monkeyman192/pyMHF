@@ -14,7 +14,7 @@ from abc import ABC
 from dataclasses import fields
 from functools import partial
 from types import MethodType, ModuleType
-from typing import TYPE_CHECKING, Any, ClassVar, Type, TypeVar, Union, cast, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Type, TypeVar, cast, overload
 
 import keyboard
 from packaging.version import InvalidVersion
@@ -222,15 +222,15 @@ class ModState(ABC):
 
 
 class Mod(ABC):
-    __author__: Union[str, list[str]] = "Name(s) of the mod author(s)"
-    __description__: str = "Short description of the mod"
-    __version__: str = "Mod version"
+    __author__: str | list[str] | None = None
+    __description__: str | None = None
+    __version__: str | None = None
     __dependencies__: list[str] = []
     # Minimum required pyMHF version for this mod.
     __pymhf_required_version__: str | None = None
 
     _custom_callbacks: set[CustomTriggerProtocol]
-    _gui_widgets: list[Union[GUIElementProtocol[WidgetData], GroupWidgetData]]
+    _gui_widgets: list[GUIElementProtocol[WidgetData] | GroupWidgetData]
     _disabled: bool = False
     _no_gui: bool
 
@@ -549,9 +549,13 @@ class ModManager:
         loaded.
         """
         disabled_names = set(disabled_mods or ())
+        folder_name = op.basename(folder)
+        if folder_name.startswith(".") or folder_name.lower() == "__pycache__":
+            # Skip hidden folders (eg. `.git`) and the pycache folder.
+            return 0, 0
         for file in os.listdir(folder):
             fullpath = op.join(folder, file)
-            if file.endswith(".py"):
+            if file.lower().endswith(".py"):
                 # Determine what mods are in the file, and whether they are disabled, without importing it.
                 # This way the file only has to be imported if something in it will actually be loaded.
                 mod_infos = _mod_infos_from_file(fullpath)

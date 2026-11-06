@@ -4,7 +4,7 @@ import os.path as op
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, TypedDict, Union, cast
+from typing import TypedDict, cast
 
 import dearpygui.dearpygui as dpg
 import win32gui
@@ -63,7 +63,7 @@ def toggle_on_top(item: int, value: bool):
     dpg.set_viewport_always_top(value)
 
 
-def get_id(widget: Union[GUIElementProtocol[WidgetData], GroupWidgetData]) -> str:
+def get_id(widget: GUIElementProtocol[WidgetData] | GroupWidgetData) -> str:
     if isinstance(widget, GroupWidgetData):
         return widget.id_
     else:
@@ -103,7 +103,7 @@ class GUI:
         self._current_tab = ""
         self.mod_manager = mod_manager
 
-        self.widget_data: dict[str, list[Union[GUIElementProtocol[WidgetData], GroupWidgetData]]] = {}
+        self.widget_data: dict[str, list[GUIElementProtocol[WidgetData] | GroupWidgetData]] = {}
         self.widget_mapping: dict[str, dict[str, Widget]] = {}
 
         self.collapsing_header_theme = dpg.add_theme()
@@ -322,9 +322,9 @@ class GUI:
 
     def diff_widgets(
         self,
-        old_widgets: list[Union[GUIElementProtocol[WidgetData], GroupWidgetData]],
-        new_widgets: list[Union[GUIElementProtocol[WidgetData], GroupWidgetData]],
-        parent: Optional[str] = None,
+        old_widgets: list[GUIElementProtocol[WidgetData] | GroupWidgetData],
+        new_widgets: list[GUIElementProtocol[WidgetData] | GroupWidgetData],
+        parent: str | None = None,
     ) -> tuple[list[dict], list[dict]]:
         # Calculate the diff between the old widgets and the new widgets
         changes = []

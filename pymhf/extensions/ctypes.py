@@ -3,7 +3,7 @@
 import ctypes
 import types
 from enum import IntEnum
-from typing import Generic, Type, TypeVar, Union
+from typing import Generic, Type, TypeVar
 
 from typing_extensions import TypeAlias
 
@@ -154,14 +154,14 @@ class c_enum32(c_enum, ctypes.c_uint32):
             return _cls
 
 
-CTYPES = Union[
-    ctypes._SimpleCData,
-    ctypes.Structure,
-    ctypes._Pointer,
-    ctypes._Pointer_orig,  # The original, un-monkeypatched ctypes._Pointer object  # type: ignore
-    ctypes.Array,
-    ctypes.Union,
-    c_enum8,
-    c_enum16,
-    c_enum32,
-]
+CTYPES = (
+    ctypes._SimpleCData
+    | ctypes.Structure
+    | ctypes._Pointer
+    | ctypes._Pointer_orig  # The original, un-monkeypatched ctypes._Pointer object  # type: ignore
+    | ctypes.Array
+    | ctypes.Union
+    | c_enum8
+    | c_enum16
+    | c_enum32
+)

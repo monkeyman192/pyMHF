@@ -2,7 +2,7 @@ import ctypes
 import re
 import types
 from enum import IntEnum
-from typing import Annotated, Generic, Type, TypeVar, Union
+from typing import Annotated, Generic, Type, TypeVar
 
 import pytest
 
@@ -469,7 +469,7 @@ def test_invalid_cases():
             a: Annotated[ctypes.c_int32, "hi"]
 
 
-T = TypeVar("T", bound=Union[ctypes._SimpleCData, ctypes.Structure])
+T = TypeVar("T", bound=ctypes._SimpleCData | ctypes.Structure)
 
 
 class cTkDynamicArray(ctypes.Structure, Generic[T]):

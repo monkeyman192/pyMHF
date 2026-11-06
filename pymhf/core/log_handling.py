@@ -1,6 +1,5 @@
 import subprocess
 from multiprocessing.connection import Connection
-from typing import Optional
 
 import psutil
 
@@ -16,7 +15,7 @@ class stdoutSocket:
         pass
 
 
-def open_log_console(log_script: str, log_dir: str, name_override: str = "pymhf console") -> Optional[int]:
+def open_log_console(log_script: str, log_dir: str, name_override: str = "pymhf console") -> int | None:
     """Open the logging console and return the pid of it.
 
     Parameters

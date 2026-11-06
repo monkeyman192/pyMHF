@@ -138,7 +138,7 @@ Defining functions to hook is done in much the same way as above, however, we si
 
     import ctypes
     import logging
-    from typing import Annotated, Optional
+    from typing import Annotated
 
     from pymhf import Mod
     from pymhf.core.hooking import Structure, function_hook
@@ -151,7 +151,7 @@ Defining functions to hook is done in much the same way as above, however, we si
 
     @partial_struct
     class TkAudioID(ctypes.Structure):
-        mpacName: Annotated[Optional[str], Field(ctypes.c_char_p)]
+        mpacName: Annotated[str | None, Field(ctypes.c_char_p)]
         muID: Annotated[int, Field(ctypes.c_uint32)]
         mbValid: Annotated[bool, Field(ctypes.c_bool)]
 
@@ -235,7 +235,7 @@ To hook or call a function with an overload, append ``.overload(overload_id: str
 
     import ctypes
     import logging
-    from typing import Annotated, Optional, overload
+    from typing import Annotated, overload
 
     import pymhf.core._internal as _internal
     from pymhf import Mod
@@ -249,7 +249,7 @@ To hook or call a function with an overload, append ``.overload(overload_id: str
 
     @partial_struct
     class TkAudioID(ctypes.Structure):
-        mpacName: Annotated[Optional[str], Field(ctypes.c_char_p)]
+        mpacName: Annotated[str | None, Field(ctypes.c_char_p)]
         muID: Annotated[int, Field(ctypes.c_uint32)]
         mbValid: Annotated[bool, Field(ctypes.c_bool)]
 

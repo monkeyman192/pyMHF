@@ -1,6 +1,6 @@
 from ctypes import CFUNCTYPE, WinDLL
 from logging import getLogger
-from typing import Any, Optional
+from typing import Any
 
 import pymhf.core._internal as _internal
 from pymhf.core._types import FUNCDEF
@@ -42,11 +42,11 @@ def call_exported(name: str, func_def: FUNCDEF, *args):
 def call_function(
     name: str,
     *args,
-    overload: Optional[str] = None,
-    pattern: Optional[str] = None,
-    func_def: Optional[FUNCDEF] = None,
-    offset: Optional[int] = None,
-    binary: Optional[str] = None,
+    overload: str | None = None,
+    pattern: str | None = None,
+    func_def: FUNCDEF | None = None,
+    offset: int | None = None,
+    binary: str | None = None,
 ) -> Any:
     """Call a named function.
 

@@ -16,7 +16,7 @@ from pymem.ressources.structure import (
     MODULEINFO,
     SYSTEM_INFO,
 )
-from typing_extensions import Union, cast
+from typing_extensions import cast
 
 from pymhf.utils.winapi import (
     IMAGE_DOS_HEADER,
@@ -31,7 +31,7 @@ from pymhf.utils.winapi import (
 )
 
 
-def _is_hashable_page(mbi: Union[MEMORY_BASIC_INFORMATION32, MEMORY_BASIC_INFORMATION64]) -> bool:
+def _is_hashable_page(mbi: MEMORY_BASIC_INFORMATION32 | MEMORY_BASIC_INFORMATION64) -> bool:
     """Check if a memory page is suitable for hashing. The page must not change during runtime and/or
     between runs."""
     if mbi.State != MEMORY_STATE.MEM_COMMIT:

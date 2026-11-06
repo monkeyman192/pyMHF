@@ -4,7 +4,6 @@ import json
 import os
 import os.path as op
 from logging import getLogger
-from typing import Optional
 
 from pymem.ressources.structure import MODULEINFO
 
@@ -44,11 +43,11 @@ class OffsetCache:
         with open(self.path, "w") as f:
             json.dump(self._lookup, f, indent=1)
 
-    def get(self, pattern: str, binary: Optional[str] = None) -> Optional[int]:
+    def get(self, pattern: str, binary: str | None = None) -> int | None:
         """Get the offset based on the pattern provided."""
         return self._lookup.get(binary or _internal.EXE_NAME, {}).get(pattern)
 
-    def set(self, pattern: str, offset: int, binary: Optional[str] = None, save: bool = True):
+    def set(self, pattern: str, offset: int, binary: str | None = None, save: bool = True):
         """Set the pattern with the given value and optionally save."""
         _binary = binary
         if _binary is None:
@@ -59,7 +58,7 @@ class OffsetCache:
         if save:
             self.save()
 
-    def items(self, binary: Optional[str] = None):
+    def items(self, binary: str | None = None):
         for pattern, offset in self._lookup.get(binary or _internal.EXE_NAME, {}).items():
             yield pattern, offset
 

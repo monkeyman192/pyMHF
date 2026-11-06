@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Current (0.2.6.dev)
+-------------------
+
+- Added a few new command line arguments to allow customising what features are enabled. (`#129 <https://github.com/monkeyman192/pyMHF/issues/129>`_)
+- Fixed an issue with importing mods where the name of the python file didn't end with ``.py`` (ie. lowercase).
+- Set interactive console to not be enabled by default. Also turned off the executor which would have handled this when it's enabled.
+- Changed default values for ``Mod`` class attributes such as ``__author__`` and ``__version__`` to be ``None`` by default instead of a dummy string value.
+
 0.2.5 (21/10/2026)
 ------------------
 

@@ -2,7 +2,7 @@ import asyncio
 from functools import partial
 from importlib.metadata import PackageNotFoundError, version
 from logging import getLogger
-from typing import Any, Callable, Literal, NamedTuple, Optional, Protocol, Type
+from typing import Any, Callable, Literal, NamedTuple, Protocol, Type
 
 logger = getLogger(__name__)
 
@@ -33,7 +33,7 @@ router_mapping: dict[str, "CleanableAPIRouter"] = {}
 
 class EndpointData(NamedTuple):
     route: str
-    method: Optional[Literal["GET", "PUT", "WEBSOCKET"]]
+    method: Literal["GET", "PUT", "WEBSOCKET"] | None
     dont_extend: bool
 
 
@@ -98,8 +98,8 @@ async def websocket_wrapper(websocket: WebSocket, func_name: str):
 
 
 def endpoint(
-    route: Optional[str] = None,
-    method: Optional[Literal["GET", "PUT", "WEBSOCKET"]] = None,
+    route: str | None = None,
+    method: Literal["GET", "PUT", "WEBSOCKET"] | None = None,
     dont_extend: bool = False,
 ):
     """Create a HTTP endpoint for the decorated method or property.

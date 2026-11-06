@@ -96,7 +96,7 @@ By setting this value to ``false``, pyMHF will not attempt to start the binary a
 ``interactive_console``
 """""""""""""""""""""""
 
-*Optional* - Default ``true``
+*Optional* - Default ``false``
 
 If set to ``false`` then there will be no interactive python terminal created in the initial terminal.
 
