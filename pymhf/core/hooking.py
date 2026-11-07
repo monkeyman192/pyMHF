@@ -146,6 +146,34 @@ class FuncHook(cyminhook.MinHook):
             logger.error(f"Detour {detour} has an invalid detour time: {detour._hook_time}")
         return detour_list
 
+    def _is_detour_enabled(self, detour: HookProtocol) -> bool:
+        if (detour_list := self._determine_detour_list(detour)) is None:
+            return False
+        return detour in detour_list and detour not in self._disabled_detours
+
+    def enable_detour(self, detour: HookProtocol):
+        # Enable the detour, ensuring it's not marked as disabled, and then adding it to the detour list.
+        if detour in self._disabled_detours:
+            self._disabled_detours.discard(detour)
+            if (detour_list := self._determine_detour_list(detour)) is not None:
+                detour_list.append(detour)
+            else:
+                logger.error(f"Unable to enable detour {detour}")
+
+    def disable_detour(self, detour: HookProtocol):
+        # Disable the detour, ensuring it is marked as disabled, and then removing it from the detour list.
+        # This won't trigger the check for whether a hook has any detours so that we can avoid the FuncHook
+        # object getting closed.
+        if detour not in self._disabled_detours:
+            self._disabled_detours.add(detour)
+            if (detour_list := self._determine_detour_list(detour)) is not None:
+                if detour in detour_list:
+                    detour_list.remove(detour)
+                else:
+                    logger.error(f"Unable to remove the detour {detour}")
+            else:
+                logger.error(f"Unable to remove the detour {detour}")
+
     def add_detour(self, detour: HookProtocol):
         """Add the provided detour to this FuncHook."""
         # If the hook has the `_disabled` attribute, then don't add the detour.
@@ -211,6 +239,25 @@ class FuncHook(cyminhook.MinHook):
             # We need to get the type of the class and assign the attribute to the class function itself.
             setattr(detour.__func__, "caller_address", lambda: self.caller_address)
 
+        # Bind some extra functions to the detour function so that we can get the status, and enable/disable
+        # it at runtime.
+        if not hasattr(detour.__func__, "is_enabled"):
+            setattr(
+                detour.__func__,
+                "is_enabled",
+                lambda _detour=detour: self._is_detour_enabled(_detour),
+            )
+            setattr(
+                detour.__func__,
+                "enable",
+                lambda _detour=detour: self.enable_detour(_detour),
+            )
+            setattr(
+                detour.__func__,
+                "disable",
+                lambda _detour=detour: self.disable_detour(_detour),
+            )
+
     def remove_detour(self, detour: HookProtocol):
         """Remove the provided detour from this FuncHook."""
         # Determine the detour list to use. If none, then return.
@@ -221,7 +268,7 @@ class FuncHook(cyminhook.MinHook):
             detour_list.remove(detour)
         # Try and remove the hook from the diabled list also in case it's there.
         if detour in self._disabled_detours:
-            self._disabled_detours.remove(detour)
+            self._disabled_detours.discard(detour)
         # Also check for one-shot detours. They may or may not have been called,
         # but we don't really care.
         # If it has been called then it will be in the disabled detours and so
@@ -243,16 +290,16 @@ class FuncHook(cyminhook.MinHook):
         self._has_noop == any([getattr(d, "_noop", False) for d in self._before_detours])
 
     @property
-    def _should_enable(self):
+    def _has_any_detours(self):
         return (
             len(self._before_detours) > 0
             or len(self._after_detours) > 0
-            or len(self._after_detours_with_results)
+            or len(self._after_detours_with_results) > 0
         )
 
     def bind(self) -> bool:
         """Actually initialise the base class. Returns whether the hook is bound."""
-        if not self._should_enable or self._invalid:
+        if not self._has_any_detours or self._invalid:
             return False
 
         self.detour = self._compound_detour
@@ -280,6 +327,11 @@ class FuncHook(cyminhook.MinHook):
 
     def _compound_detour(self, *args):
         ret = None
+
+        # Do a check to see if we have any detours. If not, we can skip everything below and just call the
+        # original function.
+        if not self._has_any_detours:
+            return self.original(*args)
 
         # Loop over the before detours, keeping the last none-None return value.
         i = None
@@ -341,12 +393,12 @@ class FuncHook(cyminhook.MinHook):
         self.state = "closed"
 
     def queue_enable(self):
-        if self._should_enable:
+        if self._has_any_detours:
             cyminhook.queue_enable(self)
             self.state = "enabled"
 
     def enable(self):
-        if self._should_enable:
+        if self._has_any_detours:
             super().enable()
             self.state = "enabled"
 
