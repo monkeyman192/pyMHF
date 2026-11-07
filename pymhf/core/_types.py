@@ -101,6 +101,18 @@ class HookProtocol(Protocol):
 
     def __func__(self) -> "CallerHookProtocol": ...
 
+    def is_enabled(self) -> bool:
+        """Return True if the detour is currently enabled. False otherwise."""
+        ...
+
+    def enable(self):
+        """Enable the detour. Will do nothing if the detour is already enabled."""
+        ...
+
+    def disable(self):
+        """Disable the detour. Will do nothing if the detour is already disabled."""
+        ...
+
 
 class CallerHookProtocol(HookProtocol):
     def caller_address(self) -> int:
