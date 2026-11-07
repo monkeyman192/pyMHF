@@ -451,7 +451,7 @@ pyMHF provides functionality to allow these detours to be run <em>before</em> or
 <h4><a class="reference internal" href="../api/pymhf.core.hooking.html#pymhf.core.hooking.get_caller" title="pymhf.core.hooking.get_caller"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_caller(...)</span></code></a><a class="headerlink" href="#get-caller" title="Link to this heading">#</a></h4>
 <p>When applied to a function this decorator will cause the function hook to determine where it was called from.
 To access this information, you can call a function on the detour method itself. This is seen more clearly by example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyHook</span><span class="p">(</span><span class="n">NMSMod</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyHook</span><span class="p">(</span><span class="n">Mod</span><span class="p">):</span>
     <span class="nd">@get_caller</span>
     <span class="nd">@pymhf</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">hooking</span><span class="o">.</span><span class="n">manual_hook</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">do_something</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
@@ -462,6 +462,48 @@ To access this information, you can call a function on the detour method itself.
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The address returned will be one expression later than the <code class="docutils literal notranslate"><span class="pre">call</span></code> instruction used to call the original function. This is because to get this caller address we are looking for the value of the <code class="docutils literal notranslate"><span class="pre">RSP</span></code> register which is where the program will resume operation from after running the function.</p>
+</div>
+</section>
+</section>
+<section id="enabling-and-disabling-detours-at-runtime">
+<h3>Enabling and disabling detours at runtime<a class="headerlink" href="#enabling-and-disabling-detours-at-runtime" title="Link to this heading">#</a></h3>
+<p>It is sometimes convenient to be able to be able to enable or disable a detour at runtime (eg. if you want to toggle some functionality on or off based on some condition).</p>
+<p>Similar to how the <code class="docutils literal notranslate"><span class="pre">&#64;get_caller</span></code> decorator above works, all detours have the following functions:</p>
+<section id="enable">
+<h4><code class="docutils literal notranslate"><span class="pre">enable()</span></code><a class="headerlink" href="#enable" title="Link to this heading">#</a></h4>
+<blockquote>
+<div><p>Enable the detour. Will do nothing if the detour is already enabled.</p>
+</div></blockquote>
+</section>
+<section id="disable">
+<h4><code class="docutils literal notranslate"><span class="pre">disable()</span></code><a class="headerlink" href="#disable" title="Link to this heading">#</a></h4>
+<blockquote>
+<div><p>Disable the detour. Will do nothing if the detour is already disabled.</p>
+</div></blockquote>
+</section>
+<section id="is-enabled-bool">
+<h4><code class="docutils literal notranslate"><span class="pre">is_enabled()</span> <span class="pre">-&gt;</span> <span class="pre">bool</span></code><a class="headerlink" href="#is-enabled-bool" title="Link to this heading">#</a></h4>
+<blockquote>
+<div><p>Return True if the detour is currently enabled. False otherwise.</p>
+</div></blockquote>
+<p>Consider the following example on how to use them:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyHook</span><span class="p">(</span><span class="n">Mod</span><span class="p">):</span>
+    <span class="nd">@gui_button</span><span class="p">(</span><span class="s2">"Toggle"</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">toggle_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_something</span><span class="o">.</span><span class="n">is_enabled</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">do_something</span><span class="o">.</span><span class="n">disable</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">do_something</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+
+    <span class="nd">@pymhf</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">hooking</span><span class="o">.</span><span class="n">manual_hook</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">do_something</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"I was called from 0x</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">do_something</span><span class="o">.</span><span class="n">caller_address</span><span class="p">()</span><span class="si">:</span><span class="s2">X</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Whenever the <code class="docutils literal notranslate"><span class="pre">Toggle</span></code> button in the gui is pressed, the detour will be toggled between the enabled and disabled states.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This will not work for one-shot detours currently, and detours which are disabled by way of the <code class="docutils literal notranslate"><span class="pre">&#64;disabled</span></code> decorator will also not be able to be re-enabled this way.</p>
 </div>
 </section>
 </section>

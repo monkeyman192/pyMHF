@@ -89,7 +89,7 @@ To access this information, you can call a function on the detour method itself.
 
 .. code-block:: python
 
-    class MyHook(NMSMod):
+    class MyHook(Mod):
         @get_caller
         @pymhf.core.hooking.manual_hook(...)
         def do_something(self, *args):
@@ -99,3 +99,48 @@ This address will be the address relative to the start of the binary the hook is
 
 .. note::
     The address returned will be one expression later than the ``call`` instruction used to call the original function. This is because to get this caller address we are looking for the value of the ``RSP`` register which is where the program will resume operation from after running the function.
+
+
+Enabling and disabling detours at runtime
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is sometimes convenient to be able to be able to enable or disable a detour at runtime (eg. if you want to toggle some functionality on or off based on some condition).
+
+Similar to how the ``@get_caller`` decorator above works, all detours have the following functions:
+
+``enable()``
+""""""""""""
+
+    Enable the detour. Will do nothing if the detour is already enabled.
+
+``disable()``
+"""""""""""""
+
+    Disable the detour. Will do nothing if the detour is already disabled.
+
+``is_enabled() -> bool``
+""""""""""""""""""""""""
+
+    Return True if the detour is currently enabled. False otherwise.
+
+Consider the following example on how to use them:
+
+.. code-block:: python
+
+    class MyHook(Mod):
+        @gui_button("Toggle")
+        def toggle_state(self):
+            if self.do_something.is_enabled():
+                self.do_something.disable()
+            else:
+                self.do_something.enable()
+
+        @pymhf.core.hooking.manual_hook(...)
+        def do_something(self, *args):
+            logging.info(f"I was called from 0x{self.do_something.caller_address():X}")
+
+Whenever the ``Toggle`` button in the gui is pressed, the detour will be toggled between the enabled and disabled states.
+
+.. note::
+    This will not work for one-shot detours currently, and detours which are disabled by way of the ``@disabled`` decorator will also not be able to be re-enabled this way.
+
