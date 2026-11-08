@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from enum import Enum
+from logging import getLogger
 from typing import TYPE_CHECKING, Any, Literal, Type, TypedDict, cast
 
 import dearpygui.dearpygui as dpg
@@ -21,6 +22,9 @@ if TYPE_CHECKING:
     from pymhf.gui.gui import GUI
 
 INDENT = 32
+
+
+logger = getLogger(__name__)
 
 
 class WidgetSurrounds(TypedDict, total=False):
@@ -512,6 +516,12 @@ class IntVariable(Variable):
         self.is_slider = is_slider
 
     def _add_variable_value(self, tag: str, default_value: int):
+        if not isinstance(default_value, int):
+            logger.error(
+                f"The default value of {self.mod._mod_name}.{self.variable_name} ({default_value!r}) is not "
+                "an integer. Falling back to 0."
+            )
+            default_value = 0
         dpg.add_int_value(tag=tag, default_value=default_value)
 
     def _add_editable_field(self, extra_args: dict[str, Any]):
@@ -551,6 +561,12 @@ class FloatVariable(Variable):
         self.is_slider = is_slider
 
     def _add_variable_value(self, tag: str, default_value: float):
+        if not isinstance(default_value, (float, int)):
+            logger.error(
+                f"The default value of {self.mod._mod_name}.{self.variable_name} ({default_value!r}) is not "
+                "a number. Falling back to 0."
+            )
+            default_value = 0
         dpg.add_double_value(tag=tag, default_value=default_value)
 
     def _add_editable_field(self, extra_args: dict[str, Any]):
@@ -588,6 +604,12 @@ class StringVariable(Variable):
         super().__init__(id_, label, mod, variable_name, VariableType.FLOAT, has_setter, extra_args)
 
     def _add_variable_value(self, tag: str, default_value: str):
+        if not isinstance(default_value, str):
+            logger.error(
+                f"The default value of {self.mod._mod_name}.{self.variable_name} ({default_value!r}) is not "
+                "a string. Falling back to the empty string."
+            )
+            default_value = ""
         dpg.add_string_value(tag=tag, default_value=default_value)
 
     def _add_editable_field(self, extra_args: dict[str, Any]):
@@ -616,6 +638,12 @@ class BoolVariable(Variable):
         super().__init__(id_, label, mod, variable_name, VariableType.BOOLEAN, has_setter, extra_args)
 
     def _add_variable_value(self, tag: str, default_value: bool):
+        if not isinstance(default_value, bool) or default_value not in (0, 1):
+            logger.error(
+                f"The default value of {self.mod._mod_name}.{self.variable_name} ({default_value!r}) is not "
+                "a boolean. Falling back to False"
+            )
+            default_value = False
         dpg.add_bool_value(tag=tag, default_value=default_value)
 
     def _add_editable_field(self, extra_args: dict[str, Any]):
@@ -644,6 +672,13 @@ class EnumVariable(Variable):
         self.enum = enum
 
     def _add_variable_value(self, tag: str, default_value: Enum):
+        if not isinstance(default_value, self.enum):
+            _curr_default = default_value
+            default_value = next(iter(self.enum))
+            logger.error(
+                f"The default value of {self.mod._mod_name}.{self.variable_name} ({_curr_default!r}) is not "
+                f"an enum of type {self.enum}. Falling back to {str(default_value)}"
+            )
         dpg.add_string_value(tag=tag, default_value=default_value.name)
 
     def _add_editable_field(self, extra_args: dict[str, Any]):
@@ -688,6 +723,12 @@ class ColourVariable(Variable):
     def _add_variable_value(
         self, tag: str, default_value: tuple[float, float, float] | tuple[float, float, float, float]
     ):
+        if not isinstance(default_value, tuple) or len(default_value) not in (3, 4):
+            logger.error(
+                f"The default value of {self.mod._mod_name}.{self.variable_name} ({default_value!r}) is not "
+                "an colour. Falling back to (0, 0, 0)."
+            )
+            default_value = (0, 0, 0)
         dpg.add_color_value(tag=tag, default_value=default_value)
 
     def update_variable(self, _, app_data, user_data):
