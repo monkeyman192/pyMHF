@@ -8,10 +8,12 @@ import json
 import logging
 import os
 import os.path as op
+import platform
 import sys
 import traceback
 from abc import ABC
-from dataclasses import fields
+from dataclasses import dataclass, fields
+from enum import IntEnum
 from functools import partial
 from types import MethodType, ModuleType
 from typing import TYPE_CHECKING, Any, ClassVar, Type, TypeVar, cast, overload
@@ -221,13 +223,28 @@ class ModState(ABC):
             setattr(self, key, value)
 
 
+@dataclass
+class ModSettings:
+    """Various settings used to configure how a mod behaves."""
+
+    class HookNotFound(IntEnum):
+        IGNORE = 0  # Ignore the failed hook and initialise anyway.
+        DISABLE = 1  # Don't initialise the mod.
+
+    # How the mod should behave when one of the hooks in it can't be found.
+    handle_hook_not_found: HookNotFound = HookNotFound.IGNORE
+    # Minimum required pyMHF version for this mod.
+    required_pymhf: str | None = None
+    # Minimum version of python required for the mod.
+    required_python: str | None = None
+
+
 class Mod(ABC):
     __author__: str | list[str] | None = None
     __description__: str | None = None
     __version__: str | None = None
-    __dependencies__: list[str] = []
-    # Minimum required pyMHF version for this mod.
-    __pymhf_required_version__: str | None = None
+    __settings__: ModSettings | None = None
+    __dependencies__: list[str] | None = None
 
     _custom_callbacks: set[CustomTriggerProtocol]
     _gui_widgets: list[GUIElementProtocol[WidgetData] | GroupWidgetData]
@@ -434,30 +451,50 @@ class ModManager:
             self._mod_paths[mod_name] = module
             self._disabled_mods.add(mod_name)
             return False
-        if mod.__pymhf_required_version__ is not None:
-            from pymhf import __version__ as _pymhf_version
 
-            try:
-                pymhf_version = parse_version(_pymhf_version)
-            except InvalidVersion:
-                pymhf_version = None
-            try:
-                mod_version = parse_version(mod.__pymhf_required_version__)
-            except InvalidVersion:
-                logger.warning(
-                    f"__pymhf_required_version__ defined on mod {mod.__name__} is not a valid version string"
-                )
-                mod_version = None
-            if pymhf_version:
-                if mod_version is None or mod_version <= pymhf_version:
-                    self._preloaded_mods[mod_name] = mod
-                else:
-                    logger.error(
-                        f"Mod {mod.__name__} requires a newer verison of "
-                        f"pyMHF ({mod_version} ≥ {pymhf_version})! "
-                        "Please update"
+        # Do some initial checks to see if we can load the mod based on the mod settings.
+        preload_mod = True
+
+        if (mod_settings := mod.__settings__) is not None:
+            # Compare the required pyMHF version to the currently installed one.
+            if mod_settings.required_pymhf:
+                from pymhf import __version__ as _pymhf_version
+
+                try:
+                    pymhf_version = parse_version(_pymhf_version)
+                except InvalidVersion:
+                    pymhf_version = None
+                try:
+                    required_version = parse_version(mod_settings.required_pymhf)
+                except InvalidVersion:
+                    logger.warning(
+                        f"Required_pymhf value ({mod_settings.required_pymhf}) for mod {mod.__name__} is not "
+                        "a valid version string"
                     )
-        else:
+                    required_version = None
+                if pymhf_version:
+                    if required_version and required_version > pymhf_version:
+                        logger.error(
+                            f"Mod {mod.__name__} requires a newer verison of "
+                            f"pyMHF ({required_version} ≥ {pymhf_version})! "
+                            "Please update"
+                        )
+                        preload_mod = False
+            # Compare the required python version to the currently used one.
+            # Note: this code will likely never actually get hit since we won't be able to import a file which
+            # uses syntax from a later python version.
+            if mod_settings.required_python is not None:
+                running_python_version = parse_version(platform.python_version())
+                try:
+                    required_version = parse_version(mod_settings.required_python)
+                except InvalidVersion:
+                    required_version = None
+                if required_version and required_version > running_python_version:
+                    # Required python version is higher than the current running version so we cannot load the
+                    # mod.
+                    preload_mod = False
+
+        if preload_mod:
             self._preloaded_mods[mod_name] = mod
         # Only get mod states if the mod name doesn't already have a cached
         # state, otherwise it will override it.
@@ -609,7 +646,23 @@ class ModManager:
             return None
         # Register each of the methods which are detours.
         for hook in _mod.hooks:
-            self.hook_manager.register_hook(hook)
+            if not self.hook_manager.register_hook(hook):
+                # Determine what to do. If we need to stop, then we stop processing hooks and rollback those
+                # which have been added.
+                if (mod_settings := mod.__settings__) is not None:
+                    if mod_settings.handle_hook_not_found == ModSettings.HookNotFound.DISABLE:
+                        logger.error(
+                            f"Unable to find the hook for {hook.__func__.__qualname__}. Due to the mod "
+                            f"settings for {_mod._mod_name} no hooks will be enabled and the mod will be "
+                            "disabled."
+                        )
+                        self._disable(_mod)
+                        # Break out of the loop which is registering hooks so we don't try and enable any
+                        # more.
+                        break
+                    elif mod_settings.handle_hook_not_found == ModSettings.HookNotFound.IGNORE:
+                        pass
+
         # Add any custom callbacks which may be defined by the calling library.
         self.hook_manager._add_custom_callbacks(_mod._custom_callbacks)
         # Set up any keyboard bindings.
@@ -646,7 +699,11 @@ class ModManager:
         else:
             iter_ = self.mods.items()
         for _mod_name, mod in iter_:
-            if dependencies := getattr(mod, "__dependencies__", []):
+            if dependencies := getattr(mod, "__dependencies__"):
+                if not isinstance(dependencies, list):
+                    logger.warning(
+                        f"Invalid type for dependencies: {type(dependencies)}. It will be ignored."
+                    )
                 module = self._mod_paths[_mod_name]
                 for dependency in dependencies:
                     if dependency in self.mods:
@@ -711,8 +768,8 @@ class ModManager:
                             and not op.commonpath([_module_fpath, venv_dir]) == venv_dir
                         ):
                             # Ignore files containing mods.
-                            # This will probably be added as an optional feature in the future, but
-                            # for now I think simpler to not reload them and log a warning instead.
+                            # This will probably be added as an optional feature in the future, but for now I
+                            # think it's simpler to not reload them and log a warning instead.
                             with open(_module_fpath, "r") as f:
                                 if parse_file_for_mod(f.read()):
                                     logger.warning(

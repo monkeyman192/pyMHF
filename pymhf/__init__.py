@@ -473,7 +473,7 @@ def run():
             ) is not None:
                 local_config["local_config"]["mod_dir"] = mod_folder
             else:
-                return None
+                return
 
         # Write the config back and then delete the temporary file only once everything is ok.
         write_pymhf_settings(local_config, dst)
@@ -510,9 +510,11 @@ def run():
                 if (
                     mod_dir := get_folder("Select folder where mods can be found", MOD_DIR_Q, has_tkinter)
                 ) is not None:
-                    pymhf_settings["mod_dir"] = mod_dir
+                    if mod_dir != "":
+                        print(f"Setting mod_dir to {mod_dir!r}")
+                        pymhf_settings["mod_dir"] = mod_dir
                 else:
-                    return None
+                    return
             elif config_choice == CFG_OPT_START_PAUSED:
                 if (start_paused := START_PAUSED.ask()) is not None:
                     pymhf_settings["start_paused"] = start_paused
@@ -524,14 +526,14 @@ def run():
                 ) is not None:
                     pymhf_settings["log_dir"] = log_dir
                 else:
-                    return None
+                    return
             elif config_choice == CFG_OPT_MOD_SAVE_PATH:
                 if (
                     msd := get_folder("Select folder where mod saves are placed", MOD_SAVE_DIR_Q, has_tkinter)
                 ) is not None:
                     pymhf_settings["mod_save_dir"] = msd
                 else:
-                    return None
+                    return
             elif config_choice is None:
                 keep_going = False
 

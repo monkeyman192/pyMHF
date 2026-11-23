@@ -1,7 +1,13 @@
 # Test functions in the pymhf.core.importing file
+import logging
+import platform
+
 import pytest
+from packaging.version import parse as parse_version
 
 from pymhf.core.importing import ModInfo, get_mod_infos, parse_file_for_mod
+
+CURRENT_PYTHON_VERSION = platform.python_version()
 
 # "files" which will pass.
 STANDARD_IMPORT = """
@@ -239,3 +245,56 @@ class OtherThing(Mod):
 )
 def test_get_mod_infos(data: str, result: list[ModInfo]):
     assert get_mod_infos(data) == result
+
+
+SYNTAX_ERROR_IMPORT = """
+string = t"thing"
+"""
+
+
+SYNTAX_ERROR_WITH_MOD_IMPORT = """
+from pymhf import Mod
+from pymhf.core.mod_loader import ModSettings
+
+class Thing(pymhf.Mod):
+    __settings__ = ModSettings(required_python="3.14")
+    def __init__(self):
+        super().__init__()
+        self.tstring = t"string {something}"
+"""
+
+
+@pytest.mark.parametrize(
+    "data,error_message,max_py_version",
+    [
+        (
+            SYNTAX_ERROR_WITH_MOD_IMPORT,
+            (
+                "The mod 'mod.py' was not able to be loaded as it contains a syntax error. This indicates "
+                "that it may require a newer version of python than the currently running version. "
+                f"Required version: 3.14, Current version: {CURRENT_PYTHON_VERSION}"
+            ),
+            "3.13",
+        ),
+        (
+            SYNTAX_ERROR_IMPORT,
+            (
+                "The mod 'mod.py' was not able to be loaded as it contains a syntax error. This indicates "
+                "that it may require a newer version of python than the currently running version. "
+                f"Current version: {CURRENT_PYTHON_VERSION}"
+            ),
+            "3.13",
+        ),
+    ],
+)
+def test_import_with_exceptions(
+    data: str,
+    error_message: str,
+    max_py_version: str,
+    caplog: pytest.LogCaptureFixture,
+):
+    if parse_version(CURRENT_PYTHON_VERSION) > parse_version(max_py_version):
+        pytest.skip(f"Error will not occur in python version {CURRENT_PYTHON_VERSION}")
+    caplog.set_level(logging.INFO)
+    parse_file_for_mod(data, "mod.py")
+    assert ("pymhf.core.importing", logging.ERROR, error_message) in caplog.record_tuples
