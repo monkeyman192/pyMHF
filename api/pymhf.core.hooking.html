@@ -577,9 +577,12 @@ This will also enable the hooks so that they become active.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pymhf.core.hooking.HookManager.register_hook">
-<span class="sig-name descname"><span class="pre">register_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hook</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HookProtocol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymhf.core.hooking.HookManager.register_hook" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">register_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hook</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HookProtocol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#pymhf.core.hooking.HookManager.register_hook" title="Link to this definition">#</a></dt>
 <dd><p>Register the provided hook.
-This will determine the offset of the function being hooked.</p>
+This will determine the offset of the function being hooked and add the info to the internal data
+relating to what needs to actually be hooked.
+If the function cannot be found for some reason, then this will return False, otherwise it will
+return True.</p>
 </dd></dl>
 
 <dl class="py method">

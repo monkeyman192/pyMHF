@@ -144,3 +144,39 @@ Whenever the ``Toggle`` button in the gui is pressed, the detour will be toggled
 .. note::
     This will not work for one-shot detours currently, and detours which are disabled by way of the ``@disabled`` decorator will also not be able to be re-enabled this way.
 
+Configuring mods and mod metadata
+---------------------------------
+
+There are a few class attributes which can be applied to mod definitions to provide some extra info, either by modding libraries, or for the built-in pyMHF gui.
+
+Note that none of these are required and all fallback to default empty values (ie. generally ``None``).
+
+``__author__: str | list[str] | None``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A list of mod authors, or simply a string with the mod author if there is just one.
+
+``__description__: str | None``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A description of the mod.
+
+``__version__: str | None``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Version of the mod. No validation is done on this field if it's not ``None``.
+
+``__settings__:`` :py:class:`~pymhf.core.mod_loader.ModSettings` ``| None``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Settings related to the mod. Currently the main setting which affects anything is ``handle_hook_not_found`` which can take the values ``ModSettings.HookNotFound.IGNORE`` and ``ModSettings.HookNotFound.DISABLE``.
+
+If the value is ``IGNORE``, then any hooks which can't be found in a mod will be ignored and the mod will still be loaded if possible. This is the default option.
+
+If the valaue is ``DISABLE``, then if any hooks are unable to be found then the mod will be disabled and any hooks which had been found, or any key bindings of custom callbacks will all be rolled back and disabled.
+
+``__dependencies__: list[str] | None``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A list of other mods which are required as dependencies. See :doc:`here </docs/inter_mod_functionality>` for more details on how it's used.
+

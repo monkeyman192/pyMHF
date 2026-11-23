@@ -508,6 +508,33 @@ To access this information, you can call a function on the detour method itself.
 </section>
 </section>
 </section>
+<section id="configuring-mods-and-mod-metadata">
+<h2>Configuring mods and mod metadata<a class="headerlink" href="#configuring-mods-and-mod-metadata" title="Link to this heading">#</a></h2>
+<p>There are a few class attributes which can be applied to mod definitions to provide some extra info, either by modding libraries, or for the built-in pyMHF gui.</p>
+<p>Note that none of these are required and all fallback to default empty values (ie. generally <code class="docutils literal notranslate"><span class="pre">None</span></code>).</p>
+<section id="author-str-list-str-none">
+<h3><code class="docutils literal notranslate"><span class="pre">__author__:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">list[str]</span> <span class="pre">|</span> <span class="pre">None</span></code><a class="headerlink" href="#author-str-list-str-none" title="Link to this heading">#</a></h3>
+<p>A list of mod authors, or simply a string with the mod author if there is just one.</p>
+</section>
+<section id="description-str-none">
+<h3><code class="docutils literal notranslate"><span class="pre">__description__:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code><a class="headerlink" href="#description-str-none" title="Link to this heading">#</a></h3>
+<p>A description of the mod.</p>
+</section>
+<section id="version-str-none">
+<h3><code class="docutils literal notranslate"><span class="pre">__version__:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code><a class="headerlink" href="#version-str-none" title="Link to this heading">#</a></h3>
+<p>Version of the mod. No validation is done on this field if it’s not <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</section>
+<section id="settings-modsettings-none">
+<h3><code class="docutils literal notranslate"><span class="pre">__settings__:</span></code> <a class="reference internal" href="../api/pymhf.core.mod_loader.html#pymhf.core.mod_loader.ModSettings" title="pymhf.core.mod_loader.ModSettings"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModSettings</span></code></a> <code class="docutils literal notranslate"><span class="pre">|</span> <span class="pre">None</span></code><a class="headerlink" href="#settings-modsettings-none" title="Link to this heading">#</a></h3>
+<p>Settings related to the mod. Currently the main setting which affects anything is <code class="docutils literal notranslate"><span class="pre">handle_hook_not_found</span></code> which can take the values <code class="docutils literal notranslate"><span class="pre">ModSettings.HookNotFound.IGNORE</span></code> and <code class="docutils literal notranslate"><span class="pre">ModSettings.HookNotFound.DISABLE</span></code>.</p>
+<p>If the value is <code class="docutils literal notranslate"><span class="pre">IGNORE</span></code>, then any hooks which can’t be found in a mod will be ignored and the mod will still be loaded if possible. This is the default option.</p>
+<p>If the valaue is <code class="docutils literal notranslate"><span class="pre">DISABLE</span></code>, then if any hooks are unable to be found then the mod will be disabled and any hooks which had been found, or any key bindings of custom callbacks will all be rolled back and disabled.</p>
+</section>
+<section id="dependencies-list-str-none">
+<h3><code class="docutils literal notranslate"><span class="pre">__dependencies__:</span> <span class="pre">list[str]</span> <span class="pre">|</span> <span class="pre">None</span></code><a class="headerlink" href="#dependencies-list-str-none" title="Link to this heading">#</a></h3>
+<p>A list of other mods which are required as dependencies. See <a class="reference internal" href="inter_mod_functionality.html"><span class="doc">here</span></a> for more details on how it’s used.</p>
+</section>
+</section>
 </section>
 
 
