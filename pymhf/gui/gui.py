@@ -528,6 +528,10 @@ class GUI:
 
         dpg.add_separator(parent=mod_name)
 
+        if mod._disabled:
+            # No need to render any widgets.
+            return
+
         with dpg.group(parent=mod_name) as mod_widget_group:
             # Push the mod name to the container stack so that we can draw everthing under it.
             dpg.push_container_stack(mod_widget_group)

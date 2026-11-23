@@ -791,13 +791,17 @@ class HookManager:
             if (func_hook := self.hooks.get(hook_id)) is not None:
                 if func_hook.state == "closed":
                     del self.hooks[hook_id]
+                    self._uninitialized_hooks.discard(hook_id)
 
-    def register_hook(self, hook: HookProtocol):
+    def register_hook(self, hook: HookProtocol) -> bool:
         """Register the provided hook.
-        This will determine the offset of the function being hooked."""
+        This will determine the offset of the function being hooked and add the info to the internal data
+        relating to what needs to actually be hooked.
+        If the function cannot be found for some reason, then this will return False, otherwise it will
+        return True."""
         if getattr(hook, "_disabled", False) is True:
             # Do nothing, exit immediately.
-            return
+            return False
         hook_func_name = hook._hook_func_name
         # If the hook has an overload, add it here so that we can disambiguate them.
         if getattr(hook, "_func_overload", None) is not None:
@@ -827,11 +831,11 @@ class HookManager:
                     hook_offset_is_absolute = True
             else:
                 logger.error(f"Cannot find {hook_binary} in the import list")
-                return
+                return False
         elif hook._is_exported_func_hook:
             if _internal.BINARY_PATH is None:
                 logger.error("Current running binary path unknown. Cannot hook exported functions")
-                return
+                return False
             # TODO: This is inefficient. We should only instantiate the "dll" once.
             own_dll = ctypes.WinDLL(_internal.BINARY_PATH)
             func_ptr = getattr(own_dll, hook._hook_func_name)
@@ -842,7 +846,7 @@ class HookManager:
             func_id = FunctionIdentifier(hook_func_name, hook_offset, hook_binary, hook_offset_is_absolute)
         else:
             logger.error(f"Unable to find offset for {hook_func_name}. Hook will not be registered.")
-            return
+            return False
 
         if func_id not in self.hooks:
             try:
@@ -855,13 +859,15 @@ class HookManager:
                 )
             except Exception:
                 logger.exception(f"There was an issue creating the func hook for {func_id}")
-                return
+                return False
             self._uninitialized_hooks.add(func_id)
             self._hook_id_mapping[hook] = func_id
         self.hooks[func_id].add_detour(hook)
 
         if getattr(hook, "_get_caller", False):
             self._get_caller_detours.add(func_id)
+
+        return True
 
     def initialize_hooks(self) -> int:
         """Initialize any uninitialized hooks.

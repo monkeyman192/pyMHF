@@ -3,17 +3,27 @@ import importlib.machinery
 import importlib.util
 import logging
 import os.path as op
+import platform
+import re
 import string
 import sys
 from types import ModuleType
 from typing import NamedTuple
+
+from packaging.version import InvalidVersion
+from packaging.version import parse as parse_version
 
 from pymhf.gui.widget_data import ctx_group, ctx_group_counter
 
 logger = logging.getLogger(__name__)
 
 
+# Regex to search for the required python version in the case of a syntax error.
+RE_REQUIRED_PYTHON = r"""required_python\s*=\s*['"]([^'"]+)['"]"""
+
 VALID_CHARS = string.ascii_letters + string.digits + "_"
+
+CURRENT_PYTHON = platform.python_version()
 
 
 def _clean_name(name: str) -> str:
@@ -65,13 +75,47 @@ def _is_disable_decorator(decorator: ast.expr, disable_names: set[str]) -> bool:
     return False
 
 
-def get_mod_infos(data: str) -> list[ModInfo]:
+CORE_ERROR = (
+    "was not able to be loaded as it contains a syntax error. This indicates that it may require a newer "
+    "version of python than the currently running version."
+)
+
+
+def get_mod_infos(data: str, fname: str | None = None) -> list[ModInfo]:
     """Parse the provided data and return the details of every mod class defined in it.
 
     This allows the name of each mod, and whether it has been decorated with ``@disable``, to be determined
     without importing the file they are defined in.
     """
-    tree = ast.parse(data)
+    try:
+        tree = ast.parse(data)
+    except SyntaxError:
+        required_version = None
+        required_python_version = None
+        if (match := re.search(RE_REQUIRED_PYTHON, data)) is not None:
+            required_python_version = match.group(1)
+            # Try and parse the version. If we can then just use the version in the file
+            try:
+                required_version = parse_version(required_python_version)
+            except InvalidVersion:
+                required_version = None
+        if required_version:
+            if fname:
+                logger.error(
+                    f"The mod {fname!r} {CORE_ERROR}"
+                    f" Required version: {required_python_version}, Current version: {CURRENT_PYTHON}"
+                )
+            else:
+                logger.error(
+                    f"A mod {CORE_ERROR}"
+                    f" Required version: {required_python_version}, Current version: {CURRENT_PYTHON}"
+                )
+        else:
+            if fname:
+                logger.error(f"The mod {fname!r} {CORE_ERROR} Current version: {CURRENT_PYTHON}")
+            else:
+                logger.error(f"A mod {CORE_ERROR} Current version: {CURRENT_PYTHON}")
+        return []
     # A file may import the names we are looking for in more than one way, so keep track of every name each
     # object may be referred to as.
     mod_class_names: set[str] = set()
@@ -117,9 +161,9 @@ def get_mod_infos(data: str) -> list[ModInfo]:
     return mods
 
 
-def parse_file_for_mod(data: str) -> bool:
+def parse_file_for_mod(data: str, fname: str | None = None) -> bool:
     """Parse the provided data and determine if there is at least one mod class in it."""
-    return len(get_mod_infos(data)) != 0
+    return len(get_mod_infos(data, fname)) != 0
 
 
 def import_file(fpath: str) -> ModuleType | None:

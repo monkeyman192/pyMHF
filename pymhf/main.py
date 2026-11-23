@@ -512,7 +512,7 @@ def run_module(
                         if op.isdir(fpath):
                             for pyfile in glob.iglob(op.join(fpath, "*.[p][y]")):
                                 with open(pyfile, "r") as f:
-                                    if parse_file_for_mod(f.read()):
+                                    if parse_file_for_mod(f.read(), pyfile):
                                         # Once we know that at least one file contains a mod, stop iterating
                                         # and add the folder to the path.
                                         if fpath not in _path:
