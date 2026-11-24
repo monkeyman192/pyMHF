@@ -23,7 +23,7 @@ from pymhf.gui.widget_data import (
     VariableWidgetData,
     WidgetData,
 )
-from pymhf.gui.widgets import CustomWidget, Group, Variable, Widget
+from pymhf.gui.widgets import INDENT, CustomWidget, Group, Variable, Widget
 from pymhf.utils.winapi import set_window_transparency
 
 SETTINGS_NAME = "_pymhf_gui_settings"
@@ -79,6 +79,7 @@ class GUI:
         self.is_debug = config.get("logging", {}).get("log_level") == "debug"
         self.scale = config.get("gui", {}).get("scale", 1)
         self.submodule_reload_enabled = False
+        self.show_mod_info = False
         dpg.create_context()
         dpg.create_viewport(
             title=WINDOW_TITLE,
@@ -490,20 +491,13 @@ class GUI:
                 if isinstance(widget, CustomWidget):
                     self.redrawing_widgets[mod_name][widget.id_] = widget
 
-    def add_tab(self, mod: Mod):
-        """Add the mod as a new tab in the GUI."""
-        # Check to see if the `no_gui` decorator has been applied to the class.
-        # If so, don't add it now.
-        if getattr(mod, "_no_gui", False) is True:
-            return
+    def _toggle_mod_info_visible(self, _sender, _):
+        self.show_mod_info = not self.show_mod_info
+        dpg.configure_item("mod_info", show=self.show_mod_info)
 
+    def add_mod_ui_top_matter(self, mod: Mod):
+        # Add the mod top matter.
         mod_name = mod._mod_name
-        mod.pymhf_gui = self
-
-        dpg.add_tab(label=mod_name, tag=mod_name, parent="tabbar")
-        dpg.set_item_user_data(mod_name, mod)
-        self.tabs[mod_name] = None
-        self.widget_mapping[mod_name] = {}
 
         with dpg.group(horizontal=True, parent=mod_name):
             dpg.add_button(
@@ -525,8 +519,79 @@ class GUI:
                     user_data=mod_name,
                     tag=f"_enable_button_{mod_name}",
                 )
+            dpg.add_button(
+                label="Mod Info",
+                callback=self._toggle_mod_info_visible,
+            )
+
+        # Add a button to toggle the mod info subsection.
+        with dpg.collapsing_header(
+            label="Mod info",
+            parent=mod_name,
+            leaf=True,
+            show=self.show_mod_info,
+            tag="mod_info",
+        ):
+            # Add all the normal fields.
+            if (author := mod.__author__) is not None:
+                with dpg.group(horizontal=True):
+                    if isinstance(author, str):
+                        dpg.add_text("Author:", indent=INDENT)
+                        dpg.add_text(author)
+                    else:
+                        if len(author) <= 1:
+                            dpg.add_text("Author:", indent=INDENT)
+                        else:
+                            dpg.add_text("Authors:", indent=INDENT)
+                        if len(author) == 0:
+                            dpg.add_text("Unknown")
+                        else:
+                            dpg.add_text(", ".join(author))
+            if (description := mod.__description__) is not None:
+                with dpg.group(horizontal=True):
+                    dpg.add_text("Description:", indent=INDENT)
+                    dpg.add_text(description)
+            if (version := mod.__version__) is not None:
+                with dpg.group(horizontal=True):
+                    dpg.add_text("Version:", indent=INDENT)
+                    dpg.add_text(version)
+            # Check for any custom fields. These MUST be in the form `__pymhf_mod_info_{name}__`
+            custom_attr_names: list[str] = []
+            for attr_name in dir(mod):
+                if attr_name.startswith("__pymhf_mod_info_"):
+                    custom_attr_names.append(attr_name)
+            for attr_name in custom_attr_names:
+                try:
+                    visible_name = attr_name[17:-2].replace("_", " ").capitalize()
+                    value = getattr(mod, attr_name)
+                    with dpg.group(horizontal=True):
+                        dpg.add_text(f"{visible_name}:", indent=INDENT)
+                        if isinstance(value, list):
+                            dpg.add_text(", ".join([str(x) for x in value]))
+                        else:
+                            dpg.add_text(str(value))
+                except Exception:
+                    # Any error, we just report and don't add the row.
+                    logger.exception(f"Unable to display the {attr_name} mod info attribute")
 
         dpg.add_separator(parent=mod_name)
+
+    def add_tab(self, mod: Mod):
+        """Add the mod as a new tab in the GUI."""
+        # Check to see if the `no_gui` decorator has been applied to the class.
+        # If so, don't add it now.
+        if getattr(mod, "_no_gui", False) is True:
+            return
+
+        mod_name = mod._mod_name
+        mod.pymhf_gui = self
+
+        dpg.add_tab(label=mod_name, tag=mod_name, parent="tabbar")
+        dpg.set_item_user_data(mod_name, mod)
+        self.tabs[mod_name] = None
+        self.widget_mapping[mod_name] = {}
+
+        self.add_mod_ui_top_matter(mod)
 
         if mod._disabled:
             # No need to render any widgets.

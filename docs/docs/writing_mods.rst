@@ -180,3 +180,11 @@ If the valaue is ``DISABLE``, then if any hooks are unable to be found then the 
 
 A list of other mods which are required as dependencies. See :doc:`here </docs/inter_mod_functionality>` for more details on how it's used.
 
+Custom mod metadata
+-------------------
+
+pyMHF supports custom metadata rendering in the Mod Info section of the gui.
+This metadata is specified in the mod by having an attribute which looks like ``__pymhf_mod_info_{name}__``. So for example, ``__pymhf_mod_info_website__ = "https://monkeyman192.github.io/pyMHF/"`` would be valid and would be rendered in the GUI as ``Website: https://monkeyman192.github.io/pyMHF/``.
+
+.. note::
+    Note that the ``name`` cannot contain spaces (the resulting class attribute must be valid).
