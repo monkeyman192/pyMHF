@@ -48,6 +48,7 @@ try:
     HTTP_API_ALLOWED = True
 except ImportError:
     HTTP_API_ALLOWED = False
+    router_mapping = None
 from pymhf.core.importing import ModInfo, get_mod_infos, import_file, parse_file_for_mod
 from pymhf.core.memutils import get_addressof, map_struct
 from pymhf.core.utils import does_pid_have_focus, saferun
@@ -839,13 +840,14 @@ class ModManager:
                     self._gui.reload_tab(mod, is_enabled=True)
 
                 # Get the HTTP router if there is one for this mod.
-                if (mod_router := router_mapping.get(mod._mod_name)) is not None:
-                    mod_router.load_routes(mod._http_endpoints)
-                else:
-                    mod_router = CleanableAPIRouter(mod._mod_name, prefix=f"/{mod._mod_name}")
-                    mod_router.load_routes(mod._http_endpoints)
-                    api_app.include_router(mod_router, tags=[mod._mod_name])
-                    router_mapping[mod._mod_name] = mod_router
+                if router_mapping is not None and HTTP_API_ALLOWED:
+                    if (mod_router := router_mapping.get(mod._mod_name)) is not None:
+                        mod_router.load_routes(mod._http_endpoints)
+                    else:
+                        mod_router = CleanableAPIRouter(mod._mod_name, prefix=f"/{mod._mod_name}")
+                        mod_router.load_routes(mod._http_endpoints)
+                        api_app.include_router(mod_router, tags=[mod._mod_name])
+                        router_mapping[mod._mod_name] = mod_router
 
                 mod._disabled = False
 

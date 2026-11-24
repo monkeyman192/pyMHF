@@ -90,8 +90,10 @@ class MovingCircle(CustomWidget):
 
 
 class GUITest(Mod):
-    __author__ = "monkeyman192"
+    __author__ = ["monkeyman192"]
     __description__ = "Example mod showcasing custom widgets"
+    __version__ = "0.1.2"
+    __pymhf_mod_info_important_info__ = "123"
 
     def __init__(self):
         super().__init__()

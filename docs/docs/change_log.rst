@@ -11,7 +11,8 @@ Current (0.2.6.dev)
 - Added the ability to enable, disable, and check whether a detour is enabled or disabled by calling ``enable()``, ``disable()``, and ``is_enabled()`` respectively on the method. (`#130 <https://github.com/monkeyman192/pyMHF/issues/130>`_)
 - Improved handling of gui variables which get invalid default values. (`#127 <https://github.com/monkeyman192/pyMHF/issues/127>`_)
 - Introduced a new :py:class:`~pymhf.core.mod_loader.ModSettings` class which configures how a mod behaves. (`#128 <https://github.com/monkeyman192/pyMHF/issues/128>`_)
-- Fixed an issue where selecting the option to change the mod page when running ``pymhf config`` and then cancelling out caused the path to be set to an empty stirng.
+- Fixed an issue where selecting the option to change the mod page when running ``pymhf config`` and then cancelling out caused the path to be set to an empty string.
+- Added a "Mod Info" section to the automatic GUI which displays standard mod metadata attributes as well as custom ones.
 
 0.2.5 (21/10/2026)
 ------------------
